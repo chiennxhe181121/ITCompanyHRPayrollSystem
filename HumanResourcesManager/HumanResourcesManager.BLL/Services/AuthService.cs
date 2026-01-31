@@ -1,4 +1,4 @@
-﻿using HumanResourcesManager.BLL.DTOs;
+﻿  using HumanResourcesManager.BLL.DTOs;
 using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.DAL.Data;
 using HumanResourcesManager.DAL.Models;
@@ -20,8 +20,13 @@ namespace HumanResourcesManager.BLL.Services
         {
             try
             {
+                // 1️⃣ Check Username
                 if (_context.UserAccounts.Any(u => u.Username == dto.Username))
                     throw new Exception("Username already exists");
+
+                // 2️⃣ Check Email (Employee)
+                if (_context.Employees.Any(e => e.Email == dto.Email))
+                    throw new Exception("Email already exists");
 
                 var employee = new Employee
                 {
@@ -70,10 +75,15 @@ namespace HumanResourcesManager.BLL.Services
                 .Include(u => u.Employee)
                 .Include(u => u.Role)
                 .FirstOrDefault(u =>
-                    u.Username == dto.Username &&
-                    u.Status == CommonStatus.Active);
+                    u.Status == CommonStatus.Active &&
+                    (
+                        u.Username == dto.LoginKey ||
+                        u.Employee.Email == dto.LoginKey
+                    )
+                );
 
-            if (user == null) return null;
+            if (user == null)
+                return null;
 
             if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
                 return null;
@@ -88,5 +98,6 @@ namespace HumanResourcesManager.BLL.Services
                 RoleName = user.Role.RoleName
             };
         }
+
     }
 }

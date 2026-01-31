@@ -7,35 +7,88 @@
     <div class="col-md-5">
         <div class="card shadow-lg border-0">
             <div class="card-body p-4">
+
                 <h3 class="text-center mb-4">🔐 Login</h3>
 
-                <form method="post">
-                    <div class="mb-3">
-                        <label>Username</label>
-                        <input asp-for="Username" class="form-control" />
+                <form method="post" id="loginForm">
+                    @Html.AntiForgeryToken()
+
+                    <!-- VALIDATION SUMMARY -->
+                    <div asp-validation-summary="ModelOnly"
+                         class="text-danger mb-3"></div>
+
+                    <!-- USERNAME or EMAIL -->
+                    <div class="form-floating mb-3">
+                        <input asp-for="LoginKey"
+                               class="form-control"
+                               placeholder="Username or Email" />
+                        <label asp-for="LoginKey"></label>
+                        <span asp-validation-for="LoginKey"
+                              class="text-danger"></span>
                     </div>
 
-                    <div class="mb-3">
-                        <label>Password</label>
-                        <input asp-for="Password" type="password" class="form-control" />
+                    <!-- PASSWORD -->
+                    <div class="form-floating mb-3 position-relative">
+                        <input asp-for="Password"
+                               type="password"
+                               class="form-control password-input"
+                               placeholder="Password" />
+                        <label asp-for="Password"></label>
+
+                        <span class="password-toggle"
+                              onclick="togglePassword(this)">👁</span>
+
+                        <span asp-validation-for="Password"
+                              class="text-danger"></span>
                     </div>
 
-                    <button class="btn btn-primary w-100 mt-2">
-                        Login
+                    <!-- SUBMIT -->
+                    <button type="submit" class="btn btn-primary w-100">
+                        <span class="btn-text">Login</span>
+                        <span class="spinner-border spinner-border-sm d-none"></span>
                     </button>
+
                 </form>
 
-                <p class="text-danger text-center mt-3">
-                    @ViewBag.Error
-                </p>
+                @if (!string.IsNullOrEmpty(ViewBag.Error))
+                {
+                    <p class="text-danger text-center mt-3">
+                        @ViewBag.Error
+                    </p>
+                }
 
                 <hr />
 
+                <a href="#"
+                   class="btn btn-outline-secondary w-100 mb-2">
+                    Bạn đã quên mật khẩu?
+                </a>
+
                 <a href="/HumanResourcesManager/register"
-                   class="btn btn-outline-secondary w-100">
+                   class="btn btn-outline-dark w-100">
                     Chưa có tài khoản? Đăng ký
                 </a>
+
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // 👁 Toggle password
+        function togglePassword(el) {
+            const input = el.previousElementSibling.previousElementSibling;
+            input.type = input.type === "password" ? "text" : "password";
+        }
+
+        // ⏳ Loading spinner
+        document.getElementById("loginForm")
+            .addEventListener("submit", function () {
+                document.getElementById("loadingSpinner").classList.remove("d-none");
+                document.querySelector(".btn-text").classList.add("d-none");
+            });
+    </script>
+}

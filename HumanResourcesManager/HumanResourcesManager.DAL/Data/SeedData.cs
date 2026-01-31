@@ -50,7 +50,7 @@ namespace HumanResourcesManager.DAL.Data
                     new Employee
                     {
                         EmployeeCode = "EMP001",
-                        FullName = "Nguyen Van A",
+                        FullName = "A Hoang dep zai",
                         Email = "a.nguyen@company.com",
                         Phone = "0901234567",
                         DepartmentId = 1,
