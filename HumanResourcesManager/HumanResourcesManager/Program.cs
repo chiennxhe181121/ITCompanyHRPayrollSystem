@@ -1,5 +1,7 @@
+﻿using HumanResourcesManager.DAL.Data;
+using HumanResourcesManager.BLL.Interfaces;
+using HumanResourcesManager.BLL.Services;
 using Microsoft.EntityFrameworkCore;
-using HumanResourcesManager.DAL.Data;
 
 namespace HumanResourcesManager
 {
@@ -9,25 +11,42 @@ namespace HumanResourcesManager
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            // MVC
             builder.Services.AddControllersWithViews();
 
+            // DbContext
             builder.Services.AddDbContext<HumanManagerContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(
+                    builder.Configuration.GetConnectionString("DefaultConnection")
+                ));
+
+            // ===== BLL DI =====
+            builder.Services.AddScoped<IAuthService, AuthService>();
+
+            // ===== SESSION =====
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(60);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+
+            builder.Services.AddHttpContextAccessor();
 
             var app = builder.Build();
 
+            // ===== SEED DATA =====
             using (var scope = app.Services.CreateScope())
             {
-                var context = scope.ServiceProvider.GetRequiredService<HumanManagerContext>();
+                var context = scope.ServiceProvider
+                                   .GetRequiredService<HumanManagerContext>();
                 SeedData.Initialize(context);
             }
 
-            // Configure the HTTP request pipeline.
+            // Middleware
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
@@ -36,6 +55,7 @@ namespace HumanResourcesManager
 
             app.UseRouting();
 
+            app.UseSession();        // 🔥 PHẢI CÓ
             app.UseAuthorization();
 
             app.MapControllerRoute(

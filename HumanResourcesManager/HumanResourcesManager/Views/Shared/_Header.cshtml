@@ -1,0 +1,49 @@
+﻿@using HumanResourcesManager.BLL.DTOs
+@using HumanResourcesManager.Helpers
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    var user = HttpContextAccessor.HttpContext?.Session
+        .GetObject<UserSessionDTO>("USER_SESSION");
+}
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
+            🧑‍💼 HRM System
+        </a>
+
+        <ul class="navbar-nav ms-auto align-items-center">
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
+            </li>
+
+            @if (user == null)
+            {
+                <li class="nav-item">
+                    <a class="nav-link" href="/HumanResourcesManager/login">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-primary ms-2"
+                       href="/HumanResourcesManager/register">
+                        Register
+                    </a>
+                </li>
+            }
+            else
+            {
+                <li class="nav-item me-3 text-white">
+                    👋 @user.FullName
+                    <span class="badge bg-info ms-1">@user.RoleCode</span>
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-outline-danger"
+                       asp-controller="Auth"
+                       asp-action="Logout">
+                        Logout
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+</nav>

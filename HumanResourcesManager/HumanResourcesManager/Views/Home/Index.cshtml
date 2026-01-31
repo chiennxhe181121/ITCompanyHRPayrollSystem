@@ -1,8 +1,22 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Trang chủ";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <h1 style="color:aqua"> Hệ thống chấm công</h1>
+<div class="hero-section shadow-lg rounded-4 p-5 text-center bg-white">
+    <h1 class="fw-bold mb-3">👋 Welcome to HRM System</h1>
+    <p class="text-muted mb-4">
+        Hệ thống quản lý & chấm công nhân sự hiện đại
+    </p>
+
+    <div class="d-flex justify-content-center gap-3">
+        <a href="/HumanResourcesManager/register"
+           class="btn btn-primary btn-lg px-4">
+            📝 Đăng ký
+        </a>
+
+        <a href="/HumanResourcesManager/login"
+           class="btn btn-outline-dark btn-lg px-4">
+            🔐 Đăng nhập
+        </a>
+    </div>
 </div>
