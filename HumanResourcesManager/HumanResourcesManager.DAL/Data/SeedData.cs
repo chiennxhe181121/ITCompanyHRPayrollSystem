@@ -1,7 +1,5 @@
 ﻿using HumanResourcesManager.DAL.Models;
 using HumanResourcesManager.DAL.Shared;
-using BCrypt.Net;
-using HumanResourcesManager.DAL.Shared;
 
 namespace HumanResourcesManager.DAL.Data
 {
@@ -9,8 +7,8 @@ namespace HumanResourcesManager.DAL.Data
     {
         public static void Initialize(HumanManagerContext context)
         {
-            context.Database.EnsureCreated();
-
+            // ❌ KHÔNG dùng EnsureCreated khi có Migration
+            // context.Database.EnsureCreated();
 
             // ===================== ROLE =====================
             if (!context.Roles.Any())
@@ -23,41 +21,7 @@ namespace HumanResourcesManager.DAL.Data
                 context.SaveChanges();
             }
 
-
-            // ===================== USER ACCOUNT =====================
-            if (!context.UserAccounts.Any())
-            {
-                context.UserAccounts.AddRange(
-                    new UserAccount
-                    {
-                        EmployeeId = 1, // Nguyen Van A
-                        Username = "admin",
-                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
-                        RoleId = context.Roles.First(r => r.RoleCode == "ADMIN").RoleId,
-                        Status = CommonStatus.Active
-                    },
-                    new UserAccount
-                    {
-                        EmployeeId = 2, // Tran Thi B
-                        Username = "hr",
-                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
-                        RoleId = context.Roles.First(r => r.RoleCode == "HR").RoleId,
-                        Status = CommonStatus.Active
-                    },
-                    new UserAccount
-                    {
-                        EmployeeId = 3, // Le Van C
-                        Username = "emp",
-                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
-                        RoleId = context.Roles.First(r => r.RoleCode == "EMP").RoleId,
-                        Status = CommonStatus.Active
-                    }
-                );
-
-                context.SaveChanges();
-            }
-
-            // ===================== Department =====================
+            // ===================== DEPARTMENT =====================
             if (!context.Departments.Any())
             {
                 context.Departments.AddRange(
@@ -68,7 +32,7 @@ namespace HumanResourcesManager.DAL.Data
                 context.SaveChanges();
             }
 
-            // ===================== Position =====================
+            // ===================== POSITION =====================
             if (!context.Positions.Any())
             {
                 context.Positions.AddRange(
@@ -92,7 +56,7 @@ namespace HumanResourcesManager.DAL.Data
                         DepartmentId = 1,
                         PositionId = 1,
                         Status = CommonStatus.Active,
-                        ImgAvatar = null // user update sau
+                        ImgAvatar = null
                     },
                     new Employee
                     {
@@ -120,8 +84,43 @@ namespace HumanResourcesManager.DAL.Data
                 context.SaveChanges();
             }
 
+            // ===================== USER ACCOUNT =====================
+            if (!context.UserAccounts.Any())
+            {
+                var adminRoleId = context.Roles.First(r => r.RoleCode == "ADMIN").RoleId;
+                var hrRoleId = context.Roles.First(r => r.RoleCode == "HR").RoleId;
+                var empRoleId = context.Roles.First(r => r.RoleCode == "EMP").RoleId;
 
-            // ===================== Allowance =====================
+                context.UserAccounts.AddRange(
+                    new UserAccount
+                    {
+                        EmployeeId = 1,
+                        Username = "admin",
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
+                        RoleId = adminRoleId,
+                        Status = CommonStatus.Active
+                    },
+                    new UserAccount
+                    {
+                        EmployeeId = 2,
+                        Username = "hr",
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
+                        RoleId = hrRoleId,
+                        Status = CommonStatus.Active
+                    },
+                    new UserAccount
+                    {
+                        EmployeeId = 3,
+                        Username = "emp",
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
+                        RoleId = empRoleId,
+                        Status = CommonStatus.Active
+                    }
+                );
+                context.SaveChanges();
+            }
+
+            // ===================== ALLOWANCE =====================
             if (!context.Allowances.Any())
             {
                 context.Allowances.AddRange(
@@ -131,7 +130,7 @@ namespace HumanResourcesManager.DAL.Data
                 context.SaveChanges();
             }
 
-            // ===================== EmployeeAllowance =====================
+            // ===================== EMPLOYEE ALLOWANCE =====================
             if (!context.EmployeeAllowances.Any())
             {
                 context.EmployeeAllowances.AddRange(
@@ -142,7 +141,7 @@ namespace HumanResourcesManager.DAL.Data
                 context.SaveChanges();
             }
 
-            // ===================== Payroll =====================
+            // ===================== PAYROLL =====================
             if (!context.Payrolls.Any())
             {
                 context.Payrolls.AddRange(
