@@ -16,11 +16,12 @@ namespace HumanResourcesManager.BLL.Services
             _context = context;
         }
 
+        // Chó Hoàng
         public void Register(RegisterDTO dto)
         {
             try
             {
-                // 1️⃣ Check Username
+                // 1️⃣ Check Username 
                 if (_context.UserAccounts.Any(u => u.Username == dto.Username))
                     throw new Exception("Username already exists");
 
