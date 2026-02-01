@@ -1,4 +1,4 @@
-﻿  using HumanResourcesManager.BLL.DTOs;
+﻿using HumanResourcesManager.BLL.DTOs;
 using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.DAL.Data;
 using HumanResourcesManager.DAL.Models;

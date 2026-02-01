@@ -14,15 +14,15 @@ namespace HumanResourcesManager.DAL.Data
         {
         }
 
-      
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{
-        //    if (!optionsBuilder.IsConfigured)
-        //    {
-        //        optionsBuilder.UseSqlServer(
-        //            "Server=(localdb)\\MSSQLLocalDB;Database=HumanManagerDB;Trusted_Connection=True;TrustServerCertificate=True");
-        //    }
-        //}
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlServer(
+                    "Server=(localdb)\\MSSQLLocalDB;Database=HumanManagerDB;Trusted_Connection=True;TrustServerCertificate=True");
+            }
+        }
 
         #region DbSet
         public DbSet<Employee> Employees { get; set; }
