@@ -1,4 +1,5 @@
 ﻿using HumanResourcesManager.DAL.Models;
+using HumanResourcesManager.DAL.Shared;
 
 namespace HumanResourcesManager.DAL.Data
 {
@@ -6,9 +7,21 @@ namespace HumanResourcesManager.DAL.Data
     {
         public static void Initialize(HumanManagerContext context)
         {
-            context.Database.EnsureCreated();
+            // ❌ KHÔNG dùng EnsureCreated khi có Migration
+            // context.Database.EnsureCreated();
 
-            // ===================== Department =====================
+            // ===================== ROLE =====================
+            if (!context.Roles.Any())
+            {
+                context.Roles.AddRange(
+                    new Role { RoleCode = "EMP", RoleName = "Employee", Status = CommonStatus.Active },
+                    new Role { RoleCode = "HR", RoleName = "HR", Status = CommonStatus.Active },
+                    new Role { RoleCode = "ADMIN", RoleName = "Admin", Status = CommonStatus.Active }
+                );
+                context.SaveChanges();
+            }
+
+            // ===================== DEPARTMENT =====================
             if (!context.Departments.Any())
             {
                 context.Departments.AddRange(
@@ -19,7 +32,7 @@ namespace HumanResourcesManager.DAL.Data
                 context.SaveChanges();
             }
 
-            // ===================== Position =====================
+            // ===================== POSITION =====================
             if (!context.Positions.Any())
             {
                 context.Positions.AddRange(
@@ -30,44 +43,84 @@ namespace HumanResourcesManager.DAL.Data
                 context.SaveChanges();
             }
 
-            // ===================== Employee =====================
+            // ===================== EMPLOYEE =====================
             if (!context.Employees.Any())
             {
                 context.Employees.AddRange(
-    new Employee
-    {
-        EmployeeCode = "EMP001",
-        FullName = "Nguyen Van A",
-        Phone = "0901234567",
-        Email = "a.nguyen@company.com",
-        DepartmentId = 1,
-        PositionId = 1
-    },
-    new Employee
-    {
-        EmployeeCode = "EMP002",
-        FullName = "Tran Thi B",
-        Phone = "0912345678",
-        Email = "b.tran@company.com",
-        DepartmentId = 2,
-        PositionId = 2
-    },
-    new Employee
-    {
-        EmployeeCode = "EMP003",
-        FullName = "Le Van C",
-        Phone = "0923456789",
-        Email = "c.le@company.com",
-        DepartmentId = 3,
-        PositionId = 3
-    }
-);
-
-
+                    new Employee
+                    {
+                        EmployeeCode = "EMP001",
+                        FullName = "A Hoang dep zai",
+                        Email = "a.nguyen@company.com",
+                        Phone = "0901234567",
+                        DepartmentId = 1,
+                        PositionId = 1,
+                        Status = CommonStatus.Active,
+                        ImgAvatar = null
+                    },
+                    new Employee
+                    {
+                        EmployeeCode = "EMP002",
+                        FullName = "Tran Thi B",
+                        Email = "b.tran@company.com",
+                        Phone = "0912345678",
+                        DepartmentId = 2,
+                        PositionId = 2,
+                        Status = CommonStatus.Active,
+                        ImgAvatar = null
+                    },
+                    new Employee
+                    {
+                        EmployeeCode = "EMP003",
+                        FullName = "Le Van C",
+                        Email = "c.le@company.com",
+                        Phone = "0923456789",
+                        DepartmentId = 3,
+                        PositionId = 3,
+                        Status = CommonStatus.Active,
+                        ImgAvatar = null
+                    }
+                );
                 context.SaveChanges();
             }
 
-            // ===================== Allowance =====================
+            // ===================== USER ACCOUNT =====================
+            if (!context.UserAccounts.Any())
+            {
+                var adminRoleId = context.Roles.First(r => r.RoleCode == "ADMIN").RoleId;
+                var hrRoleId = context.Roles.First(r => r.RoleCode == "HR").RoleId;
+                var empRoleId = context.Roles.First(r => r.RoleCode == "EMP").RoleId;
+
+                context.UserAccounts.AddRange(
+                    new UserAccount
+                    {
+                        EmployeeId = 1,
+                        Username = "admin",
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
+                        RoleId = adminRoleId,
+                        Status = CommonStatus.Active
+                    },
+                    new UserAccount
+                    {
+                        EmployeeId = 2,
+                        Username = "hr",
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
+                        RoleId = hrRoleId,
+                        Status = CommonStatus.Active
+                    },
+                    new UserAccount
+                    {
+                        EmployeeId = 3,
+                        Username = "emp",
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
+                        RoleId = empRoleId,
+                        Status = CommonStatus.Active
+                    }
+                );
+                context.SaveChanges();
+            }
+
+            // ===================== ALLOWANCE =====================
             if (!context.Allowances.Any())
             {
                 context.Allowances.AddRange(
@@ -77,7 +130,7 @@ namespace HumanResourcesManager.DAL.Data
                 context.SaveChanges();
             }
 
-            // ===================== EmployeeAllowance =====================
+            // ===================== EMPLOYEE ALLOWANCE =====================
             if (!context.EmployeeAllowances.Any())
             {
                 context.EmployeeAllowances.AddRange(
@@ -88,7 +141,7 @@ namespace HumanResourcesManager.DAL.Data
                 context.SaveChanges();
             }
 
-            // ===================== Payroll =====================
+            // ===================== PAYROLL =====================
             if (!context.Payrolls.Any())
             {
                 context.Payrolls.AddRange(

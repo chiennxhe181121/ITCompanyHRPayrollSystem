@@ -1,0 +1,134 @@
+﻿@model HumanResourcesManager.BLL.DTOs.RegisterDTO
+@{
+    ViewData["Title"] = "Register";
+}
+
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-lg border-0">
+            <div class="card-body p-4">
+
+                <h3 class="text-center mb-4">📝 Register</h3>
+
+                <form method="post" id="registerForm">
+                    @Html.AntiForgeryToken()
+
+                    <!-- VALIDATION SUMMARY -->
+                    <div asp-validation-summary="ModelOnly"
+                         class="text-danger mb-3"></div>
+
+                    <!-- FULL NAME -->
+                    <div class="form-floating mb-3">
+                        <input asp-for="FullName"
+                               class="form-control"
+                               placeholder="Full Name" />
+                        <label asp-for="FullName"></label>
+                        <span asp-validation-for="FullName"
+                              class="text-danger"></span>
+                    </div>
+
+                    <!-- EMAIL -->
+                    <div class="form-floating mb-3">
+                        <input asp-for="Email"
+                               class="form-control"
+                               placeholder="Email" />
+                        <label asp-for="Email"></label>
+                        <span asp-validation-for="Email"
+                              class="text-danger"></span>
+                    </div>
+
+                    <!-- GENDER -->
+                    <div class="mb-3">
+                        <select asp-for="Gender"
+                                class="form-select">
+                            <option value="">-- Gender --</option>
+                            <option value="true">Male</option>
+                            <option value="false">Female</option>
+                        </select>
+                    </div>
+
+                    <!-- Username -->
+                    <div class="form-floating mb-3">
+                        <input asp-for="Username"
+                               class="form-control"
+                               placeholder="Username" />
+                        <label asp-for="Username"></label>
+                        <span asp-validation-for="Username"
+                              class="text-danger"></span>
+                    </div>
+
+
+                    <!-- PASSWORD -->
+                    <div class="form-floating mb-3 position-relative">
+                        <input asp-for="Password"
+                               type="password"
+                               class="form-control password-input"
+                               placeholder="Password" />
+                        <label asp-for="Password"></label>
+
+                        <span class="password-toggle"
+                              onclick="togglePassword(this)">👁</span>
+
+                        <span asp-validation-for="Password"
+                              class="text-danger"></span>
+                    </div>
+
+                    <!-- CONFIRM PASSWORD -->
+                    <div class="form-floating mb-3 position-relative">
+                        <input asp-for="ConfirmPassword"
+                               type="password"
+                               class="form-control password-input"
+                               placeholder="Confirm Password" />
+                        <label asp-for="ConfirmPassword"></label>
+
+                        <span class="password-toggle"
+                              onclick="togglePassword(this)">👁</span>
+
+                        <span asp-validation-for="ConfirmPassword"
+                              class="text-danger"></span>
+                    </div>
+
+                    <!-- SUBMIT -->
+                    <button type="submit" class="btn btn-primary w-100">
+                        <span class="btn-text">Register</span>
+                        <span class="spinner-border spinner-border-sm d-none"></span>
+                    </button>
+
+                </form>
+
+                @if (!string.IsNullOrEmpty(ViewBag.Error))
+                {
+                    <p class="text-danger text-center mt-3">
+                        @ViewBag.Error
+                    </p>
+                }
+
+                <hr />
+
+                <a href="/HumanResourcesManager/login"
+                   class="btn btn-outline-dark w-100">
+                    Đã có tài khoản? Đăng nhập
+                </a>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        function togglePassword(el) {
+            const input = el.previousElementSibling.previousElementSibling;
+            input.type = input.type === "password" ? "text" : "password";
+        }
+
+        document.getElementById("registerForm")
+            .addEventListener("submit", function () {
+                document.getElementById("loadingSpinner").classList.remove("d-none");
+                document.querySelector(".btn-text").classList.add("d-none");
+            });
+    </script>
+}
