@@ -14,9 +14,9 @@ namespace HumanResourcesManager.DAL.Data
             if (!context.Roles.Any())
             {
                 context.Roles.AddRange(
-                    new Role { RoleCode = "EMP", RoleName = "Employee", Status = CommonStatus.Active },
-                    new Role { RoleCode = "HR", RoleName = "HR", Status = CommonStatus.Active },
-                    new Role { RoleCode = "ADMIN", RoleName = "Admin", Status = CommonStatus.Active }
+                    new Role { RoleCode = "EMP", RoleName = "Employee", Status = Constants.Active },
+                    new Role { RoleCode = "HR", RoleName = "HR", Status = Constants.Active },
+                    new Role { RoleCode = "ADMIN", RoleName = "Admin", Status = Constants.Active }
                 );
                 context.SaveChanges();
             }
@@ -55,7 +55,7 @@ namespace HumanResourcesManager.DAL.Data
                         Phone = "0901234567",
                         DepartmentId = 1,
                         PositionId = 1,
-                        Status = CommonStatus.Active,
+                        Status = Constants.Active,
                         ImgAvatar = null
                     },
                     new Employee
@@ -66,7 +66,7 @@ namespace HumanResourcesManager.DAL.Data
                         Phone = "0912345678",
                         DepartmentId = 2,
                         PositionId = 2,
-                        Status = CommonStatus.Active,
+                        Status = Constants.Active,
                         ImgAvatar = null
                     },
                     new Employee
@@ -77,7 +77,7 @@ namespace HumanResourcesManager.DAL.Data
                         Phone = "0923456789",
                         DepartmentId = 3,
                         PositionId = 3,
-                        Status = CommonStatus.Active,
+                        Status = Constants.Active,
                         ImgAvatar = null
                     }
                 );
@@ -98,7 +98,7 @@ namespace HumanResourcesManager.DAL.Data
                         Username = "admin",
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
                         RoleId = adminRoleId,
-                        Status = CommonStatus.Active
+                        Status = Constants.Active
                     },
                     new UserAccount
                     {
@@ -106,7 +106,7 @@ namespace HumanResourcesManager.DAL.Data
                         Username = "hr",
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
                         RoleId = hrRoleId,
-                        Status = CommonStatus.Active
+                        Status = Constants.Active
                     },
                     new UserAccount
                     {
@@ -114,7 +114,7 @@ namespace HumanResourcesManager.DAL.Data
                         Username = "emp",
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
                         RoleId = empRoleId,
-                        Status = CommonStatus.Active
+                        Status = Constants.Active
                     }
                 );
                 context.SaveChanges();

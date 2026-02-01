@@ -3,7 +3,7 @@
     /// <summary>
     /// Common status constants used across the whole system
     /// </summary>
-    public static class CommonStatus
+    public static class Constants
     {
         // ==================================================
         // 1️⃣ Active / Inactive (User, Employee, Role, etc.)

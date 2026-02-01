@@ -39,7 +39,7 @@ namespace HumanResourcesManager.BLL.Services
                     DateOfBirth = new DateTime(2000, 1, 1),
 
                     HireDate = DateTime.Now,
-                    Status = CommonStatus.Active,
+                    Status = Constants.Active,
                     DepartmentId = 1,
                     PositionId = 1
                 };
@@ -56,7 +56,7 @@ namespace HumanResourcesManager.BLL.Services
                     Username = dto.Username,
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                     RoleId = empRoleId,
-                    Status = CommonStatus.Active
+                    Status = Constants.Active
                 };
 
                 _context.UserAccounts.Add(user);
@@ -75,7 +75,7 @@ namespace HumanResourcesManager.BLL.Services
                 .Include(u => u.Employee)
                 .Include(u => u.Role)
                 .FirstOrDefault(u =>
-                    u.Status == CommonStatus.Active &&
+                    u.Status == Constants.Active &&
                     (
                         u.Username == dto.LoginKey ||
                         u.Employee.Email == dto.LoginKey
