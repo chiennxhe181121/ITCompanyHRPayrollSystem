@@ -99,5 +99,52 @@ namespace HumanResourcesManager.BLL.Services
             };
         }
 
+
+
+
+        /// <summary>
+        ///     new
+        /// </summary>
+        /// <returns></returns>
+        //public string GenerateOtp()
+        //{
+        //    return new Random().Next(100000, 999999).ToString();
+        //}
+
+        //public void ResetPasswordByEmail(string email, string newPassword, string confirmPassword)
+        //{
+        //    if (newPassword != confirmPassword)
+        //        throw new Exception("Confirm password does not match new password");
+
+        //    var user = _context.UserAccounts
+        //        .Include(u => u.Employee)
+        //        .FirstOrDefault(u => u.Employee.Email == email);
+
+        //    if (user == null)
+        //        throw new Exception("Email not found");
+
+        //    user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+        //    _context.SaveChanges();
+        //}
+
+
+        public void ResetPassword(string email, string newPass, string confirmPass)
+        {
+            if (newPass != confirmPass)
+                throw new Exception("Password confirmation does not match");
+
+            var user = _context.UserAccounts
+                .Include(u => u.Employee)
+                .FirstOrDefault(u => u.Employee.Email == email);
+
+            if (user == null)
+                throw new Exception("Email not found");
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPass);
+            _context.SaveChanges();
+        }
+
+
+
     }
 }

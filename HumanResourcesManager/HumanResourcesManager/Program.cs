@@ -1,6 +1,7 @@
-﻿using HumanResourcesManager.DAL.Data;
+﻿using HumanResourcesManager.BLL.DTOs;
 using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.BLL.Services;
+using HumanResourcesManager.DAL.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace HumanResourcesManager
@@ -31,6 +32,15 @@ namespace HumanResourcesManager
                 options.Cookie.IsEssential = true;
             });
 
+            // ===== EMAIL CONFIGURATION =====
+            builder.Services.Configure<EmailSettings>(
+            builder.Configuration.GetSection("EmailSettings")
+);
+
+            builder.Services.AddScoped<EmailService>();
+            builder.Services.AddScoped<OtpService>();
+
+
             builder.Services.AddHttpContextAccessor();
 
             var app = builder.Build();
@@ -55,7 +65,7 @@ namespace HumanResourcesManager
 
             app.UseRouting();
 
-            app.UseSession();        // 🔥 PHẢI CÓ
+            app.UseSession();
             app.UseAuthorization();
 
             app.MapControllerRoute(

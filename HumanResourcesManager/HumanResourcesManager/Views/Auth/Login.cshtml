@@ -59,7 +59,7 @@
 
                 <hr />
 
-                <a href="#"
+                <a href="/HumanResourcesManager/forgot-password"
                    class="btn btn-outline-secondary w-100 mb-2">
                     Bạn đã quên mật khẩu?
                 </a>
@@ -92,3 +92,19 @@
             });
     </script>
 }
+
+@* @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    @if (TempData["ResetSuccess"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Đổi mật khẩu thành công 🎉',
+                text: 'Đăng nhập bằng mật khẩu mới nha',
+                confirmButtonText: 'OK'
+            });
+        </script>
+    }
+} *@
