@@ -150,7 +150,7 @@ namespace HumanResourcesManager.Controllers
                 DateTime.Now.AddMinutes(5).ToString()
             );
 
-            // ✅ gửi mail thật
+            //  gửi mail thật
             _emailService.SendOtp(dto.Email, otp);
 
             return RedirectToAction("VerifyOtp");
@@ -294,13 +294,13 @@ namespace HumanResourcesManager.Controllers
 
             var session = _authService.LoginWithGoogle(email, name);
 
-            // ✅ Lưu session
+            //  Lưu session
             HttpContext.Session.SetString(
                 "USER_SESSION",
                 JsonSerializer.Serialize(session)
             );
 
-            // ✅ TẠO CLAIMS
+            //  TẠO CLAIMS
             var claims = new List<Claim>
     {
         new Claim(ClaimTypes.NameIdentifier, session.UserId.ToString()),

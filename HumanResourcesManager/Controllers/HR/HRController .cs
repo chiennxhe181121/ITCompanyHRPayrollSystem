@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HumanResourcesManager.Controllers
 {
     [Authorize(Policy = "HR")]
-    [Route("HR")]
+    [Route("HumanResourcesManager/HR")]
     public class HRController : Controller
     {
         [HttpGet("")]

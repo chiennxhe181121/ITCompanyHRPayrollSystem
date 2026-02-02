@@ -37,7 +37,7 @@ namespace HumanResourcesManager
             {
                 options.LoginPath = "/HumanResourcesManager/login";
                 options.AccessDeniedPath = "/HumanResourcesManager/denied";
-                
+
                 options.Events = new CookieAuthenticationEvents
                 {
                     OnRedirectToAccessDenied = ctx =>
@@ -52,13 +52,13 @@ namespace HumanResourcesManager
                     }
                 };
                 options.ExpireTimeSpan = TimeSpan.FromHours(8);
-            })
-            .AddGoogle(options =>
-            {
-                options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
-                options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
-                options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             });
+            //.AddGoogle(options =>
+            //{
+            //    options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
+            //    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
+            //    options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            //});
 
             // Role-based authorization policies
             builder.Services.AddAuthorization(options =>

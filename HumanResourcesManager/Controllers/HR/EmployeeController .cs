@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HumanResourcesManager.Controllers
 {
     [Authorize(Policy = "HR")]
-    [Route("HR/Employee")]
+    [Route("HumanResourcesManager/HR/Employee")]
     public class EmployeeController : Controller
     {
         private readonly IEmployeeService _employeeService;
