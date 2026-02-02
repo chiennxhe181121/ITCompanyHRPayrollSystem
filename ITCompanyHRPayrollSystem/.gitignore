@@ -1,9 +1,0 @@
-# Visual Studio garbage
-.vs/
-*.user
-*.suo
-*.userprefs
-
-# Build results
-[Bb]in/
-[Oo]bj/

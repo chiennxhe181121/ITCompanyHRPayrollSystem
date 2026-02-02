@@ -179,6 +179,9 @@ namespace HumanResourcesManager.DAL.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("EmployeeId");
 
                     b.HasIndex("DepartmentId");
@@ -187,6 +190,10 @@ namespace HumanResourcesManager.DAL.Migrations
                         .IsUnique();
 
                     b.HasIndex("PositionId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
 
                     b.ToTable("Employees");
                 });
@@ -469,9 +476,6 @@ namespace HumanResourcesManager.DAL.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
 
-                    b.Property<int>("EmployeeId")
-                        .HasColumnType("int");
-
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -487,9 +491,6 @@ namespace HumanResourcesManager.DAL.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("UserId");
-
-                    b.HasIndex("EmployeeId")
-                        .IsUnique();
 
                     b.HasIndex("RoleId");
 
@@ -535,9 +536,16 @@ namespace HumanResourcesManager.DAL.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("HumanResourcesManager.DAL.Models.UserAccount", "UserAccount")
+                        .WithOne("Employee")
+                        .HasForeignKey("HumanResourcesManager.DAL.Models.Employee", "UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Department");
 
                     b.Navigation("Position");
+
+                    b.Navigation("UserAccount");
                 });
 
             modelBuilder.Entity("HumanResourcesManager.DAL.Models.EmployeeAllowance", b =>
@@ -632,19 +640,11 @@ namespace HumanResourcesManager.DAL.Migrations
 
             modelBuilder.Entity("HumanResourcesManager.DAL.Models.UserAccount", b =>
                 {
-                    b.HasOne("HumanResourcesManager.DAL.Models.Employee", "Employee")
-                        .WithOne()
-                        .HasForeignKey("HumanResourcesManager.DAL.Models.UserAccount", "EmployeeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("HumanResourcesManager.DAL.Models.Role", "Role")
                         .WithMany("UserAccounts")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Employee");
 
                     b.Navigation("Role");
                 });
@@ -697,6 +697,11 @@ namespace HumanResourcesManager.DAL.Migrations
             modelBuilder.Entity("HumanResourcesManager.DAL.Models.Role", b =>
                 {
                     b.Navigation("UserAccounts");
+                });
+
+            modelBuilder.Entity("HumanResourcesManager.DAL.Models.UserAccount", b =>
+                {
+                    b.Navigation("Employee");
                 });
 #pragma warning restore 612, 618
         }

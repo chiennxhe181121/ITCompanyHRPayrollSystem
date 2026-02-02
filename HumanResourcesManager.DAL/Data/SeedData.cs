@@ -43,6 +43,42 @@ namespace HumanResourcesManager.DAL.Data
                 context.SaveChanges();
             }
 
+            // ===================== USER ACCOUNT =====================
+            if (!context.UserAccounts.Any())
+            {
+                var adminRoleId = context.Roles.First(r => r.RoleCode == "ADMIN").RoleId;
+                var hrRoleId = context.Roles.First(r => r.RoleCode == "HR").RoleId;
+                var empRoleId = context.Roles.First(r => r.RoleCode == "EMP").RoleId;
+
+                context.UserAccounts.AddRange(
+                    new UserAccount
+                    {
+
+                        Username = "admin",
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
+                        RoleId = adminRoleId,
+                        Status = Constants.Active
+                    },
+                    new UserAccount
+                    {
+
+                        Username = "hr",
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
+                        RoleId = hrRoleId,
+                        Status = Constants.Active
+                    },
+                    new UserAccount
+                    {
+
+                        Username = "emp",
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
+                        RoleId = empRoleId,
+                        Status = Constants.Active
+                    }
+                );
+                context.SaveChanges();
+            }
+
             // ===================== EMPLOYEE =====================
             if (!context.Employees.Any())
             {
@@ -56,6 +92,7 @@ namespace HumanResourcesManager.DAL.Data
                         DepartmentId = 1,
                         PositionId = 1,
                         Status = Constants.Active,
+                        UserId = 1,
                         ImgAvatar = null
                     },
                     new Employee
@@ -67,6 +104,7 @@ namespace HumanResourcesManager.DAL.Data
                         DepartmentId = 2,
                         PositionId = 2,
                         Status = Constants.Active,
+                        UserId = 2,
                         ImgAvatar = null
                     },
                     new Employee
@@ -78,47 +116,14 @@ namespace HumanResourcesManager.DAL.Data
                         DepartmentId = 3,
                         PositionId = 3,
                         Status = Constants.Active,
+                        UserId = 3,
                         ImgAvatar = null
                     }
                 );
                 context.SaveChanges();
             }
 
-            // ===================== USER ACCOUNT =====================
-            if (!context.UserAccounts.Any())
-            {
-                var adminRoleId = context.Roles.First(r => r.RoleCode == "ADMIN").RoleId;
-                var hrRoleId = context.Roles.First(r => r.RoleCode == "HR").RoleId;
-                var empRoleId = context.Roles.First(r => r.RoleCode == "EMP").RoleId;
-
-                context.UserAccounts.AddRange(
-                    new UserAccount
-                    {
-                        EmployeeId = 1,
-                        Username = "admin",
-                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
-                        RoleId = adminRoleId,
-                        Status = Constants.Active
-                    },
-                    new UserAccount
-                    {
-                        EmployeeId = 2,
-                        Username = "hr",
-                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
-                        RoleId = hrRoleId,
-                        Status = Constants.Active
-                    },
-                    new UserAccount
-                    {
-                        EmployeeId = 3,
-                        Username = "emp",
-                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
-                        RoleId = empRoleId,
-                        Status = Constants.Active
-                    }
-                );
-                context.SaveChanges();
-            }
+           
 
             // ===================== ALLOWANCE =====================
             if (!context.Allowances.Any())
@@ -166,6 +171,8 @@ namespace HumanResourcesManager.DAL.Data
                 );
                 context.SaveChanges();
             }
+
         }
+
     }
 }

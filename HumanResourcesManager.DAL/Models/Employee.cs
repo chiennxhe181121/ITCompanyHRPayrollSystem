@@ -3,7 +3,8 @@
     public class Employee
     {
         public int EmployeeId { get; set; }
-
+        public int? UserId { get; set; }
+        public UserAccount? UserAccount { get; set; }
         public string EmployeeCode { get; set; } = null!;
         public string FullName { get; set; } = null!;
 
@@ -33,7 +34,6 @@
         // ===== RELATION =====
         public int DepartmentId { get; set; }
         public Department Department { get; set; } = null!;
-
         public int PositionId { get; set; }
         public Position Position { get; set; } = null!;
 
