@@ -43,47 +43,6 @@ namespace HumanResourcesManager.DAL.Data
                 context.SaveChanges();
             }
 
-            // ===================== EMPLOYEE =====================
-            if (!context.Employees.Any())
-            {
-                context.Employees.AddRange(
-                    new Employee
-                    {
-                        EmployeeCode = "EMP001",
-                        FullName = "A Hoang dep zai",
-                        Email = "a.nguyen@company.com",
-                        Phone = "0901234567",
-                        DepartmentId = 1,
-                        PositionId = 1,
-                        Status = Constants.Active,
-                        ImgAvatar = null
-                    },
-                    new Employee
-                    {
-                        EmployeeCode = "EMP002",
-                        FullName = "Tran Thi B",
-                        Email = "b.tran@company.com",
-                        Phone = "0912345678",
-                        DepartmentId = 2,
-                        PositionId = 2,
-                        Status = Constants.Active,
-                        ImgAvatar = null
-                    },
-                    new Employee
-                    {
-                        EmployeeCode = "EMP003",
-                        FullName = "Le Van C",
-                        Email = "c.le@company.com",
-                        Phone = "0923456789",
-                        DepartmentId = 3,
-                        PositionId = 3,
-                        Status = Constants.Active,
-                        ImgAvatar = null
-                    }
-                );
-                context.SaveChanges();
-            }
-
             // ===================== USER ACCOUNT =====================
             if (!context.UserAccounts.Any())
             {
@@ -94,7 +53,6 @@ namespace HumanResourcesManager.DAL.Data
                 context.UserAccounts.AddRange(
                     new UserAccount
                     {
-                        EmployeeId = 1,
                         Username = "admin",
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
                         RoleId = adminRoleId,
@@ -102,7 +60,6 @@ namespace HumanResourcesManager.DAL.Data
                     },
                     new UserAccount
                     {
-                        EmployeeId = 2,
                         Username = "hr",
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
                         RoleId = hrRoleId,
@@ -110,11 +67,63 @@ namespace HumanResourcesManager.DAL.Data
                     },
                     new UserAccount
                     {
-                        EmployeeId = 3,
                         Username = "emp",
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
                         RoleId = empRoleId,
                         Status = Constants.Active
+                    }
+                );
+                context.SaveChanges();
+            }
+
+            // ===================== EMPLOYEE =====================
+            if (!context.Employees.Any())
+            {
+                // 🔑 Lấy UserAccount đã seed
+                var adminUser = context.UserAccounts.First(u => u.Username == "admin");
+                var hrUser = context.UserAccounts.First(u => u.Username == "hr");
+                var empUser = context.UserAccounts.First(u => u.Username == "emp");
+
+                context.Employees.AddRange(
+                    new Employee
+                    {
+                        EmployeeCode = "EMP001",
+                        FullName = "A Hoang dep zai",
+                        Email = "a.nguyen@company.com",
+                        Phone = "0901234567",
+                        DepartmentId = 1,
+                        PositionId = 1,
+                        Status = Constants.Active,
+                        ImgAvatar = null,
+
+                        // ✅ LINK 1–1 BẰNG NAVIGATION
+                        UserAccount = adminUser
+                    },
+                    new Employee
+                    {
+                        EmployeeCode = "EMP002",
+                        FullName = "Tran Thi B",
+                        Email = "b.tran@company.com",
+                        Phone = "0912345678",
+                        DepartmentId = 2,
+                        PositionId = 2,
+                        Status = Constants.Active,
+                        ImgAvatar = null,
+
+                        UserAccount = hrUser
+                    },
+                    new Employee
+                    {
+                        EmployeeCode = "EMP003",
+                        FullName = "Le Van C",
+                        Email = "c.le@company.com",
+                        Phone = "0923456789",
+                        DepartmentId = 3,
+                        PositionId = 3,
+                        Status = Constants.Active,
+                        ImgAvatar = null,
+
+                        UserAccount = empUser
                     }
                 );
                 context.SaveChanges();

@@ -1,0 +1,37 @@
+﻿@model List<LeaveRequestDTO>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Employee</th>
+            <th>Type</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td>@r.EmployeeName</td>
+                <td>@r.LeaveTypeName</td>
+                <td>@r.FromDate.ToShortDateString()</td>
+                <td>@r.ToDate.ToShortDateString()</td>
+                <td>@r.Status</td>
+                <td>
+                    <button class="btn btn-info"
+                            onclick="showDetail('@r.EmployeeName','@r.LeaveTypeName','@r.FromDate','@r.ToDate','@r.Status')">
+                        Detail
+                    </button>
+
+                    <button class="btn btn-warning"
+                            onclick="showEdit(@r.LeaveRequestId, @r.Status)">
+                        Edit
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -5,8 +5,7 @@
         public int UserId { get; set; }
 
         // ===== RELATION =====
-        public int EmployeeId { get; set; }
-        public Employee Employee { get; set; } = null!;
+        public Employee? Employee { get; set; } = null!;
 
         // ===== AUTH INFO =====
         public string Username { get; set; } = null!;
@@ -21,5 +20,6 @@
         // 0 = Locked (bị khóa)
         // -1 = Deleted (xóa mềm)
         public int Status { get; set; }
+
     }
 }

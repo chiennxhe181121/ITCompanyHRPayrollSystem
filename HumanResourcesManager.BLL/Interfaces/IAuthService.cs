@@ -1,4 +1,5 @@
 ﻿using HumanResourcesManager.BLL.DTOs;
+using HumanResourcesManager.DAL.Models;
 
 namespace HumanResourcesManager.BLL.Interfaces
 {
@@ -6,9 +7,8 @@ namespace HumanResourcesManager.BLL.Interfaces
     {
         void Register(RegisterDTO dto);
         UserSessionDTO? Login(LoginDTO dto);
-
-        //string GenerateOtp();
-        //void ResetPasswordByEmail(string email, string newPassword, string confirmPassword);
         void ResetPassword(string email, string newPass, string confirmPass);
+        UserSessionDTO LoginWithGoogle(string email, string name);
+
     }
 }

@@ -83,11 +83,34 @@ namespace HumanResourcesManager.DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserAccounts",
+                columns: table => new
+                {
+                    UserId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Username = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RoleId = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserAccounts", x => x.UserId);
+                    table.ForeignKey(
+                        name: "FK_UserAccounts_Roles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "Roles",
+                        principalColumn: "RoleId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Employees",
                 columns: table => new
                 {
                     EmployeeId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: true),
                     EmployeeCode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     FullName = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
                     Gender = table.Column<bool>(type: "bit", nullable: false),
@@ -95,8 +118,9 @@ namespace HumanResourcesManager.DAL.Migrations
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ImgAvatar = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     HireDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Status = table.Column<long>(type: "bigint", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     DepartmentId = table.Column<int>(type: "int", nullable: false),
                     PositionId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -115,6 +139,12 @@ namespace HumanResourcesManager.DAL.Migrations
                         principalTable: "Positions",
                         principalColumn: "PositionId",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Employees_UserAccounts_UserId",
+                        column: x => x.UserId,
+                        principalTable: "UserAccounts",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -278,35 +308,6 @@ namespace HumanResourcesManager.DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserAccounts",
-                columns: table => new
-                {
-                    UserId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    EmployeeId = table.Column<int>(type: "int", nullable: false),
-                    Username = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RoleId = table.Column<int>(type: "int", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserAccounts", x => x.UserId);
-                    table.ForeignKey(
-                        name: "FK_UserAccounts_Employees_EmployeeId",
-                        column: x => x.EmployeeId,
-                        principalTable: "Employees",
-                        principalColumn: "EmployeeId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_UserAccounts_Roles_RoleId",
-                        column: x => x.RoleId,
-                        principalTable: "Roles",
-                        principalColumn: "RoleId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "OTAttendances",
                 columns: table => new
                 {
@@ -383,6 +384,13 @@ namespace HumanResourcesManager.DAL.Migrations
                 column: "PositionId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Employees_UserId",
+                table: "Employees",
+                column: "UserId",
+                unique: true,
+                filter: "[UserId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_LeaveRequests_EmployeeId",
                 table: "LeaveRequests",
                 column: "EmployeeId");
@@ -419,12 +427,6 @@ namespace HumanResourcesManager.DAL.Migrations
                 column: "EmployeeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserAccounts_EmployeeId",
-                table: "UserAccounts",
-                column: "EmployeeId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_UserAccounts_RoleId",
                 table: "UserAccounts",
                 column: "RoleId");
@@ -458,9 +460,6 @@ namespace HumanResourcesManager.DAL.Migrations
                 name: "PayrollDetails");
 
             migrationBuilder.DropTable(
-                name: "UserAccounts");
-
-            migrationBuilder.DropTable(
                 name: "Allowances");
 
             migrationBuilder.DropTable(
@@ -473,9 +472,6 @@ namespace HumanResourcesManager.DAL.Migrations
                 name: "Payrolls");
 
             migrationBuilder.DropTable(
-                name: "Roles");
-
-            migrationBuilder.DropTable(
                 name: "Employees");
 
             migrationBuilder.DropTable(
@@ -483,6 +479,12 @@ namespace HumanResourcesManager.DAL.Migrations
 
             migrationBuilder.DropTable(
                 name: "Positions");
+
+            migrationBuilder.DropTable(
+                name: "UserAccounts");
+
+            migrationBuilder.DropTable(
+                name: "Roles");
         }
     }
 }

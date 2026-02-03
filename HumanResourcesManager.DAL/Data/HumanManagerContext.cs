@@ -15,14 +15,14 @@ namespace HumanResourcesManager.DAL.Data
         }
 
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer(
-                    "Server=(localdb)\\MSSQLLocalDB;Database=HumanManagerDB;Trusted_Connection=True;TrustServerCertificate=True");
-            }
-        }
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+        //    if (!optionsBuilder.IsConfigured)
+        //    {
+        //        optionsBuilder.UseSqlServer(
+        //            "Server=(localdb)\\MSSQLLocalDB;Database=HumanManagerDB;Trusted_Connection=True;TrustServerCertificate=True");
+        //    }
+        //}
 
         #region DbSet
         public DbSet<Employee> Employees { get; set; }
@@ -97,6 +97,10 @@ namespace HumanResourcesManager.DAL.Data
                       .WithMany(p => p.Employees)
                       .HasForeignKey(e => e.PositionId)
                       .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.UserAccount)
+                       .WithOne(a => a.Employee)
+                       .HasForeignKey<Employee>(e => e.UserId)
+                       .OnDelete(DeleteBehavior.SetNull);
             });
 
             // ===================== Contract =====================
@@ -216,12 +220,7 @@ namespace HumanResourcesManager.DAL.Data
                 entity.HasIndex(u => u.Username).IsUnique();
 
                 entity.Property(u => u.Status).IsRequired();
-
-                entity.HasOne(u => u.Employee)
-                      .WithOne()
-                      .HasForeignKey<UserAccount>(u => u.EmployeeId)
-                      .OnDelete(DeleteBehavior.Restrict);
-
+              
                 entity.HasOne(u => u.Role)
                       .WithMany(r => r.UserAccounts)
                       .HasForeignKey(u => u.RoleId)

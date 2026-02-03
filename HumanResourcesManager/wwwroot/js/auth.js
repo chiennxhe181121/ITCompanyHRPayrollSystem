@@ -56,4 +56,4 @@ document.addEventListener("DOMContentLoaded", function () {
             localStorage.setItem("darkMode", toggle.checked);
         });
     }
-});
+
