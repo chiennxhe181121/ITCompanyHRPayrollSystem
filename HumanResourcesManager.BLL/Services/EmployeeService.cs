@@ -59,6 +59,26 @@ namespace HumanResourcesManager.BLL.Services
             };
         }
 
+        public EmployeeResponseDTO? GetByUserId(int id)
+        {
+            var e = _repo.GetByUserId(id);
+
+            return new EmployeeResponseDTO
+            {
+                EmployeeCode = e.EmployeeCode,
+                FullName = e.FullName,
+                Gender = e.Gender,
+                DateOfBirth = e.DateOfBirth,
+                Email = e.Email,
+                Phone = e.Phone,
+                Address = e.Address,
+                ImgAvatar = e.ImgAvatar,
+                HireDate = e.HireDate,
+                DepartmentName = e.Department.DepartmentName,
+                PositionName = e.Position.PositionName
+            };
+        }
+
         public void Create(EmployeeDTO dto)
         {
             var emp = new Employee

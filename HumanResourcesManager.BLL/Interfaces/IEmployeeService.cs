@@ -11,6 +11,7 @@ namespace HumanResourcesManager.BLL.Interfaces
     {
         IEnumerable<EmployeeDTO> GetAll();
         EmployeeDTO? GetById(int id);
+        EmployeeResponseDTO? GetByUserId(int id);
         void Create(EmployeeDTO dto);
         void Update(EmployeeDTO dto);
         void Delete(int id);

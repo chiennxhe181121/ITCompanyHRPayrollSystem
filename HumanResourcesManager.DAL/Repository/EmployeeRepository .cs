@@ -31,6 +31,15 @@ namespace HumanResourcesManager.DAL.Repositories
                 .FirstOrDefault(e => e.EmployeeId == id && e.Status != -1);
         }
 
+        public Employee? GetByUserId(int id)
+        {
+            return _context.Employees
+                .Include(e => e.Department)
+                .Include(e => e.Position)
+                .FirstOrDefault(e => e.UserId == id && e.Status == 1);
+        }
+
+
         public void Add(Employee employee)
         {
             _context.Employees.Add(employee);
