@@ -11,6 +11,7 @@ namespace HumanResourcesManager.DAL.Interfaces
     {
         IEnumerable<Employee> GetAll();
         Employee? GetById(int id);
+        Employee? GetByUserId(int id);
         void Add(Employee employee);
         void Update(Employee employee);
         void SoftDelete(int id);
