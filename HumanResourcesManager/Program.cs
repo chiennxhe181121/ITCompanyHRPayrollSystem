@@ -65,7 +65,8 @@ namespace HumanResourcesManager
             {
                 options.AddPolicy("ADMIN", p => p.RequireRole("ADMIN"));
                 options.AddPolicy("HR", p => p.RequireRole("HR"));
-                options.AddPolicy("EMPLOYEE", p => p.RequireRole("EMPLOYEE"));
+                options.AddPolicy("EMP", p => p.RequireRole("EMP"));
+                options.AddPolicy("MANAGER", p => p.RequireRole("MANAGER"));
             });
 
             // Dependency Injection: Repositories (DAL)
