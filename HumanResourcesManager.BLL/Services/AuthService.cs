@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 
-// @HoangDH
+// @HoangDH oke
 namespace HumanResourcesManager.BLL.Services
 {
     public class AuthService : IAuthService
