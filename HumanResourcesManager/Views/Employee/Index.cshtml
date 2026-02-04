@@ -1,342 +1,342 @@
 ﻿@{
-    Layout = "~/Views/Employee/_EmployeeLayout.cshtml";
+	Layout = "~/Views/Employee/_EmployeeLayout.cshtml";
 }
 <!-- Main Content -->
 <main class="flex-1 overflow-y-auto bg-slate-50/50">
-            <header class="bg-white/90 backdrop-blur-sm border-b border-slate-200/80 px-6 lg:px-8 py-5">
-                <div class="flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                        <h1 class="text-2xl font-semibold text-slate-800">Employee Dashboard</h1>
-                        <p class="text-slate-500 text-sm mt-0.5">Chấm công và quản lý thông tin cá nhân</p>
-                    </div>
-                    <div class="flex items-center gap-4 rounded-xl bg-slate-50 px-4 py-2.5 border border-slate-200/80">
-                        <div class="text-right">
-                            <p class="text-xs text-slate-500 uppercase tracking-wide">Hôm nay</p>
-                            <p class="text-sm font-medium text-slate-800" id="currentDate"></p>
-                        </div>
-                        <p class="text-lg font-semibold text-blue-600 tabular-nums" id="currentTime"></p>
-                    </div>
-                </div>
-            </header>
+	<header class="bg-white/90 backdrop-blur-sm border-b border-slate-200/80 px-6 lg:px-8 py-5">
+		<div class="flex flex-wrap items-center justify-between gap-4">
+			<div>
+				<h1 class="text-2xl font-semibold text-slate-800">Employee Dashboard</h1>
+				<p class="text-slate-500 text-sm mt-0.5">Chấm công và quản lý thông tin cá nhân</p>
+			</div>
+			<div class="flex items-center gap-4 rounded-xl bg-slate-50 px-4 py-2.5 border border-slate-200/80">
+				<div class="text-right">
+					<p class="text-xs text-slate-500 uppercase tracking-wide">Hôm nay</p>
+					<p class="text-sm font-medium text-slate-800" id="currentDate"></p>
+				</div>
+				<p class="text-lg font-semibold text-blue-600 tabular-nums" id="currentTime"></p>
+			</div>
+		</div>
+	</header>
 
-            <div class="p-5 lg:p-8">
-                <!-- Stats -->
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <div class="employee-stat-card relative bg-white rounded-2xl shadow-sm border border-slate-200/60 p-5 hover:shadow-md transition-shadow">
-                        <button type="button" class="stat-toggle absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-transparent transition-colors" data-stat="monthAttendance" title="Ẩn/Hiện">
-                            <svg class="stat-eye w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                            <svg class="stat-eye-off w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.98 8.223A10.477 10.477 0 001.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228a10.45 10.45 0 015.772-1.728c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"></path></svg>
-                        </button>
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-slate-500 text-xs font-medium uppercase tracking-wide">Chấm Công Tháng</p>
-                                <p class="text-2xl font-bold text-slate-800 mt-1.5"><span id="monthAttendance" data-value="">0</span></p>
-                            </div>
-                            <div class="w-11 h-11 bg-blue-100 rounded-xl flex items-center justify-center">
-                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-                            </div>
-                        </div>
-                    </div>
+	<div class="p-5 lg:p-8">
+		<!-- Stats -->
+		<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+			<div class="employee-stat-card relative bg-white rounded-2xl shadow-sm border border-slate-200/60 p-5 hover:shadow-md transition-shadow">
+				<button type="button" class="stat-toggle absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-transparent transition-colors" data-stat="monthAttendance" title="Ẩn/Hiện">
+					<svg class="stat-eye w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+					<svg class="stat-eye-off w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.98 8.223A10.477 10.477 0 001.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228a10.45 10.45 0 015.772-1.728c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"></path></svg>
+				</button>
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-slate-500 text-xs font-medium uppercase tracking-wide">Chấm Công Tháng</p>
+						<p class="text-2xl font-bold text-slate-800 mt-1.5"><span id="monthAttendance" data-value="">0</span></p>
+					</div>
+					<div class="w-11 h-11 bg-blue-100 rounded-xl flex items-center justify-center">
+						<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+					</div>
+				</div>
+			</div>
 
-                    <div class="employee-stat-card relative bg-white rounded-2xl shadow-sm border border-slate-200/60 p-5 hover:shadow-md transition-shadow">
-                        <button type="button" class="stat-toggle absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-transparent transition-colors" data-stat="leavesRemaining" title="Ẩn/Hiện">
-                            <svg class="stat-eye w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                            <svg class="stat-eye-off w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.98 8.223A10.477 10.477 0 001.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228a10.45 10.45 0 015.772-1.728c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"></path></svg>
-                        </button>
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-slate-500 text-xs font-medium uppercase tracking-wide">Nghỉ Phép Còn</p>
-                                <p class="text-2xl font-bold text-slate-800 mt-1.5"><span id="leavesRemaining" data-value="">12</span></p>
-                            </div>
-                            <div class="w-11 h-11 bg-emerald-100 rounded-xl flex items-center justify-center">
-                                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            </div>
-                        </div>
-                    </div>
+			<div class="employee-stat-card relative bg-white rounded-2xl shadow-sm border border-slate-200/60 p-5 hover:shadow-md transition-shadow">
+				<button type="button" class="stat-toggle absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-transparent transition-colors" data-stat="leavesRemaining" title="Ẩn/Hiện">
+					<svg class="stat-eye w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+					<svg class="stat-eye-off w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.98 8.223A10.477 10.477 0 001.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228a10.45 10.45 0 015.772-1.728c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"></path></svg>
+				</button>
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-slate-500 text-xs font-medium uppercase tracking-wide">Nghỉ Phép Còn</p>
+						<p class="text-2xl font-bold text-slate-800 mt-1.5"><span id="leavesRemaining" data-value="">12</span></p>
+					</div>
+					<div class="w-11 h-11 bg-emerald-100 rounded-xl flex items-center justify-center">
+						<svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+					</div>
+				</div>
+			</div>
 
-                    <div class="employee-stat-card relative bg-white rounded-2xl shadow-sm border border-slate-200/60 p-5 hover:shadow-md transition-shadow">
-                        <button type="button" class="stat-toggle absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-transparent transition-colors" data-stat="overtimeHours" title="Ẩn/Hiện">
-                            <svg class="stat-eye w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                            <svg class="stat-eye-off w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.98 8.223A10.477 10.477 0 001.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228a10.45 10.45 0 015.772-1.728c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"></path></svg>
-                        </button>
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-slate-500 text-xs font-medium uppercase tracking-wide">Tăng Ca Tháng</p>
-                                <p class="text-2xl font-bold text-slate-800 mt-1.5"><span id="overtimeHours" data-value="">0h</span></p>
-                            </div>
-                            <div class="w-11 h-11 bg-amber-100 rounded-xl flex items-center justify-center">
-                                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            </div>
-                        </div>
-                    </div>
+			<div class="employee-stat-card relative bg-white rounded-2xl shadow-sm border border-slate-200/60 p-5 hover:shadow-md transition-shadow">
+				<button type="button" class="stat-toggle absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-transparent transition-colors" data-stat="overtimeHours" title="Ẩn/Hiện">
+					<svg class="stat-eye w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+					<svg class="stat-eye-off w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.98 8.223A10.477 10.477 0 001.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228a10.45 10.45 0 015.772-1.728c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"></path></svg>
+				</button>
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-slate-500 text-xs font-medium uppercase tracking-wide">Tăng Ca Tháng</p>
+						<p class="text-2xl font-bold text-slate-800 mt-1.5"><span id="overtimeHours" data-value="">0h</span></p>
+					</div>
+					<div class="w-11 h-11 bg-amber-100 rounded-xl flex items-center justify-center">
+						<svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+					</div>
+				</div>
+			</div>
 
-                    <div class="employee-stat-card relative bg-white rounded-2xl shadow-sm border border-slate-200/60 p-5 hover:shadow-md transition-shadow">
-                        <button type="button" class="stat-toggle absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-transparent transition-colors" data-stat="currentSalary" title="Ẩn/Hiện">
-                            <svg class="stat-eye w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                            <svg class="stat-eye-off w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.98 8.223A10.477 10.477 0 001.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228a10.45 10.45 0 015.772-1.728c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"></path></svg>
-                        </button>
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-slate-500 text-xs font-medium uppercase tracking-wide">Lương Tháng Này</p>
-                                <p class="text-2xl font-bold text-slate-800 mt-1.5"><span id="currentSalary" data-value="">--</span></p>
-                            </div>
-                            <div class="w-11 h-11 bg-violet-100 rounded-xl flex items-center justify-center">
-                                <svg class="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+			<div class="employee-stat-card relative bg-white rounded-2xl shadow-sm border border-slate-200/60 p-5 hover:shadow-md transition-shadow">
+				<button type="button" class="stat-toggle absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-transparent transition-colors" data-stat="currentSalary" title="Ẩn/Hiện">
+					<svg class="stat-eye w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+					<svg class="stat-eye-off w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.98 8.223A10.477 10.477 0 001.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228a10.45 10.45 0 015.772-1.728c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"></path></svg>
+				</button>
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-slate-500 text-xs font-medium uppercase tracking-wide">Lương Tháng Này</p>
+						<p class="text-2xl font-bold text-slate-800 mt-1.5"><span id="currentSalary" data-value="">--</span></p>
+					</div>
+					<div class="w-11 h-11 bg-violet-100 rounded-xl flex items-center justify-center">
+						<svg class="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+					</div>
+				</div>
+			</div>
+		</div>
 
-                <!-- Tabs Content -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
-                    <!-- Profile Tab -->
-                    <div id="profileTab" class="tab-content hidden">
-                        <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
-                            <h2 class="text-lg font-semibold text-slate-800">Hồ Sơ Cá Nhân</h2>
-                            <p class="text-sm text-slate-500 mt-0.5">Chỉnh sửa thông tin cá nhân của bạn</p>
-                        </div>
-                        <div class="p-6">
-                            <form id="profileForm" class="w-full space-y-6" onsubmit="return false;">
-                                <input type="hidden" id="profileAvatarData" value="">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-slate-100">
-                                    <div class="flex items-center gap-4">
-                                        <div id="profileAvatarPreview" class="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-2xl font-bold text-white ring-2 ring-slate-200 shadow-inner flex-shrink-0">
-                                            <img id="profileAvatarImg" class="w-full h-full object-cover hidden" alt="">
-                                            <span id="profileAvatarInitial">E</span>
-                                        </div>
-                                        <div id="profileAvatarActions" class="flex flex-col gap-2 hidden">
-                                            <input type="file" id="profileAvatarInput" accept="image/*" class="hidden">
-                                            <button type="button" id="profileAvatarBtn" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition-colors">Chọn ảnh</button>
-                                            <button type="button" id="profileAvatarRemoveBtn" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-sm font-medium transition-colors">Xóa ảnh</button>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center justify-end md:justify-start">
-                                        <button type="button" id="profileEditSaveBtn" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-sm transition-colors">
-                                            Chỉnh sửa thông tin
-                                        </button>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-slate-600 mb-1.5">Họ và tên</label>
-                                        <input type="text" id="profileFullName" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 read-only:bg-slate-50 read-only:cursor-default focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required readonly>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-slate-600 mb-1.5">Email</label>
-                                        <input type="email" id="profileEmail" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 read-only:bg-slate-50 read-only:cursor-default focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required readonly>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-slate-600 mb-1.5">Số điện thoại</label>
-                                        <input type="tel" id="profilePhone" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 read-only:bg-slate-50 read-only:cursor-default focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="0901234567"
-                                               readonly>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-slate-600 mb-1.5">Mã nhân viên</label>
-                                        <input type="text" id="profileEmployeeCode" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-slate-600 mb-1.5">Phòng ban</label>
-                                        <input type="text" id="profileDepartment" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-slate-600 mb-1.5">Chức vụ</label>
-                                        <input type="text" id="profilePosition" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-slate-600 mb-1.5">Ngày vào làm</label>
-                                        <input type="text" id="profileJoinDate" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+		<!-- Tabs Content -->
+		<div class="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
+			<!-- Profile Tab -->
+			<div id="profileTab" class="tab-content hidden">
+				<div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
+					<h2 class="text-lg font-semibold text-slate-800">Hồ Sơ Cá Nhân</h2>
+					<p class="text-sm text-slate-500 mt-0.5">Chỉnh sửa thông tin cá nhân của bạn</p>
+				</div>
+				<div class="p-6">
+					<form id="profileForm" class="w-full space-y-6" onsubmit="return false;">
+						<input type="hidden" id="profileAvatarData" value="">
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-slate-100">
+							<div class="flex items-center gap-4">
+								<div id="profileAvatarPreview" class="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-2xl font-bold text-white ring-2 ring-slate-200 shadow-inner flex-shrink-0">
+									<img id="profileAvatarImg" class="w-full h-full object-cover hidden" alt="">
+									<span id="profileAvatarInitial">E</span>
+								</div>
+								<div id="profileAvatarActions" class="flex flex-col gap-2 hidden">
+									<input type="file" id="profileAvatarInput" accept="image/*" class="hidden">
+									<button type="button" id="profileAvatarBtn" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition-colors">Chọn ảnh</button>
+									<button type="button" id="profileAvatarRemoveBtn" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-sm font-medium transition-colors">Xóa ảnh</button>
+								</div>
+							</div>
+							<div class="flex items-center justify-end md:justify-start">
+								<button type="button" id="profileEditSaveBtn" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-sm transition-colors">
+									Chỉnh sửa thông tin
+								</button>
+							</div>
+							<div>
+								<label class="block text-sm font-medium text-slate-600 mb-1.5">Họ và tên</label>
+								<input type="text" id="profileFullName" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 read-only:bg-slate-50 read-only:cursor-default focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required readonly>
+							</div>
+							<div>
+								<label class="block text-sm font-medium text-slate-600 mb-1.5">Email</label>
+								<input type="email" id="profileEmail" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 read-only:bg-slate-50 read-only:cursor-default focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required readonly>
+							</div>
+							<div>
+								<label class="block text-sm font-medium text-slate-600 mb-1.5">Số điện thoại</label>
+								<input type="tel" id="profilePhone" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 read-only:bg-slate-50 read-only:cursor-default focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="0901234567"
+									   readonly>
+							</div>
+							<div>
+								<label class="block text-sm font-medium text-slate-600 mb-1.5">Mã nhân viên</label>
+								<input type="text" id="profileEmployeeCode" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
+							</div>
+							<div>
+								<label class="block text-sm font-medium text-slate-600 mb-1.5">Phòng ban</label>
+								<input type="text" id="profileDepartment" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
+							</div>
+							<div>
+								<label class="block text-sm font-medium text-slate-600 mb-1.5">Chức vụ</label>
+								<input type="text" id="profilePosition" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
+							</div>
+							<div>
+								<label class="block text-sm font-medium text-slate-600 mb-1.5">Ngày vào làm</label>
+								<input type="text" id="profileJoinDate" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
 
-                    <!-- Attendance Tab -->
-                    <div id="attendanceTab" class="tab-content">
-                        <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
-                            <h2 class="text-lg font-semibold text-slate-800">Chấm Công</h2>
-                        </div>
-                        <div class="p-6">
-                            <!-- Check In/Out Section -->
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                                <div class="bg-gradient-to-br from-blue-50 to-indigo-50/80 rounded-2xl p-6 border border-blue-100">
-                                    <h3 class="text-base font-semibold text-slate-800 mb-4">📸 Chấm Công Vào</h3>
-                                    <div id="checkInArea">
-                                        <video id="checkInVideo" class="w-full rounded-lg mb-4 hidden" autoplay></video>
-                                        <canvas id="checkInCanvas" class="hidden"></canvas>
-                                        <div id="checkInPhotoPreview" class="hidden mb-4">
-                                            <img id="checkInPhotoImg" class="w-full rounded-lg">
-                                        </div>
-                                        <button id="startCheckInCameraBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-colors mb-2 shadow-sm">
-                                            📷 Bật Camera
-                                        </button>
-                                        <button id="captureCheckInBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 rounded-xl transition-colors hidden">
-                                            ✓ Chụp Ảnh
-                                        </button>
-                                        <button id="submitCheckInBtn" class="w-full bg-violet-600 hover:bg-violet-700 text-white font-medium py-3 rounded-xl transition-colors hidden">
-                                            ✓ Xác Nhận Check In
-                                        </button>
-                                    </div>
-                                    <p class="text-sm text-slate-600 mt-3" id="checkInStatus">Chưa check-in hôm nay</p>
-                                </div>
+			<!-- Attendance Tab -->
+			<div id="attendanceTab" class="tab-content">
+				<div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
+					<h2 class="text-lg font-semibold text-slate-800">Chấm Công</h2>
+				</div>
+				<div class="p-6">
+					<!-- Check In/Out Section -->
+					<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+						<div class="bg-gradient-to-br from-blue-50 to-indigo-50/80 rounded-2xl p-6 border border-blue-100">
+							<h3 class="text-base font-semibold text-slate-800 mb-4">📸 Chấm Công Vào</h3>
+							<div id="checkInArea">
+								<video id="checkInVideo" class="w-full rounded-lg mb-4 hidden" autoplay></video>
+								<canvas id="checkInCanvas" class="hidden"></canvas>
+								<div id="checkInPhotoPreview" class="hidden mb-4">
+									<img id="checkInPhotoImg" class="w-full rounded-lg">
+								</div>
+								<button id="startCheckInCameraBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-colors mb-2 shadow-sm">
+									📷 Bật Camera
+								</button>
+								<button id="captureCheckInBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 rounded-xl transition-colors hidden">
+									✓ Chụp Ảnh
+								</button>
+								<button id="submitCheckInBtn" class="w-full bg-violet-600 hover:bg-violet-700 text-white font-medium py-3 rounded-xl transition-colors hidden">
+									✓ Xác Nhận Check In
+								</button>
+							</div>
+							<p class="text-sm text-slate-600 mt-3" id="checkInStatus">Chưa check-in hôm nay</p>
+						</div>
 
-                                <div class="bg-gradient-to-br from-amber-50 to-orange-50/80 rounded-2xl p-6 border border-amber-100">
-                                    <h3 class="text-base font-semibold text-slate-800 mb-4">📸 Chấm Công Ra</h3>
-                                    <div id="checkOutArea">
-                                        <video id="checkOutVideo" class="w-full rounded-lg mb-4 hidden" autoplay></video>
-                                        <canvas id="checkOutCanvas" class="hidden"></canvas>
-                                        <div id="checkOutPhotoPreview" class="hidden mb-4">
-                                            <img id="checkOutPhotoImg" class="w-full rounded-lg">
-                                        </div>
-                                        <button id="startCheckOutCameraBtn" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-3 rounded-xl transition-colors mb-2 shadow-sm">
-                                            📷 Bật Camera
-                                        </button>
-                                        <button id="captureCheckOutBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 rounded-xl transition-colors hidden">
-                                            ✓ Chụp Ảnh
-                                        </button>
-                                        <button id="submitCheckOutBtn" class="w-full bg-violet-600 hover:bg-violet-700 text-white font-medium py-3 rounded-xl transition-colors hidden">
-                                            ✓ Xác Nhận Check Out
-                                        </button>
-                                    </div>
-                                    <p class="text-sm text-slate-600 mt-3" id="checkOutStatus">Chưa check-out hôm nay</p>
-                                </div>
-                            </div>
+						<div class="bg-gradient-to-br from-amber-50 to-orange-50/80 rounded-2xl p-6 border border-amber-100">
+							<h3 class="text-base font-semibold text-slate-800 mb-4">📸 Chấm Công Ra</h3>
+							<div id="checkOutArea">
+								<video id="checkOutVideo" class="w-full rounded-lg mb-4 hidden" autoplay></video>
+								<canvas id="checkOutCanvas" class="hidden"></canvas>
+								<div id="checkOutPhotoPreview" class="hidden mb-4">
+									<img id="checkOutPhotoImg" class="w-full rounded-lg">
+								</div>
+								<button id="startCheckOutCameraBtn" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-3 rounded-xl transition-colors mb-2 shadow-sm">
+									📷 Bật Camera
+								</button>
+								<button id="captureCheckOutBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 rounded-xl transition-colors hidden">
+									✓ Chụp Ảnh
+								</button>
+								<button id="submitCheckOutBtn" class="w-full bg-violet-600 hover:bg-violet-700 text-white font-medium py-3 rounded-xl transition-colors hidden">
+									✓ Xác Nhận Check Out
+								</button>
+							</div>
+							<p class="text-sm text-slate-600 mt-3" id="checkOutStatus">Chưa check-out hôm nay</p>
+						</div>
+					</div>
 
-                            <!-- Attendance History -->
-                            <div>
-                                <h3 class="text-base font-semibold text-slate-800 mb-3">Lịch Sử Chấm Công</h3>
-                                <div class="overflow-x-auto rounded-xl border border-slate-200/80">
-                                    <table class="employee-table w-full">
-                                        <thead>
-                                            <tr class="bg-slate-50 border-b border-slate-200">
-                                                <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ngày</th>
-                                                <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Check In</th>
-                                                <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Check Out</th>
-                                                <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Đi Muộn</th>
-                                                <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Thời gian về sớm</th>
-                                                <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tăng Ca</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="attendanceTableBody"></tbody>
-                                    </table>
-                                </div>
-                                <div id="attendancePagination" class="pagination mt-6"></div>
-                            </div>
-                        </div>
-                    </div>
+					<!-- Attendance History -->
+					<div>
+						<h3 class="text-base font-semibold text-slate-800 mb-3">Lịch Sử Chấm Công</h3>
+						<div class="overflow-x-auto rounded-xl border border-slate-200/80">
+							<table class="employee-table w-full">
+								<thead>
+									<tr class="bg-slate-50 border-b border-slate-200">
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ngày</th>
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Check In</th>
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Check Out</th>
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Đi Muộn</th>
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Thời gian về sớm</th>
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tăng Ca</th>
+									</tr>
+								</thead>
+								<tbody id="attendanceTableBody"></tbody>
+							</table>
+						</div>
+						<div id="attendancePagination" class="pagination mt-6"></div>
+					</div>
+				</div>
+			</div>
 
-                    <!-- Leaves Tab -->
-                    <div id="leavesTab" class="tab-content hidden">
-                        <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
-                            <div class="flex flex-wrap items-center justify-between gap-3">
-                                <h2 class="text-lg font-semibold text-slate-800">Nghỉ Phép</h2>
-                                <button id="addLeaveBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2.5 rounded-xl shadow-sm transition-colors text-sm">
-                                    + Đăng Ký Nghỉ Phép
-                                </button>
-                            </div>
-                        </div>
-                        <div class="p-6">
-                            <div class="overflow-x-auto rounded-xl border border-slate-200/80">
-                                <table class="employee-table w-full">
-                                    <thead>
-                                        <tr class="bg-slate-50 border-b border-slate-200">
-                                            <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Loại Phép</th>
-                                            <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Từ Ngày</th>
-                                            <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Đến Ngày</th>
-                                            <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Số Ngày</th>
-                                            <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Lý Do</th>
-                                            <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Trạng Thái</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="leavesTableBody"></tbody>
-                                </table>
-                            </div>
-                            <div id="leavesPagination" class="pagination mt-6"></div>
-                        </div>
-                    </div>
+			<!-- Leaves Tab -->
+			<div id="leavesTab" class="tab-content hidden">
+				<div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
+					<div class="flex flex-wrap items-center justify-between gap-3">
+						<h2 class="text-lg font-semibold text-slate-800">Nghỉ Phép</h2>
+						<button id="addLeaveBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2.5 rounded-xl shadow-sm transition-colors text-sm">
+							+ Đăng Ký Nghỉ Phép
+						</button>
+					</div>
+				</div>
+				<div class="p-6">
+					<div class="overflow-x-auto rounded-xl border border-slate-200/80">
+						<table class="employee-table w-full">
+							<thead>
+								<tr class="bg-slate-50 border-b border-slate-200">
+									<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Loại Phép</th>
+									<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Từ Ngày</th>
+									<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Đến Ngày</th>
+									<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Số Ngày</th>
+									<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Lý Do</th>
+									<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Trạng Thái</th>
+								</tr>
+							</thead>
+							<tbody id="leavesTableBody"></tbody>
+						</table>
+					</div>
+					<div id="leavesPagination" class="pagination mt-6"></div>
+				</div>
+			</div>
 
-                    <!-- Overtime Tab -->
-                    <div id="overtimeTab" class="tab-content hidden">
-                        <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
-                            <h2 class="text-lg font-semibold text-slate-800">Tăng Ca</h2>
-                            <p class="text-sm text-slate-500 mt-1">Nhận việc tăng ca từ lịch do quản lý tạo</p>
-                            <div class="flex flex-wrap gap-3 mt-4">
-                                <button type="button" id="overtimeBtnList" class="overtime-sub-btn min-w-[160px] px-5 py-2.5 rounded-xl text-sm font-medium transition-all bg-blue-600 text-white shadow-sm hover:bg-blue-700" data-overtime-view="available">
-                                    <span class="flex items-center justify-center gap-2">
-                                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-                                        Danh sách tăng ca
-                                    </span>
-                                </button>
-                                <button type="button" id="overtimeBtnHistory" class="overtime-sub-btn min-w-[160px] px-5 py-2.5 rounded-xl text-sm font-medium transition-all bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800"
-                                        data-overtime-view="history">
-                                    <span class="flex items-center justify-center gap-2">
-                                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        Lịch sử nhận tăng ca
-                                    </span>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="p-6">
-                            <div id="overtimeViewAvailable" class="overtime-view">
-                                <div class="overflow-x-auto rounded-xl border border-slate-200/80">
-                                    <table class="employee-table w-full">
-                                        <thead>
-                                            <tr class="bg-slate-50 border-b border-slate-200">
-                                                <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ngày</th>
-                                                <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Thời Gian</th>
-                                                <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Mô Tả</th>
-                                                <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Hành Động</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="overtimeAvailableBody"></tbody>
-                                    </table>
-                                </div>
-                                <p id="overtimeAvailableEmpty" class="text-sm text-slate-500 py-6 text-center hidden">Chưa có lịch tăng ca nào để nhận.</p>
-                                <div id="overtimeAvailablePagination" class="pagination mt-4"></div>
-                            </div>
-                            <div id="overtimeViewHistory" class="overtime-view hidden">
-                                <div class="overflow-x-auto rounded-xl border border-slate-200/80">
-                                    <table class="employee-table w-full">
-                                        <thead>
-                                            <tr class="bg-slate-50 border-b border-slate-200">
-                                                <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ngày</th>
-                                                <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Thời Gian</th>
-                                                <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tổng Giờ</th>
-                                                <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Lý Do</th>
-                                                <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Trạng Thái</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="overtimeTableBody"></tbody>
-                                    </table>
-                                </div>
-                                <div id="overtimePagination" class="pagination mt-6"></div>
-                            </div>
-                        </div>
-                    </div>
+			<!-- Overtime Tab -->
+			<div id="overtimeTab" class="tab-content hidden">
+				<div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
+					<h2 class="text-lg font-semibold text-slate-800">Tăng Ca</h2>
+					<p class="text-sm text-slate-500 mt-1">Nhận việc tăng ca từ lịch do quản lý tạo</p>
+					<div class="flex flex-wrap gap-3 mt-4">
+						<button type="button" id="overtimeBtnList" class="overtime-sub-btn min-w-[160px] px-5 py-2.5 rounded-xl text-sm font-medium transition-all bg-blue-600 text-white shadow-sm hover:bg-blue-700" data-overtime-view="available">
+							<span class="flex items-center justify-center gap-2">
+								<svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+								Danh sách tăng ca
+							</span>
+						</button>
+						<button type="button" id="overtimeBtnHistory" class="overtime-sub-btn min-w-[160px] px-5 py-2.5 rounded-xl text-sm font-medium transition-all bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800"
+								data-overtime-view="history">
+							<span class="flex items-center justify-center gap-2">
+								<svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+								Lịch sử nhận tăng ca
+							</span>
+						</button>
+					</div>
+				</div>
+				<div class="p-6">
+					<div id="overtimeViewAvailable" class="overtime-view">
+						<div class="overflow-x-auto rounded-xl border border-slate-200/80">
+							<table class="employee-table w-full">
+								<thead>
+									<tr class="bg-slate-50 border-b border-slate-200">
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ngày</th>
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Thời Gian</th>
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Mô Tả</th>
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Hành Động</th>
+									</tr>
+								</thead>
+								<tbody id="overtimeAvailableBody"></tbody>
+							</table>
+						</div>
+						<p id="overtimeAvailableEmpty" class="text-sm text-slate-500 py-6 text-center hidden">Chưa có lịch tăng ca nào để nhận.</p>
+						<div id="overtimeAvailablePagination" class="pagination mt-4"></div>
+					</div>
+					<div id="overtimeViewHistory" class="overtime-view hidden">
+						<div class="overflow-x-auto rounded-xl border border-slate-200/80">
+							<table class="employee-table w-full">
+								<thead>
+									<tr class="bg-slate-50 border-b border-slate-200">
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ngày</th>
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Thời Gian</th>
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tổng Giờ</th>
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Lý Do</th>
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Trạng Thái</th>
+									</tr>
+								</thead>
+								<tbody id="overtimeTableBody"></tbody>
+							</table>
+						</div>
+						<div id="overtimePagination" class="pagination mt-6"></div>
+					</div>
+				</div>
+			</div>
 
-                    <!-- Payroll Tab -->
-                    <div id="payrollTab" class="tab-content hidden">
-                        <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
-                            <h2 class="text-lg font-semibold text-slate-800">Bảng Lương</h2>
-                        </div>
-                        <div class="p-6">
-                            <div class="overflow-x-auto rounded-xl border border-slate-200/80">
-                                <table class="employee-table w-full">
-                                    <thead>
-                                        <tr class="bg-slate-50 border-b border-slate-200">
-                                            <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tháng</th>
-                                            <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Lương Cơ Bản</th>
-                                            <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tăng Ca</th>
-                                            <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Phạt</th>
-                                            <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Phụ Cấp</th>
-                                            <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Thực Lĩnh</th>
-                                            <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Trạng Thái</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="payrollTableBody"></tbody>
-                                </table>
-                            </div>
-                            <div id="payrollPagination" class="pagination mt-6"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
+			<!-- Payroll Tab -->
+			<div id="payrollTab" class="tab-content hidden">
+				<div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
+					<h2 class="text-lg font-semibold text-slate-800">Bảng Lương</h2>
+				</div>
+				<div class="p-6">
+					<div class="overflow-x-auto rounded-xl border border-slate-200/80">
+						<table class="employee-table w-full">
+							<thead>
+								<tr class="bg-slate-50 border-b border-slate-200">
+									<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tháng</th>
+									<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Lương Cơ Bản</th>
+									<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tăng Ca</th>
+									<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Phạt</th>
+									<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Phụ Cấp</th>
+									<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Thực Lĩnh</th>
+									<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Trạng Thái</th>
+								</tr>
+							</thead>
+							<tbody id="payrollTableBody"></tbody>
+						</table>
+					</div>
+					<div id="payrollPagination" class="pagination mt-6"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</main>
