@@ -1,4 +1,4 @@
-﻿using HumanResourcesManager.DAL.Models;
+using HumanResourcesManager.DAL.Models;
 using HumanResourcesManager.DAL.Shared;
 
 namespace HumanResourcesManager.DAL.Data
@@ -16,7 +16,8 @@ namespace HumanResourcesManager.DAL.Data
                 context.Roles.AddRange(
                     new Role { RoleCode = "EMP", RoleName = "Employee", Status = Constants.Active },
                     new Role { RoleCode = "HR", RoleName = "HR", Status = Constants.Active },
-                    new Role { RoleCode = "ADMIN", RoleName = "Admin", Status = Constants.Active }
+                    new Role { RoleCode = "ADMIN", RoleName = "Admin", Status = Constants.Active },
+                    new Role { RoleCode = "MANAGER", RoleName = "Manager", Status = Constants.Active }
                 );
                 context.SaveChanges();
             }

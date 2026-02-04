@@ -15,7 +15,8 @@ namespace HumanResourcesManager.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            // Đưa người dùng về trang đăng nhập mặc định
+            return RedirectToAction("Login", "Auth");
         }
 
         public IActionResult Privacy()

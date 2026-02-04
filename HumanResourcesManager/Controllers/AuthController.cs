@@ -1,4 +1,4 @@
-﻿using HumanResourcesManager.BLL.DTOs;
+using HumanResourcesManager.BLL.DTOs;
 using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.BLL.Services;
 using Microsoft.AspNetCore.Authentication;
@@ -104,6 +104,7 @@ namespace HumanResourcesManager.Controllers
             {
                 "ADMIN" => RedirectToAction("Index", "Admin"),
                 "HR" => RedirectToAction("Index", "HR"),
+                "MANAGER" => RedirectToAction("Index", "Manager"),
                 _ => RedirectToAction("Index", "Home")
             };
         }
@@ -139,21 +140,50 @@ namespace HumanResourcesManager.Controllers
         public IActionResult ForgotPassword(ForgotPasswordDTO dto)
         {
             if (!ModelState.IsValid)
+            {
+                if (IsAjaxRequest())
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        error = "Email không hợp lệ."
+                    });
+                }
+
                 return View(dto);
+            }
 
-            var otp = _otpService.GenerateOtp();
+            try
+            {
+                var otp = _otpService.GenerateOtp();
 
-            HttpContext.Session.SetString("RESET_EMAIL", dto.Email);
-            HttpContext.Session.SetString("RESET_OTP", otp);
-            HttpContext.Session.SetString(
-                "RESET_EXPIRE",
-                DateTime.Now.AddMinutes(5).ToString()
-            );
+                HttpContext.Session.SetString("RESET_EMAIL", dto.Email);
+                HttpContext.Session.SetString("RESET_OTP", otp);
+                HttpContext.Session.SetString(
+                    "RESET_EXPIRE",
+                    DateTime.Now.AddMinutes(5).ToString()
+                );
 
-            //  gửi mail thật
-            _emailService.SendOtp(dto.Email, otp);
+                // gửi mail thật
+                _emailService.SendOtp(dto.Email, otp);
 
-            return RedirectToAction("VerifyOtp");
+                if (IsAjaxRequest())
+                {
+                    return Json(new { success = true });
+                }
+
+                return RedirectToAction("VerifyOtp");
+            }
+            catch (Exception ex)
+            {
+                if (IsAjaxRequest())
+                {
+                    return Json(new { success = false, error = ex.Message });
+                }
+
+                ViewBag.Error = ex.Message;
+                return View(dto);
+            }
         }
 
         [HttpGet("verify-otp")]
@@ -170,20 +200,52 @@ namespace HumanResourcesManager.Controllers
 
             if (sessionOtp == null || expireStr == null)
             {
+                if (IsAjaxRequest())
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        error = "OTP đã hết hạn. Vui lòng thực hiện lại bước quên mật khẩu."
+                    });
+                }
+
                 ViewBag.Error = "OTP expired";
                 return View(dto);
             }
 
             if (DateTime.Parse(expireStr) < DateTime.Now)
             {
+                if (IsAjaxRequest())
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        error = "OTP đã hết hạn. Vui lòng thực hiện lại bước quên mật khẩu."
+                    });
+                }
+
                 ViewBag.Error = "OTP expired";
                 return View(dto);
             }
 
             if (dto.Otp != sessionOtp)
             {
+                if (IsAjaxRequest())
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        error = "Mã OTP không chính xác."
+                    });
+                }
+
                 ViewBag.Error = "Invalid OTP";
                 return View(dto);
+            }
+
+            if (IsAjaxRequest())
+            {
+                return Json(new { success = true });
             }
 
             return RedirectToAction("ResetPassword");
@@ -202,23 +264,61 @@ namespace HumanResourcesManager.Controllers
         public IActionResult ResetPassword(ResetPasswordDTO dto)
         {
             if (!ModelState.IsValid)
+            {
+                if (IsAjaxRequest())
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        error = "Dữ liệu mật khẩu không hợp lệ."
+                    });
+                }
+
                 return View(dto);
+            }
 
             var email = HttpContext.Session.GetString("RESET_EMAIL");
 
             if (email == null)
             {
+                if (IsAjaxRequest())
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        error = "Phiên đặt lại mật khẩu đã hết hạn. Vui lòng thực hiện lại từ đầu."
+                    });
+                }
+
                 ViewBag.Error = "Session expired";
                 return View(dto);
             }
 
-            _authService.ResetPassword(email, dto.NewPassword, dto.ConfirmPassword);
+            try
+            {
+                _authService.ResetPassword(email, dto.NewPassword, dto.ConfirmPassword);
 
-            HttpContext.Session.Remove("RESET_OTP");
-            HttpContext.Session.Remove("RESET_EMAIL");
-            TempData["ResetSuccess"] = true;
+                HttpContext.Session.Remove("RESET_OTP");
+                HttpContext.Session.Remove("RESET_EMAIL");
+                TempData["ResetSuccess"] = true;
 
-            return RedirectToAction("Login");
+                if (IsAjaxRequest())
+                {
+                    return Json(new { success = true });
+                }
+
+                return RedirectToAction("Login");
+            }
+            catch (Exception ex)
+            {
+                if (IsAjaxRequest())
+                {
+                    return Json(new { success = false, error = ex.Message });
+                }
+
+                ViewBag.Error = ex.Message;
+                return View(dto);
+            }
         }
 
 
@@ -323,7 +423,14 @@ namespace HumanResourcesManager.Controllers
                 : RedirectToAction("Index", "Home");
         }
 
-
+        private bool IsAjaxRequest()
+        {
+            return string.Equals(
+                Request.Headers["X-Requested-With"],
+                "XMLHttpRequest",
+                StringComparison.OrdinalIgnoreCase
+            );
+        }
 
     }
 }
