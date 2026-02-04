@@ -104,6 +104,7 @@ namespace HumanResourcesManager.Controllers
             {
                 "ADMIN" => RedirectToAction("Index", "Admin"),
                 "HR" => RedirectToAction("Index", "HR"),
+                "EMP" => RedirectToAction("Index", "Employee"),
                 "MANAGER" => RedirectToAction("Index", "Manager"),
                 _ => RedirectToAction("Index", "Home")
             };

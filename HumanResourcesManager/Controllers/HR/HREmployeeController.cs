@@ -7,11 +7,11 @@ namespace HumanResourcesManager.Controllers
 {
     [Authorize(Policy = "HR")]
     [Route("HumanResourcesManager/HR/Employee")]
-    public class EmployeeController : Controller
+    public class HREmployeeController : Controller
     {
         private readonly IEmployeeService _employeeService;
 
-        public EmployeeController(IEmployeeService employeeService)
+        public HREmployeeController(IEmployeeService employeeService)
         {
             _employeeService = employeeService;
         }
