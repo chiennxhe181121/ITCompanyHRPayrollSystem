@@ -1,26 +1,42 @@
 ﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="utf-8" />
-    <title>Admin Panel - HRM</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <link rel="stylesheet" href="~/css/admin.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - PayFlow Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../css/styles.css">
 </head>
-<body>
+<body class="bg-slate-50 min-h-screen">
 
-    @await Html.PartialAsync("_AdminHeader")
+    @await Html.PartialAsync("../Employee/_Loading")
 
-    <div class="admin-container">
+    <div class="flex h-screen overflow-hidden">
+        @await Html.PartialAsync("_AdminSidebar")
+        @RenderBody()
+
+
+    @* @await Html.PartialAsync("_AdminHeader") *@
+
+    @* <div class="admin-container">
         @await Html.PartialAsync("_AdminSidebar")
 
         <main class="admin-content">
             @RenderBody()
         </main>
+    </div> *@
+
     </div>
 
     @await Html.PartialAsync("_AdminFooter")
 
+    <!-- Modals will be inserted here by JavaScript -->
+    <div id="modalContainer"></div>
+
+    @* <script src="../wwwroot/js/admin.js"></script> *@
+    <script src="~/js/loading.js"></script>
+    <script src="~/js/admin_tab.js"></script>
+    @* <script src="../wwwroot/js/loading.js"></script> *@
+    @* <script src="../database.js"></script> *@
 </body>
 </html>

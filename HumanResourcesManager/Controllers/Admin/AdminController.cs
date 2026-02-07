@@ -10,7 +10,9 @@ namespace HumanResourcesManager.Controllers.Admin
         [HttpGet("")]
         public IActionResult Index()
         {
-            return View("~/Views/Admin/Dashboard/Index.cshtml");
+            //return View("~/Views/Admin/Dashboard/Index.cshtml");
+            //return View("~/Views/Admin/Index.cshtml");
+            return View();
         }
     }
 
