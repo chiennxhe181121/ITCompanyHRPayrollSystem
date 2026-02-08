@@ -3,6 +3,9 @@ using HumanResourcesManager.DAL.Interfaces;
 using HumanResourcesManager.DAL.Models;
 using Microsoft.EntityFrameworkCore;
 
+
+
+// @HoangDH 
 namespace HumanResourcesManager.DAL.Repositories
 {
     public class UserAccountRepository : IUserAccountRepository
@@ -42,5 +45,61 @@ namespace HumanResourcesManager.DAL.Repositories
 
             return account;
         }
+
+
+        // new methods can be added here as needed
+        public IEnumerable<UserAccount> GetAll()
+        {
+            return _context.UserAccounts
+                .Include(x => x.Role)
+                .Include(x => x.Employee);
+        }
+
+
+        public UserAccount? GetById(int id)
+        {
+            return _context.UserAccounts
+                .Include(x => x.Role)
+                .Include(x => x.Employee)
+                .FirstOrDefault(x => x.UserId == id && x.Status != -1);
+        }
+
+        public UserAccount Add(UserAccount user)
+        {
+            _context.UserAccounts.Add(user);
+            return user;
+        }
+
+        public void Update(UserAccount user)
+        {
+            _context.UserAccounts.Update(user);
+        }
+
+        public void Save()
+        {
+            _context.SaveChanges();
+        }
+
+        public bool ExistsByUsername(string username)
+        {
+            return _context.UserAccounts
+                .Any(x => x.Username == username);
+        }
+
+        public bool ExistsByEmail(string email)
+        {
+            return _context.Employees
+                .Any(e => e.Email == email);
+        }
+
+        public Role? GetRoleByCode(string roleCode)
+        {
+            return _context.Roles
+                .FirstOrDefault(r => r.RoleCode == roleCode);
+        }
+
+
+
+
     }
 }

@@ -1,0 +1,60 @@
+﻿@model HumanResourcesManager.BLL.DTOs.UserAccount.UserAccountCreateDTO
+
+@{
+    ViewData["Title"] = "Thêm tài khoản";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="p-6 max-w-xl">
+    <h2 class="text-lg font-semibold mb-4">Thêm tài khoản</h2>
+
+    <form asp-controller="UserAccounts"
+          asp-action="Create"
+          method="post"
+          class="space-y-4">
+
+        <div>
+            <label asp-for="Username" class="block text-sm font-medium"></label>
+            <input asp-for="Username"
+                   class="w-full border rounded-lg px-3 py-2" />
+            <span asp-validation-for="Username"
+                  class="text-sm text-red-500"></span>
+        </div>
+
+        <div>
+            <label asp-for="Password" class="block text-sm font-medium"></label>
+            <input asp-for="Password"
+                   type="password"
+                   class="w-full border rounded-lg px-3 py-2" />
+            <span asp-validation-for="Password"
+                  class="text-sm text-red-500"></span>
+        </div>
+
+        <div>
+            <label asp-for="RoleId" class="block text-sm font-medium"></label>
+            <select asp-for="RoleId"
+                    class="w-full border rounded-lg px-3 py-2">
+                <option value="">-- Chọn vai trò --</option>
+                <option value="1">Employee</option>
+                <option value="2">HR</option>
+                <option value="3">Admin</option>
+                <option value="4">Manager</option>
+            </select>
+            <span asp-validation-for="RoleId"
+                  class="text-sm text-red-500"></span>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+            <button type="submit"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                Lưu
+            </button>
+
+            <a asp-controller="UserAccounts"
+               asp-action="Index"
+               class="px-4 py-2 border rounded-lg">
+                Huỷ
+            </a>
+        </div>
+    </form>
+</div>

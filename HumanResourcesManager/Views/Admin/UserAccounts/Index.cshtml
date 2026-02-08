@@ -1,0 +1,125 @@
+﻿@model IEnumerable<HumanResourcesManager.BLL.DTOs.UserAccount.UserAccountDTO>
+@using HumanResourcesManager.DAL.Shared
+
+@{
+    ViewData["Title"] = "Quản Lý Tài Khoản";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-lg font-semibold text-slate-800">Quản Lý Tài Khoản</h2>
+            <p class="text-sm text-slate-500">CRUD tài khoản người dùng</p>
+        </div>
+
+        <a href="/HumanResourcesManager/admin/UserAccounts/Create"
+           class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm">
+            + Thêm tài khoản
+        </a>
+    </div>
+</div>
+
+<div class="p-6">
+    <div class="overflow-x-auto border rounded-xl">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50">
+                <tr>
+                    <th class="px-4 py-3">ID</th>
+                    <th class="px-4 py-3">Username</th>
+                    <th class="px-4 py-3">Họ tên</th>
+                    <th class="px-4 py-3">Email</th>
+                    <th class="px-4 py-3">Role</th>
+                    <th class="px-4 py-3">Trạng thái</th>
+                    <th class="px-4 py-3 text-right">Hành động</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var u in Model)
+                {
+                    <tr class="border-t hover:bg-slate-50">
+                        <td class="px-4 py-2">@u.UserId</td>
+                        <td class="px-4 py-2">@u.Username</td>
+                        <td class="px-4 py-2">@u.FullName</td>
+                        <td class="px-4 py-2">@u.Email</td>
+                        <td class="px-4 py-2">@u.RoleName</td>
+                        <td class="px-4 py-2">
+                            @if (u.Status == Constants.Active)
+                            {
+                                <span class="text-emerald-600 font-medium">Active</span>
+                            }
+                            else
+                            {
+                                <span class="text-red-500 font-medium">Inactive</span>
+                            }
+                        </td>
+                        <td class="px-4 py-2 text-right space-x-2">
+                            <a href="/HumanResourcesManager/admin/UserAccounts/Edit/@u.UserId"
+                               class="text-blue-600 hover:underline">Edit</a>
+
+                            <a href="/HumanResourcesManager/admin/UserAccounts/ResetPassword/@u.UserId"
+                               class="text-amber-600 hover:underline">Reset PW</a>
+
+                            @if (u.Status == Constants.Active)
+                            {
+                                <form method="post"
+                                      action="/HumanResourcesManager/admin/UserAccounts/Inactive/@u.UserId"
+                                      class="inline">
+                                    <button class="text-red-600 hover:underline"
+                                            onclick="return confirm('Khoá tài khoản này?')">
+                                        Lock
+                                    </button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (ViewBag.TotalPages > 1)
+        {
+            <div class="flex justify-center mt-6">
+                <ul class="flex gap-1 text-sm">
+
+                    @* PREVIOUS *@
+                    @if (ViewBag.CurrentPage > 1)
+                    {
+                        <li>
+                            <a class="px-3 py-1 border rounded hover:bg-slate-100"
+                               href="?page=@(ViewBag.CurrentPage - 1)">
+                                Trước
+                            </a>
+                        </li>
+                    }
+
+                    @* PAGE NUMBERS *@
+                    @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                    {
+                        <li>
+                            <a class="px-3 py-1 border rounded
+                               @(i == ViewBag.CurrentPage ? "bg-blue-600 text-white" : "hover:bg-slate-100")"
+                               href="?page=@i">
+                                @i
+                            </a>
+                        </li>
+                    }
+
+                    @* NEXT *@
+                    @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                    {
+                        <li>
+                            <a class="px-3 py-1 border rounded hover:bg-slate-100"
+                               href="?page=@(ViewBag.CurrentPage + 1)">
+                                Sau
+                            </a>
+                        </li>
+                    }
+
+                </ul>
+            </div>
+        }
+
+    </div>
+</div>

@@ -85,6 +85,9 @@ namespace HumanResourcesManager
             builder.Services.AddScoped<ILeaveRequestRepository, LeaveRequestRepository>();
             builder.Services.AddScoped<ILeaveRequestService, LeaveRequestService>();
 
+            builder.Services.AddScoped<IUserAccountService, UserAccountService>(); // 08/02/2026
+
+
 
             // Session configuration
             builder.Services.AddDistributedMemoryCache();

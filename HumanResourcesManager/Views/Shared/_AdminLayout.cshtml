@@ -1,42 +1,53 @@
-﻿<!DOCTYPE html>
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - PayFlow Pro</title>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"] - Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="../css/styles.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/styles.css" />
+
+    @RenderSection("Styles", required: false)
 </head>
 <body class="bg-slate-50 min-h-screen">
 
+    <!-- Global Loading -->
     @await Html.PartialAsync("../Employee/_Loading")
 
     <div class="flex h-screen overflow-hidden">
-        @await Html.PartialAsync("_AdminSidebar")
-        @RenderBody()
 
-
-    @* @await Html.PartialAsync("_AdminHeader") *@
-
-    @* <div class="admin-container">
+        <!-- Sidebar -->
         @await Html.PartialAsync("_AdminSidebar")
 
-        <main class="admin-content">
+        <!-- Main content -->
+        <main class="flex-1 overflow-y-auto">
             @RenderBody()
         </main>
-    </div> *@
 
     </div>
 
+    <!-- Footer -->
     @await Html.PartialAsync("_AdminFooter")
 
-    <!-- Modals will be inserted here by JavaScript -->
+    <!-- Modal container -->
     <div id="modalContainer"></div>
 
-    @* <script src="../wwwroot/js/admin.js"></script> *@
+    <!-- Scripts -->
     <script src="~/js/loading.js"></script>
-    <script src="~/js/admin_tab.js"></script>
-    @* <script src="../wwwroot/js/loading.js"></script> *@
-    @* <script src="../database.js"></script> *@
+    @* <script src="~/js/admin_tab.js"></script> *@
+    <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+
+    @RenderSection("Scripts", required: false)
 </body>
 </html>
