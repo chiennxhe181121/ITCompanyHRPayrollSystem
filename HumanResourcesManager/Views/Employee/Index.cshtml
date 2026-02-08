@@ -1,23 +1,12 @@
-﻿@{
+﻿@model HumanResourcesManager.BLL.DTOs.EmployeeResponseDTO
+
+@{
 	Layout = "~/Views/Employee/_EmployeeLayout.cshtml";
 }
+
 <!-- Main Content -->
 <main class="flex-1 overflow-y-auto bg-slate-50/50">
-	<header class="bg-white/90 backdrop-blur-sm border-b border-slate-200/80 px-6 lg:px-8 py-5">
-		<div class="flex flex-wrap items-center justify-between gap-4">
-			<div>
-				<h1 class="text-2xl font-semibold text-slate-800">Employee Dashboard</h1>
-				<p class="text-slate-500 text-sm mt-0.5">Chấm công và quản lý thông tin cá nhân</p>
-			</div>
-			<div class="flex items-center gap-4 rounded-xl bg-slate-50 px-4 py-2.5 border border-slate-200/80">
-				<div class="text-right">
-					<p class="text-xs text-slate-500 uppercase tracking-wide">Hôm nay</p>
-					<p class="text-sm font-medium text-slate-800" id="currentDate"></p>
-				</div>
-				<p class="text-lg font-semibold text-blue-600 tabular-nums" id="currentTime"></p>
-			</div>
-		</div>
-	</header>
+	@await Html.PartialAsync("_EmployeeHeader")
 
 	<div class="p-5 lg:p-8">
 		<!-- Stats -->
@@ -99,51 +88,120 @@
 					<form id="profileForm" class="w-full space-y-6" onsubmit="return false;">
 						<input type="hidden" id="profileAvatarData" value="">
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-slate-100">
+
+							<!-- AVATAR + EDIT BUTTON (GIỮ NGUYÊN) -->
 							<div class="flex items-center gap-4">
-								<div id="profileAvatarPreview" class="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-2xl font-bold text-white ring-2 ring-slate-200 shadow-inner flex-shrink-0">
+								<div id="profileAvatarPreview"
+									 class="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-2xl font-bold text-white ring-2 ring-slate-200 shadow-inner flex-shrink-0">
 									<img id="profileAvatarImg" class="w-full h-full object-cover hidden" alt="">
 									<span id="profileAvatarInitial">E</span>
 								</div>
 								<div id="profileAvatarActions" class="flex flex-col gap-2 hidden">
 									<input type="file" id="profileAvatarInput" accept="image/*" class="hidden">
-									<button type="button" id="profileAvatarBtn" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition-colors">Chọn ảnh</button>
-									<button type="button" id="profileAvatarRemoveBtn" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-sm font-medium transition-colors">Xóa ảnh</button>
+									<button type="button" id="profileAvatarBtn"
+											class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition-colors">
+										Chọn ảnh
+									</button>
+									<button type="button" id="profileAvatarRemoveBtn"
+											class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-sm font-medium transition-colors">
+										Xóa ảnh
+									</button>
 								</div>
 							</div>
+
 							<div class="flex items-center justify-end md:justify-start">
-								<button type="button" id="profileEditSaveBtn" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-sm transition-colors">
+								<button type="button" id="profileEditSaveBtn"
+										class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-sm transition-colors">
 									Chỉnh sửa thông tin
 								</button>
 							</div>
+
+							<!-- HỌ TÊN -->
 							<div>
 								<label class="block text-sm font-medium text-slate-600 mb-1.5">Họ và tên</label>
-								<input type="text" id="profileFullName" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 read-only:bg-slate-50 read-only:cursor-default focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required readonly>
-							</div>
-							<div>
-								<label class="block text-sm font-medium text-slate-600 mb-1.5">Email</label>
-								<input type="email" id="profileEmail" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 read-only:bg-slate-50 read-only:cursor-default focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required readonly>
-							</div>
-							<div>
-								<label class="block text-sm font-medium text-slate-600 mb-1.5">Số điện thoại</label>
-								<input type="tel" id="profilePhone" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 read-only:bg-slate-50 read-only:cursor-default focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="0901234567"
+								<input type="text" id="profileFullName"
+									   value="@Model.FullName"
+									   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
 									   readonly>
 							</div>
+
+							<!-- EMAIL -->
+							<div>
+								<label class="block text-sm font-medium text-slate-600 mb-1.5">Email cá nhân</label>
+								<input type="email" id="profileEmail"
+									   value="@Model.Email"
+									   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-800"
+									   readonly>
+							</div>
+
+							<!-- GIỚI TÍNH -->
+							<div>
+								<label class="block text-sm font-medium text-slate-600 mb-1.5">Giới tính</label>
+								<input type="text" id="profileGender"
+									   value="@Model.Gender"
+									   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-800" readonly>
+							</div>
+
+							<!-- NGÀY SINH -->
+							<div>
+								<label class="block text-sm font-medium text-slate-600 mb-1.5">Ngày sinh</label>
+								<input type="date" id="profileDob"
+									   value="@Model.DateOfBirth.ToString("yyyy-MM-dd")"
+									   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-800" readonly>
+							</div>
+
+							<!-- SỐ ĐIỆN THOẠI -->
+							<div>
+								<label class="block text-sm font-medium text-slate-600 mb-1.5">Số điện thoại</label>
+								<input type="tel" id="profilePhone"
+									   value="@Model.Phone"
+									   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-800" readonly>
+							</div>
+
+							<!-- NƠI Ở HIỆN NAY -->
+							<div>
+								<label class="block text-sm font-medium text-slate-600 mb-1.5">Nơi ở hiện nay</label>
+								<input type="text" id="profileAddress"
+									   value="@Model.Address"
+									   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-800" readonly>
+							</div>
+
+							<!-- MÃ NHÂN VIÊN -->
 							<div>
 								<label class="block text-sm font-medium text-slate-600 mb-1.5">Mã nhân viên</label>
-								<input type="text" id="profileEmployeeCode" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
+								<input type="text" id="profileEmployeeCode"
+									   value="@Model.EmployeeCode"
+									   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
+									   readonly>
 							</div>
+
+							<!-- PHÒNG BAN -->
 							<div>
 								<label class="block text-sm font-medium text-slate-600 mb-1.5">Phòng ban</label>
-								<input type="text" id="profileDepartment" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
+								<input type="text" id="profileDepartment"
+									   value="@Model.DepartmentName"
+									   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
+									   readonly>
 							</div>
+
+							<!-- CHỨC VỤ -->
 							<div>
 								<label class="block text-sm font-medium text-slate-600 mb-1.5">Chức vụ</label>
-								<input type="text" id="profilePosition" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
+								<input type="text" id="profilePosition"
+									   value="@Model.PositionName"
+									   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
+									   readonly>
 							</div>
+
+							<!-- NGÀY VÀO LÀM -->
 							<div>
 								<label class="block text-sm font-medium text-slate-600 mb-1.5">Ngày vào làm</label>
-								<input type="text" id="profileJoinDate" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
+								<input type="text" id="profileHireDate"
+									   value="@Model.HireDate.ToString("dd/MM/yyyy")"
+									   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
+									   readonly>
 							</div>
+
 						</div>
 					</form>
 				</div>

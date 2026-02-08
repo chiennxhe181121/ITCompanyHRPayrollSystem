@@ -31,14 +31,17 @@ namespace HumanResourcesManager.DAL.Repositories
                 .FirstOrDefault(e => e.EmployeeId == id && e.Status != -1);
         }
 
-        public Employee? GetByUserId(int id)
+        public Employee? GetByUserId(int userId)
         {
-            return _context.Employees
-                .Include(e => e.Department)
-                .Include(e => e.Position)
-                .FirstOrDefault(e => e.UserId == id && e.Status == 1);
+            return _context.UserAccounts
+                .Include(u => u.Employee)
+                    .ThenInclude(e => e.Department)
+                .Include(u => u.Employee)
+                    .ThenInclude(e => e.Position)
+                .Where(u => u.UserId == userId)
+                .Select(u => u.Employee)
+                .FirstOrDefault();
         }
-
 
         public void Add(Employee employee)
         {
