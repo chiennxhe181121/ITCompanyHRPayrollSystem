@@ -1,3 +1,4 @@
+@* Employee Sidebar *@
 <aside class="employee-sidebar w-64 bg-white border-r border-slate-200/80 flex-shrink-0 shadow-sm">
     <div class="h-full flex flex-col">
         <div class="p-5 border-b border-slate-100">
@@ -7,8 +8,14 @@
                     <span id="userInitial" class="text-white text-lg font-bold">E</span>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold text-slate-800 truncate leading-tight" id="userName">Employee</p>
-                    <p class="text-xs text-slate-500 mt-0.5">Nhân viên</p>
+                    <p class="text-sm font-semibold text-slate-800 truncate leading-tight"
+                       id="userName">
+                        Employee
+                    </p>
+                    <p class="text-xs text-slate-500 mt-0.5"
+                       id="userPosition">
+                        Nhân viên
+                    </p>
                 </div>
             </div>
         </div>
@@ -56,5 +63,10 @@
                 <span>Đăng Xuất</span>
             </button>
         </div>
+        <form id="logoutForm"
+              method="get"
+              action="/HumanResourcesManager/logout"
+              class="hidden">
+        </form>
     </div>
 </aside>
