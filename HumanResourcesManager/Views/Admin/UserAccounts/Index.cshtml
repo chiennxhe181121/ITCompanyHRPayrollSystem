@@ -4,6 +4,10 @@
 @{
     ViewData["Title"] = "Quản Lý Tài Khoản";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    string keyword = Context.Request.Query["keyword"];
+    string role = Context.Request.Query["role"];
+    string status = Context.Request.Query["status"];
 }
 
 <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
@@ -20,6 +24,58 @@
     </div>
 </div>
 
+<!-- 🔍 SEARCH + FILTER -->
+<div class="px-6 py-4 border-b bg-white">
+    <form method="get" class="flex flex-wrap gap-3 items-end">
+
+        <!-- SEARCH -->
+        <div>
+            <label class="text-sm font-medium">Tìm kiếm</label>
+            <input name="keyword"
+                   value="@keyword"
+                   placeholder="Username / Họ tên / Email"
+                   class="border rounded-lg px-3 py-2 w-64" />
+        </div>
+
+        <!-- ROLE -->
+        <div>
+            <label class="text-sm font-medium">Vai trò</label>
+            <select name="role"
+                    class="border rounded-lg px-3 py-2 w-40">
+                <option value="">-- Tất cả --</option>
+                <option value="EMPLOYEE" selected="@(role == "EMPLOYEE")">Employee</option>
+                <option value="HR" selected="@(role == "HR")">HR</option>
+                <option value="ADMIN" selected="@(role == "ADMIN")">Admin</option>
+                <option value="MANAGER" selected="@(role == "MANAGER")">Manager</option>
+            </select>
+        </div>
+
+        <!-- STATUS -->
+        <div>
+            <label class="text-sm font-medium">Trạng thái</label>
+            <select name="status"
+                    class="border rounded-lg px-3 py-2 w-36">
+                <option value="">-- Tất cả --</option>
+                <option value="Active" selected="@(status == "Active")">Active</option>
+                <option value="Inactive" selected="@(status == "Inactive")">Inactive</option>
+            </select>
+        </div>
+
+        <!-- ACTION -->
+        <div class="flex gap-2">
+            <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                Search
+            </button>
+
+            <a href="/HumanResourcesManager/admin/UserAccounts"
+               class="px-4 py-2 border rounded-lg">
+                Reset
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- TABLE -->
 <div class="p-6">
     <div class="overflow-x-auto border rounded-xl">
         <table class="w-full text-sm">
@@ -36,90 +92,108 @@
             </thead>
 
             <tbody>
-                @foreach (var u in Model)
+                @if (!Model.Any())
                 {
-                    <tr class="border-t hover:bg-slate-50">
-                        <td class="px-4 py-2">@u.UserId</td>
-                        <td class="px-4 py-2">@u.Username</td>
-                        <td class="px-4 py-2">@u.FullName</td>
-                        <td class="px-4 py-2">@u.Email</td>
-                        <td class="px-4 py-2">@u.RoleName</td>
-                        <td class="px-4 py-2">
-                            @if (u.Status == Constants.Active)
-                            {
-                                <span class="text-emerald-600 font-medium">Active</span>
-                            }
-                            else
-                            {
-                                <span class="text-red-500 font-medium">Inactive</span>
-                            }
-                        </td>
-                        <td class="px-4 py-2 text-right space-x-2">
-                            <a href="/HumanResourcesManager/admin/UserAccounts/Edit/@u.UserId"
-                               class="text-blue-600 hover:underline">Edit</a>
-
-                            <a href="/HumanResourcesManager/admin/UserAccounts/ResetPassword/@u.UserId"
-                               class="text-amber-600 hover:underline">Reset PW</a>
-
-                            @if (u.Status == Constants.Active)
-                            {
-                                <form method="post"
-                                      action="/HumanResourcesManager/admin/UserAccounts/Inactive/@u.UserId"
-                                      class="inline">
-                                    <button class="text-red-600 hover:underline"
-                                            onclick="return confirm('Khoá tài khoản này?')">
-                                        Lock
-                                    </button>
-                                </form>
-                            }
+                    <tr>
+                        <td colspan="7" class="text-center py-6 text-slate-500">
+                            Không tìm thấy tài khoản phù hợp
                         </td>
                     </tr>
+                }
+                else
+                {
+                    foreach (var u in Model)
+                    {
+                        <tr class="border-t hover:bg-slate-50">
+                            <td class="px-4 py-2">@u.UserId</td>
+                            <td class="px-4 py-2">@u.Username</td>
+                            <td class="px-4 py-2">@u.FullName</td>
+                            <td class="px-4 py-2">@u.Email</td>
+                            <td class="px-4 py-2">@u.RoleName</td>
+                            <td class="px-4 py-2">
+                                @if (u.Status == Constants.Active)
+                                {
+                                    <span class="text-emerald-600 font-medium">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="text-red-500 font-medium">Inactive</span>
+                                }
+                            </td>
+                            <td class="px-4 py-2 text-right space-x-2">
+                                <a href="/HumanResourcesManager/admin/UserAccounts/Edit/@u.UserId"
+                                   class="text-blue-600 hover:underline">Edit</a>
+
+                                <a href="/HumanResourcesManager/admin/UserAccounts/ResetPassword/@u.UserId"
+                                   class="text-amber-600 hover:underline">Reset PW</a>
+
+                                @if (u.Status == Constants.Active)
+                                {
+                                    <form method="post"
+                                          action="/HumanResourcesManager/admin/UserAccounts/Inactive/@u.UserId"
+                                          class="inline">
+                                        <button class="text-red-600 hover:underline"
+                                                onclick="return confirm('Khoá tài khoản này?')">
+                                            Lock
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form method="post"
+                                          action="/HumanResourcesManager/admin/UserAccounts/Active/@u.UserId"
+                                          class="inline">
+                                        <button class="text-emerald-600 hover:underline"
+                                                onclick="return confirm('Mở khoá tài khoản này?')">
+                                            Unlock
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
                 }
             </tbody>
         </table>
 
+        <!-- PAGINATION -->
         @if (ViewBag.TotalPages > 1)
         {
             <div class="flex justify-center mt-6">
                 <ul class="flex gap-1 text-sm">
 
-                    @* PREVIOUS *@
                     @if (ViewBag.CurrentPage > 1)
                     {
                         <li>
-                            <a class="px-3 py-1 border rounded hover:bg-slate-100"
-                               href="?page=@(ViewBag.CurrentPage - 1)">
+                            <a class="px-3 py-1 border rounded"
+                               href="?page=@(ViewBag.CurrentPage - 1)&keyword=@keyword&role=@role&status=@status">
                                 Trước
                             </a>
                         </li>
                     }
 
-                    @* PAGE NUMBERS *@
                     @for (int i = 1; i <= ViewBag.TotalPages; i++)
                     {
                         <li>
                             <a class="px-3 py-1 border rounded
-                               @(i == ViewBag.CurrentPage ? "bg-blue-600 text-white" : "hover:bg-slate-100")"
-                               href="?page=@i">
+                                               @(i == ViewBag.CurrentPage ? "bg-blue-600 text-white" : "")"
+                               href="?page=@i&keyword=@keyword&role=@role&status=@status">
                                 @i
                             </a>
                         </li>
                     }
 
-                    @* NEXT *@
                     @if (ViewBag.CurrentPage < ViewBag.TotalPages)
                     {
                         <li>
-                            <a class="px-3 py-1 border rounded hover:bg-slate-100"
-                               href="?page=@(ViewBag.CurrentPage + 1)">
+                            <a class="px-3 py-1 border rounded"
+                               href="?page=@(ViewBag.CurrentPage + 1)&keyword=@keyword&role=@role&status=@status">
                                 Sau
                             </a>
                         </li>
                     }
-
                 </ul>
             </div>
         }
-
     </div>
 </div>

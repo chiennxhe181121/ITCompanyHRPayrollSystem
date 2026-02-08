@@ -54,18 +54,52 @@ namespace HumanResourcesManager.Controllers.Admin
                 new UserAccountCreateDTO());
         }
 
+
+        //[HttpPost("Create")]
+        //public IActionResult Create(UserAccountCreateDTO dto)
+        //{
+        //    if (!ModelState.IsValid)
+        //        return View("~/Views/Admin/UserAccounts/Create.cshtml", dto);
+
+        //    _service.Create(dto);
+
+        //    // 👉 TÍNH TRANG CUỐI
+        //    var totalItems = _service.GetAllAccounts().Count;
+        //    var pageSize = 10; // nhớ đồng bộ với Index
+        //    var lastPage = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+        //    return RedirectToAction(nameof(Index), new { page = lastPage });
+        //}
         [HttpPost("Create")]
         public IActionResult Create(UserAccountCreateDTO dto)
         {
+            // 1️⃣ Validate DataAnnotation
             if (!ModelState.IsValid)
                 return View("~/Views/Admin/UserAccounts/Create.cshtml", dto);
 
-            _service.Create(dto);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                // 2️⃣ Gọi service (có thể throw exception)
+                _service.Create(dto);
+
+                // 3️⃣ TÍNH TRANG CUỐI ĐỂ QUAY LẠI ĐÚNG CHỖ
+                var totalItems = _service.GetAllAccounts().Count;
+                var pageSize = 10; // ⚠️ PHẢI TRÙNG với Index
+                var lastPage = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+                return RedirectToAction(nameof(Index), new { page = lastPage });
+            }
+            catch (Exception ex)
+            {
+                // 4️⃣ BẮT LỖI → HIỆN RA FORM, KHÔNG 500
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View("~/Views/Admin/UserAccounts/Create.cshtml", dto);
+            }
         }
 
-        // ===== EDIT =====
-        [HttpGet("Edit/{id}")]
+
+            // ===== EDIT =====
+            [HttpGet("Edit/{id}")]
         public IActionResult Edit(int id)
         {
             var account = _service.GetById(id);
@@ -98,20 +132,37 @@ namespace HumanResourcesManager.Controllers.Admin
 
 
         // ===== RESET PASSWORD =====
+        [HttpGet("ResetPassword/{id}")]
+        public IActionResult ResetPassword(int id)
+        {
+            var user = _service.GetById(id);
+            if (user == null) return NotFound();
+
+            var dto = new UserAccountResetPasswordDTO
+            {
+                UserId = id
+            };
+
+            return View("~/Views/Admin/UserAccounts/ResetPassword.cshtml", dto);
+        }
+
         [HttpPost("ResetPassword")]
         public IActionResult ResetPassword(UserAccountResetPasswordDTO dto)
         {
+            if (!ModelState.IsValid)
+                return View("~/Views/Admin/UserAccounts/ResetPassword.cshtml", dto);
+
             _service.ResetPassword(dto);
             return RedirectToAction(nameof(Index));
         }
 
-        // ===== INACTIVE =====
-        [HttpPost("Inactive/{id}")]
-        public IActionResult Inactive(int id)
+        [HttpPost("Active/{id}")]
+        public IActionResult Active(int id)
         {
-            _service.SetInactive(id);
+            _service.SetActive(id);
             return RedirectToAction(nameof(Index));
         }
+
 
 
     }

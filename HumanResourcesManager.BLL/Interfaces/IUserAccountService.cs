@@ -24,7 +24,7 @@ namespace HumanResourcesManager.BLL.Interfaces
         void SetInactive(int id);
 
 
-
+        void SetActive(int id);
 
     }
 

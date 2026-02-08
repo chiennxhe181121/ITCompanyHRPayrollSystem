@@ -13,6 +13,13 @@
           method="post"
           class="space-y-4">
 
+        <!-- 🔥 SUMMARY ERROR (ẩn mặc định, chỉ hiện khi có lỗi) -->
+        <div id="validationSummary"
+             asp-validation-summary="All"
+             class="hidden text-red-500 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+        </div>
+
+        <!-- USERNAME -->
         <div>
             <label asp-for="Username" class="block text-sm font-medium"></label>
             <input asp-for="Username"
@@ -21,15 +28,28 @@
                   class="text-sm text-red-500"></span>
         </div>
 
+        <!-- PASSWORD + 👁 -->
         <div>
             <label asp-for="Password" class="block text-sm font-medium"></label>
-            <input asp-for="Password"
-                   type="password"
-                   class="w-full border rounded-lg px-3 py-2" />
+
+            <div class="relative">
+                <input asp-for="Password"
+                       id="passwordInput"
+                       type="password"
+                       class="w-full border rounded-lg px-3 py-2 pr-10" />
+
+                <button type="button"
+                        onclick="togglePassword()"
+                        class="absolute inset-y-0 right-2 flex items-center text-gray-500">
+                    👁
+                </button>
+            </div>
+
             <span asp-validation-for="Password"
                   class="text-sm text-red-500"></span>
         </div>
 
+        <!-- ROLE -->
         <div>
             <label asp-for="RoleId" class="block text-sm font-medium"></label>
             <select asp-for="RoleId"
@@ -44,6 +64,30 @@
                   class="text-sm text-red-500"></span>
         </div>
 
+        <!-- FULL NAME (optional) -->
+        <div>
+            <label asp-for="FullName" class="block text-sm font-medium">
+                Họ tên (nếu tạo kèm nhân viên)
+            </label>
+            <input asp-for="FullName"
+                   class="w-full border rounded-lg px-3 py-2" />
+            <span asp-validation-for="FullName"
+                  class="text-sm text-red-500"></span>
+        </div>
+
+        <!-- EMAIL (optional) -->
+        <div>
+            <label asp-for="Email" class="block text-sm font-medium">
+                Email (nếu tạo kèm nhân viên)
+            </label>
+            <input asp-for="Email"
+                   type="email"
+                   class="w-full border rounded-lg px-3 py-2" />
+            <span asp-validation-for="Email"
+                  class="text-sm text-red-500"></span>
+        </div>
+
+        <!-- ACTION -->
         <div class="flex gap-3 pt-2">
             <button type="submit"
                     class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
@@ -58,3 +102,23 @@
         </div>
     </form>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // 👉 Hiện summary khi có lỗi
+        document.addEventListener("DOMContentLoaded", function () {
+            const summary = document.getElementById("validationSummary");
+            if (summary && summary.innerText.trim().length > 0) {
+                summary.classList.remove("hidden");
+            }
+        });
+
+        // 👉 Toggle password 👁
+        function togglePassword() {
+            const input = document.getElementById("passwordInput");
+            input.type = input.type === "password" ? "text" : "password";
+        }
+    </script>
+}

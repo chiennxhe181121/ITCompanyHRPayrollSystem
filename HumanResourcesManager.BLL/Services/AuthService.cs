@@ -126,6 +126,8 @@ namespace HumanResourcesManager.BLL.Services
             if (user == null)
                 return null;
 
+            //if (!user.IsActive) return null; // user bị khóa coi như login fail
+
             if (user.PasswordHash == null)
                 return null;
 
@@ -146,6 +148,40 @@ namespace HumanResourcesManager.BLL.Services
                 RoleName = user.Role.RoleName
             };
         }
+
+        //public UserSessionDTO? Login(LoginDTO dto)
+        //{
+        //    var user = _context.UserAccounts
+        //        .Include(u => u.Employee)
+        //        .Include(u => u.Role)
+        //        .FirstOrDefault(u =>
+        //            u.Status == Constants.Active &&
+        //            (
+        //                u.Username == dto.LoginKey ||
+        //                (u.Employee != null && u.Employee.Email == dto.LoginKey)
+        //            )
+        //        );
+
+        //    if (user == null)
+        //        return null;
+
+        //    if (string.IsNullOrEmpty(user.PasswordHash))
+        //        return null;
+
+        //    if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+        //        return null;
+
+        //    return new UserSessionDTO
+        //    {
+        //        UserId = user.UserId,
+        //        Username = user.Username,
+        //        FullName = user.Employee != null
+        //            ? user.Employee.FullName
+        //            : user.Username,
+        //        RoleCode = user.Role.RoleCode,
+        //        RoleName = user.Role.RoleName
+        //    };
+        //}
 
 
 
