@@ -1,4 +1,5 @@
 ﻿using HumanResourcesManager.BLL.DTOs;
+using HumanResourcesManager.BLL.DTOs.Common;
 using HumanResourcesManager.BLL.DTOs.UserAccount;
 using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.DAL.Interfaces;
@@ -48,7 +49,7 @@ namespace HumanResourcesManager.BLL.Services
                 Username = user.Username,
                 FullName = user.Employee?.FullName ?? "",
                 Email = user.Employee?.Email,
-                RoleCode = user.Role.RoleCode, // thêm RoleCode
+                RoleCode = user.Role.RoleCode,
                 RoleName = user.Role.RoleName,
                 Status = user.Status,
                 HasEmployee = user.Employee != null
@@ -142,6 +143,69 @@ namespace HumanResourcesManager.BLL.Services
 
             _repo.Update(user);
             _repo.Save();
+        }
+
+
+        public PagedResult<UserAccountDTO> SearchAccounts(
+            string? keyword,
+            string? roleCode,
+            string? status,
+            int page,
+            int pageSize)
+        {
+            var query = _repo.GetAll().AsQueryable();
+
+            // SEARCH keyword
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                keyword = keyword.Trim().ToLower();
+                query = query.Where(x =>
+                    x.Username.ToLower().Contains(keyword) ||
+                    (x.Employee != null && (
+                        x.Employee.FullName.ToLower().Contains(keyword) ||
+                        x.Employee.Email.ToLower().Contains(keyword)
+                    ))
+                );
+            }
+
+            // FILTER ROLE
+            if (!string.IsNullOrWhiteSpace(roleCode))
+            {
+                query = query.Where(x => x.Role.RoleCode == roleCode);
+            }
+
+            // FILTER STATUS
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                if (status == "Active")
+                    query = query.Where(x => x.Status == Constants.Active);
+                else if (status == "Inactive")
+                    query = query.Where(x => x.Status == Constants.Inactive);
+            }
+
+            int totalItems = query.Count();
+
+            var items = query
+                //.OrderByDescending(x => x.UserId)
+                .OrderBy(x => x.UserId)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new UserAccountDTO
+                {
+                    UserId = x.UserId,
+                    Username = x.Username,
+                    FullName = x.Employee != null ? x.Employee.FullName : "",
+                    Email = x.Employee != null ? x.Employee.Email : "",
+                    RoleName = x.Role.RoleName,
+                    Status = x.Status
+                })
+                .ToList();
+
+            return new PagedResult<UserAccountDTO>
+            {
+                Items = items,
+                TotalItems = totalItems
+            };
         }
 
 

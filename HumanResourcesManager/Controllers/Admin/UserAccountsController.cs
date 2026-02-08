@@ -1,11 +1,13 @@
 ﻿using HumanResourcesManager.BLL.DTOs;
 using HumanResourcesManager.BLL.DTOs.UserAccount;
 using HumanResourcesManager.BLL.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HumanResourcesManager.Controllers.Admin
 {
     //[Area("Admin")]
+    [Authorize(Roles = "ADMIN")]
     [Route("HumanResourcesManager/admin/UserAccounts")]
     public class UserAccountsController : Controller
     {
@@ -16,34 +18,23 @@ namespace HumanResourcesManager.Controllers.Admin
             _service = service;
         }
 
-        //[HttpGet("")]
-        //public IActionResult Index()
-        //{
-        //    var accounts = _service.GetAllAccounts();
-        //    //return View(accounts);
-        //    return View("~/Views/Admin/UserAccounts/Index.cshtml", accounts);
-        //}
 
         [HttpGet("")]
-        public IActionResult Index(int page = 1, int pageSize = 10)
+        public IActionResult Index(
+            string? keyword,
+            string? roleCode, 
+            string? status,
+            int page = 1)
         {
-            var allAccounts = _service.GetAllAccounts();
+            int pageSize = 10;
 
-            var totalItems = allAccounts.Count;
-            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
-
-            var accounts = allAccounts
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
+            var result = _service.SearchAccounts(keyword, roleCode, status, page, pageSize);
 
             ViewBag.CurrentPage = page;
-            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalPages = (int)Math.Ceiling(result.TotalItems / (double)pageSize);
 
-            return View("~/Views/Admin/UserAccounts/Index.cshtml", accounts);
+            return View("~/Views/Admin/UserAccounts/Index.cshtml", result.Items);
         }
-
-
 
 
         // ===== CREATE =====
@@ -54,35 +45,19 @@ namespace HumanResourcesManager.Controllers.Admin
                 new UserAccountCreateDTO());
         }
 
-
-        //[HttpPost("Create")]
-        //public IActionResult Create(UserAccountCreateDTO dto)
-        //{
-        //    if (!ModelState.IsValid)
-        //        return View("~/Views/Admin/UserAccounts/Create.cshtml", dto);
-
-        //    _service.Create(dto);
-
-        //    // 👉 TÍNH TRANG CUỐI
-        //    var totalItems = _service.GetAllAccounts().Count;
-        //    var pageSize = 10; // nhớ đồng bộ với Index
-        //    var lastPage = (int)Math.Ceiling(totalItems / (double)pageSize);
-
-        //    return RedirectToAction(nameof(Index), new { page = lastPage });
-        //}
         [HttpPost("Create")]
         public IActionResult Create(UserAccountCreateDTO dto)
         {
-            // 1️⃣ Validate DataAnnotation
+            // Validate DataAnnotation
             if (!ModelState.IsValid)
                 return View("~/Views/Admin/UserAccounts/Create.cshtml", dto);
 
             try
             {
-                // 2️⃣ Gọi service (có thể throw exception)
+                // Gọi service (có thể throw exception)
                 _service.Create(dto);
 
-                // 3️⃣ TÍNH TRANG CUỐI ĐỂ QUAY LẠI ĐÚNG CHỖ
+                // TÍNH TRANG CUỐI ĐỂ QUAY LẠI ĐÚNG CHỖ
                 var totalItems = _service.GetAllAccounts().Count;
                 var pageSize = 10; // ⚠️ PHẢI TRÙNG với Index
                 var lastPage = (int)Math.Ceiling(totalItems / (double)pageSize);
@@ -91,15 +66,15 @@ namespace HumanResourcesManager.Controllers.Admin
             }
             catch (Exception ex)
             {
-                // 4️⃣ BẮT LỖI → HIỆN RA FORM, KHÔNG 500
+                // BẮT LỖI → HIỆN RA FORM, KHÔNG 500
                 ModelState.AddModelError(string.Empty, ex.Message);
                 return View("~/Views/Admin/UserAccounts/Create.cshtml", dto);
             }
         }
 
 
-            // ===== EDIT =====
-            [HttpGet("Edit/{id}")]
+        // ===== EDIT =====
+        [HttpGet("Edit/{id}")]
         public IActionResult Edit(int id)
         {
             var account = _service.GetById(id);
@@ -160,6 +135,13 @@ namespace HumanResourcesManager.Controllers.Admin
         public IActionResult Active(int id)
         {
             _service.SetActive(id);
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost("Inactive/{id}")]
+        public IActionResult Inactive(int id)
+        {
+            _service.SetInactive(id);
             return RedirectToAction(nameof(Index));
         }
 
