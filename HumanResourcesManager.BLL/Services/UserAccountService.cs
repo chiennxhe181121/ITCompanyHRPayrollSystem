@@ -94,22 +94,38 @@ namespace HumanResourcesManager.BLL.Services
             _repo.Save();
         }
 
-
-        public void Update(UserAccountUpdateDTO dto)
+        public void Update(UserAccountUpdateDTO dto, int currentUserId)
         {
-            var user = _repo.GetById(dto.UserId)
-                ?? throw new Exception("User not found");
+            var targetUser = _repo.GetById(dto.UserId)
+                ?? throw new Exception("Tài khoản không tồn tại");
 
-            var role = _repo.GetRoleByCode(dto.RoleCode)
-                ?? throw new Exception("Role not found");
+            var currentUser = _repo.GetById(currentUserId)
+                ?? throw new Exception("Không xác định được người thực hiện");
 
-            user.RoleId = role.RoleId;
-            user.Status = dto.Status;
+            var newRole = _repo.GetRoleByCode(dto.RoleCode)
+                ?? throw new Exception("Role không hợp lệ");
 
-            _repo.Update(user);
+            if (targetUser.UserId != currentUser.UserId && targetUser.RoleId == currentUser.RoleId)
+            {
+                throw new Exception($"Bạn không thể chỉnh sửa đồng nghiệp cùng cấp ({targetUser.Role.RoleName})!");
+            }
+
+            if (targetUser.UserId == currentUser.UserId)
+            {
+                if (targetUser.RoleId != newRole.RoleId)
+                {
+                    throw new Exception("Bạn không thể tự thay đổi quyền hạn (Role) của chính mình. Hãy nhờ Admin khác.");
+                }
+
+            }
+
+            targetUser.RoleId = newRole.RoleId;
+
+            // targetUser.Status = dto.Status; 
+
+            _repo.Update(targetUser);
             _repo.Save();
         }
-
 
         public void ResetPassword(UserAccountResetPasswordDTO dto)
         {
@@ -122,18 +138,6 @@ namespace HumanResourcesManager.BLL.Services
             _repo.Save();
         }
 
-        public void SetInactive(int id)
-        {
-            var user = _repo.GetById(id)
-                ?? throw new Exception("User not found");
-
-            user.Status = Constants.Inactive;
-
-            _repo.Update(user);
-            _repo.Save();
-        }
-
-
         public void SetActive(int id)
         {
             var user = _repo.GetById(id)
@@ -144,7 +148,33 @@ namespace HumanResourcesManager.BLL.Services
             _repo.Update(user);
             _repo.Save();
         }
+        public void SetInactive(int targetUserId, int currentUserId)
+        {
+            if (targetUserId == currentUserId)
+                throw new Exception("Bạn không thể tự khóa chính mình");
 
+            var targetUser = _repo.GetById(targetUserId)
+                ?? throw new Exception("User not found");
+
+            var currentUser = _repo.GetById(currentUserId)
+                ?? throw new Exception("Current user not found");
+
+            // ❌ Không cho khóa người cùng role
+            //if (targetUser.Role.RoleCode == currentUser.Role.RoleCode)
+            //{
+            //    throw new Exception("Bạn không thể khóa đồng nghiệp cùng vai trò");
+            //}
+            if (targetUser.RoleId == currentUser.RoleId)
+            {
+                throw new Exception("Bạn không thể khóa đồng nghiệp cùng vai trò");
+            }
+
+
+            targetUser.Status = Constants.Inactive;
+
+            _repo.Update(targetUser);
+            _repo.Save();
+        }
 
         public PagedResult<UserAccountDTO> SearchAccounts(
             string? keyword,

@@ -3,6 +3,7 @@ using HumanResourcesManager.BLL.DTOs.UserAccount;
 using HumanResourcesManager.BLL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace HumanResourcesManager.Controllers.Admin
 {
@@ -48,48 +49,64 @@ namespace HumanResourcesManager.Controllers.Admin
         [HttpPost("Create")]
         public IActionResult Create(UserAccountCreateDTO dto)
         {
-            // Validate DataAnnotation
             if (!ModelState.IsValid)
                 return View("~/Views/Admin/UserAccounts/Create.cshtml", dto);
 
             try
             {
-                // Gọi service (có thể throw exception)
                 _service.Create(dto);
 
-                // TÍNH TRANG CUỐI ĐỂ QUAY LẠI ĐÚNG CHỖ
                 var totalItems = _service.GetAllAccounts().Count;
-                var pageSize = 10; // ⚠️ PHẢI TRÙNG với Index
+                var pageSize = 10; 
                 var lastPage = (int)Math.Ceiling(totalItems / (double)pageSize);
 
                 return RedirectToAction(nameof(Index), new { page = lastPage });
             }
             catch (Exception ex)
             {
-                // BẮT LỖI → HIỆN RA FORM, KHÔNG 500
                 ModelState.AddModelError(string.Empty, ex.Message);
                 return View("~/Views/Admin/UserAccounts/Create.cshtml", dto);
             }
         }
 
 
-        // ===== EDIT =====
         [HttpGet("Edit/{id}")]
         public IActionResult Edit(int id)
         {
-            var account = _service.GetById(id);
-            if (account == null) return NotFound();
-
-            var dto = new UserAccountUpdateDTO
+            try
             {
-                UserId = account.UserId,
-                RoleCode = account.RoleCode,
-                Status = account.Status
-            };
+                int currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+                var targetUser = _service.GetById(id);
+                var currentUser = _service.GetById(currentUserId);
 
-            return View("~/Views/Admin/UserAccounts/Edit.cshtml", dto);
+                if (targetUser == null) return NotFound();
+
+                if (targetUser.UserId == currentUserId)
+                {
+                    TempData["Error"] = "Bạn không thể tự sửa tài khoản của mình tại đây. Vui lòng vào trang Cá nhân!";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                if (targetUser.RoleCode == currentUser.RoleCode)
+                {
+                    TempData["Error"] = $"Bạn không thể chỉnh sửa đồng nghiệp cùng cấp ({targetUser.RoleCode})!";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var dto = new UserAccountUpdateDTO
+                {
+                    UserId = targetUser.UserId,
+                    RoleCode = targetUser.RoleCode
+                };
+
+                return View("~/Views/Admin/UserAccounts/Edit.cshtml", dto);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Lỗi: " + ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
         }
-
 
 
         [HttpPost("Edit/{id}")]
@@ -101,9 +118,22 @@ namespace HumanResourcesManager.Controllers.Admin
             if (!ModelState.IsValid)
                 return View("~/Views/Admin/UserAccounts/Edit.cshtml", dto);
 
-            _service.Update(dto);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                int currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+                _service.Update(dto, currentUserId);
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+
+                return View("~/Views/Admin/UserAccounts/Edit.cshtml", dto);
+            }
         }
+
 
 
         // ===== RESET PASSWORD =====
@@ -141,9 +171,24 @@ namespace HumanResourcesManager.Controllers.Admin
         [HttpPost("Inactive/{id}")]
         public IActionResult Inactive(int id)
         {
-            _service.SetInactive(id);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                
+                int currentUserId = int.Parse(
+                    User.FindFirst(ClaimTypes.NameIdentifier)!.Value
+                );
+
+                _service.SetInactive(id, currentUserId);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
         }
+
+
 
 
 

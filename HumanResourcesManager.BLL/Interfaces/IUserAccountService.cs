@@ -19,9 +19,13 @@ namespace HumanResourcesManager.BLL.Interfaces
         UserAccountDTO GetById(int id);
         // ===== CRUD =====
         void Create(UserAccountCreateDTO dto);
-        void Update(UserAccountUpdateDTO dto);
+
+        //void Update(UserAccountUpdateDTO dto);
+        void Update(UserAccountUpdateDTO dto, int currentUserId); // Thêm currentUserId
         void ResetPassword(UserAccountResetPasswordDTO dto);
-        void SetInactive(int id);
+        //void SetInactive(int id);
+        public void SetInactive(int targetUserId, int currentUserId);
+
         void SetActive(int id);
 
         // ===== SEARCH + FILTER + PAGING =====
