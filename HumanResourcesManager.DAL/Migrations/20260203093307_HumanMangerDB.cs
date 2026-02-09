@@ -5,7 +5,7 @@
 namespace HumanResourcesManager.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDatabase : Migration
+    public partial class HumanMangerDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

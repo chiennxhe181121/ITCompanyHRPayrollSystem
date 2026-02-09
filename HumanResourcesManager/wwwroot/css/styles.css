@@ -1,0 +1,404 @@
+/* Custom styles for HR Payroll Management System */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Table Styles */
+.table-container {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Modal Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-overlay {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Page Loading Overlay - khi chuyển trang */
+.page-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+}
+.page-loading-overlay.hidden {
+  display: none !important;
+}
+.page-loading-overlay__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+.page-loading-overlay__content img {
+  width: 340px;
+  height: auto;
+  display: block;
+}
+.page-loading-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+.page-loading-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  animation: page-loading-dot 0.6s ease-in-out infinite both;
+}
+.page-loading-dot:nth-child(1) { animation-delay: 0s; }
+.page-loading-dot:nth-child(2) { animation-delay: 0.15s; }
+.page-loading-dot:nth-child(3) { animation-delay: 0.3s; }
+@keyframes page-loading-dot {
+  0%, 100% { transform: scale(0.6); opacity: 0.6; }
+  50% { transform: scale(1.2); opacity: 1; }
+}
+
+/* Loading Spinner */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  border: 2px solid #f3f4f6;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 0.6s linear infinite;
+}
+
+/* Badge Styles */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+}
+
+.badge-active {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.badge-inactive {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.badge-pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.badge-approved {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-rejected {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.badge-paid {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+/* Status Colors */
+.status-active {
+  color: #16a34a;
+}
+
+.status-inactive {
+  color: #dc2626;
+}
+
+.status-pending {
+  color: #ea580c;
+}
+
+.status-approved {
+  color: #2563eb;
+}
+
+.status-rejected {
+  color: #dc2626;
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white;
+  }
+}
+
+/* Sidebar Styles */
+.sidebar {
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Employee Dashboard - Sidebar nav active */
+.employee-sidebar .nav-item.active {
+  background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+  color: #1d4ed8;
+  font-weight: 600;
+}
+.employee-sidebar .nav-item.active:hover {
+  background: linear-gradient(135deg, #dbeafe 0%, #c7d2fe 100%);
+  color: #1d4ed8;
+}
+
+/* Manager / HR Dashboard - Sidebar nav active */
+.manager-sidebar .nav-item.active {
+  background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+  color: #1d4ed8;
+  font-weight: 600;
+}
+.manager-sidebar .nav-item.active:hover {
+  background: linear-gradient(135deg, #dbeafe 0%, #c7d2fe 100%);
+  color: #1d4ed8;
+}
+
+/* Employee Dashboard - Tables */
+.employee-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+.employee-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+.employee-table tbody td {
+  padding: 0.875rem 1rem;
+  font-size: 0.875rem;
+  color: #334155;
+}
+.employee-table thead th {
+  padding: 0.75rem 1rem;
+}
+
+/* Camera Preview */
+.camera-preview {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  aspect-ratio: 4/3;
+  background: #000;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.camera-preview video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.camera-preview canvas {
+  display: none;
+}
+
+/* Photo Capture */
+.photo-capture {
+  position: relative;
+  display: inline-block;
+}
+
+.photo-capture img {
+  max-width: 200px;
+  border-radius: 0.5rem;
+  border: 2px solid #e5e7eb;
+}
+
+/* Chart Styles */
+.chart-container {
+  position: relative;
+  height: 300px;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.pagination button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination button.active {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+/* Employee Dashboard - Pagination */
+.employee-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 0;
+}
+
+.employee-pagination .employee-pagination-btn:focus,
+.employee-pagination .employee-pagination-num:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: rgba(59, 130, 246, 0.4);
+}
+
+.employee-pagination .employee-pagination-num:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.5);
+  outline-offset: 2px;
+}
+
+/* Responsive Tables */
+@media (max-width: 768px) {
+  .responsive-table {
+    font-size: 0.875rem;
+  }
+  
+  .responsive-table th,
+  .responsive-table td {
+    padding: 0.5rem;
+  }
+}
+
+/* Utility Classes */
+.text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+/* Custom Focus Styles */
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+  outline: none;
+}
+
+/* Transitions */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Backdrop Blur */
+.backdrop-blur {
+  backdrop-filter: blur(8px);
+}
+
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+}
+
+.backdrop-blur-md {
+  backdrop-filter: blur(12px);
+}
+
+/* Shadow Hover Effects */
+.shadow-hover:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
