@@ -1,11 +1,228 @@
-﻿@{
+﻿@model HumanResourcesManager.BLL.DTOs.Dashboard.DashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<h1>Admin Dashboard</h1>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<p>Chào mừng Hoàng đến với hệ thống quản trị 🎉</p>
-<div class="container mt-5">
-    <h1>Admin Dashboard</h1>
-    <p>Chào mừng Hoàng đến với hệ thống quản trị 🎉</p>
-</div>
+<main class="flex-1 overflow-y-auto bg-slate-50 min-h-screen pb-10">
+
+    <header class="bg-white border-b border-slate-200 px-8 py-6 mb-8 shadow-sm">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">Tổng quan hệ thống</h1>
+                <p class="text-slate-500 text-sm mt-1">Xin chào Admin, đây là báo cáo ngày @DateTime.Now.ToString("dd/MM/yyyy")</p>
+            </div>
+            <div class="flex gap-3">
+                <button class="bg-white border border-slate-300 text-slate-600 px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:bg-slate-50">
+                    <i class="fa-solid fa-download mr-2"></i> Xuất báo cáo
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="px-8">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">+5%</span>
+                </div>
+                <p class="text-slate-500 text-sm font-medium">Tổng tài khoản</p>
+                <h3 class="text-2xl font-bold text-slate-800">@Model.TotalUsers</h3>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-id-card"></i>
+                    </div>
+                    <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">+12</span>
+                </div>
+                <p class="text-slate-500 text-sm font-medium">Tổng nhân viên</p>
+                <h3 class="text-2xl font-bold text-slate-800">@Model.TotalEmployees</h3>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-building"></i>
+                    </div>
+                </div>
+                <p class="text-slate-500 text-sm font-medium">Phòng ban</p>
+                <h3 class="text-2xl font-bold text-slate-800">@Model.TotalDepartments</h3>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <span class="text-xs font-bold text-slate-400">Hiện tại</span>
+                </div>
+                <p class="text-slate-500 text-sm font-medium">Đang hoạt động</p>
+                <h3 class="text-2xl font-bold text-slate-800">@Model.ActiveUsers</h3>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 lg:col-span-2">
+                <h3 class="text-lg font-bold text-slate-800 mb-4">Tăng trưởng nhân sự (6 tháng)</h3>
+                <div class="h-64">
+                    <canvas id="employeeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <h3 class="text-lg font-bold text-slate-800 mb-4">Phân bổ phòng ban</h3>
+                <div class="h-64 flex justify-center">
+                    <canvas id="departmentChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 lg:col-span-2">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold text-slate-800">Tài khoản mới tạo</h3>
+                    <a href="/HumanResourcesManager/admin/UserAccounts" class="text-sm text-indigo-600 hover:text-indigo-700 font-medium">Xem tất cả</a>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-slate-500 font-medium border-b border-slate-100">
+                            <tr>
+                                <th class="pb-3">Username</th>
+                                <th class="pb-3">Vai trò</th>
+                                <th class="pb-3">Ngày tạo</th>
+                                <th class="pb-3 text-right">Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-50">
+                            @foreach (var user in Model.RecentUsers)
+                            {
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="py-3 font-medium text-slate-700">@user.Username</td>
+                                    <td class="py-3">
+                                        <span class="px-2 py-1 rounded text-xs font-bold
+                                                @(user.RoleName == "Admin" ? "bg-purple-100 text-purple-700" :
+                                                                                            user.RoleName == "HR" ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-600")">
+                                        @user.RoleName
+                                    </span>
+                                </td>
+                                <td class="py-3 text-slate-500">@user.CreatedDate.ToString("dd/MM/yyyy")</td>
+                                <td class="py-3 text-right">
+                                    @if (user.Status == "Active")
+                                        {
+                                            <span class="text-emerald-600 font-medium text-xs">● Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-red-500 font-medium text-xs">● Inactive</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-indigo-900 rounded-2xl shadow-lg p-6 text-white flex flex-col justify-between relative overflow-hidden">
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+                <div class="absolute bottom-0 left-0 -mb-4 -ml-4 w-32 h-32 bg-indigo-500 opacity-20 rounded-full blur-2xl"></div>
+
+                <div class="relative z-10">
+                    <h3 class="text-lg font-bold mb-1">Thao tác nhanh</h3>
+                    <p class="text-indigo-200 text-sm mb-6">Truy cập nhanh các chức năng quản trị.</p>
+
+                    <div class="space-y-3">
+                        <a href="/HumanResourcesManager/admin/UserAccounts/Create" class="flex items-center gap-3 bg-white/10 hover:bg-white/20 p-3 rounded-xl transition-all border border-white/10">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center">
+                                <i class="fa-solid fa-user-plus text-sm"></i>
+                            </div>
+                            <span class="font-medium text-sm">Thêm tài khoản</span>
+                        </a>
+
+                        <a href="#" class="flex items-center gap-3 bg-white/10 hover:bg-white/20 p-3 rounded-xl transition-all border border-white/10">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center">
+                                <i class="fa-solid fa-file-invoice text-sm"></i>
+                            </div>
+                            <span class="font-medium text-sm">Quản lý lương</span>
+                        </a>
+
+                        <a href="#" class="flex items-center gap-3 bg-white/10 hover:bg-white/20 p-3 rounded-xl transition-all border border-white/10">
+                            <div class="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center">
+                                <i class="fa-solid fa-gear text-sm"></i>
+                            </div>
+                            <span class="font-medium text-sm">Cấu hình hệ thống</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<script>
+    // 1. Biểu đồ cột (Employee Growth)
+    const ctxEmp = document.getElementById('employeeChart').getContext('2d');
+    new Chart(ctxEmp, {
+        type: 'bar',
+        data: {
+            labels: ['T8', 'T9', 'T10', 'T11', 'T12', 'T1'],
+            datasets: [{
+                label: 'Nhân sự mới',
+                data: @Json.Serialize(Model.EmployeeStatsByMonth), // Lấy data từ C#
+                backgroundColor: '#4f46e5', // Màu Indigo
+                borderRadius: 4,
+                barThickness: 30
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // 2. Biểu đồ tròn (Department)
+    const ctxDept = document.getElementById('departmentChart').getContext('2d');
+    // Lấy Keys và Values từ Dictionary
+    const deptLabels = @Json.Serialize(Model.DepartmentDistribution.Keys);
+    const deptData = @Json.Serialize(Model.DepartmentDistribution.Values);
+
+    new Chart(ctxDept, {
+        type: 'doughnut',
+        data: {
+            labels: deptLabels,
+            datasets: [{
+                data: deptData,
+                backgroundColor: [
+                    '#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'
+                ],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+            },
+            cutout: '70%' // Độ rỗng ở giữa
+        }
+    });
+</script>

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 
-// @HoangDH
+// @HoangDH 
 namespace HumanResourcesManager.BLL.Services
 {
     public class AuthService : IAuthService
@@ -67,34 +67,69 @@ namespace HumanResourcesManager.BLL.Services
 
 
 
+        //    public UserSessionDTO? Login(LoginDTO dto)
+        //    {
+        //        //var user = _context.UserAccounts
+        //        //    .Include(u => u.Employee)
+        //        //    .Include(u => u.Role)
+        //        //    .FirstOrDefault(u =>
+        //        //        u.Status == Constants.Active &&
+        //        //        (
+        //        //            u.Username == dto.LoginKey ||
+        //        //            u.Employee.Email == dto.LoginKey
+        //        //        )
+        //        //    );
+        //        var user = _context.UserAccounts
+        //            .Include(u => u.Employee)
+        //            .Include(u => u.Role)
+        //            .FirstOrDefault(u =>
+        //                  u.Status == Constants.Active &&
+        //                 (
+        //                     u.Username == dto.LoginKey ||
+        //                 (u.Employee != null && u.Employee.Email == dto.LoginKey)
+        //    )
+        //);
+
+        //        if (user == null)
+        //            return null;
+
+        //        if (user.PasswordHash == null)
+        //            return null; // Google account không login bằng password
+
+        //        if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+        //            return null;
+
+        //        return new UserSessionDTO
+        //        {
+        //            UserId = user.UserId,
+
+        //            Username = user.Username,
+        //            FullName = user.Employee.FullName,
+        //            RoleCode = user.Role.RoleCode,
+        //            RoleName = user.Role.RoleName
+        //        };
+        //    }
+
         public UserSessionDTO? Login(LoginDTO dto)
         {
-            //var user = _context.UserAccounts
-            //    .Include(u => u.Employee)
-            //    .Include(u => u.Role)
-            //    .FirstOrDefault(u =>
-            //        u.Status == Constants.Active &&
-            //        (
-            //            u.Username == dto.LoginKey ||
-            //            u.Employee.Email == dto.LoginKey
-            //        )
-            //    );
             var user = _context.UserAccounts
                 .Include(u => u.Employee)
                 .Include(u => u.Role)
                 .FirstOrDefault(u =>
-                      u.Status == Constants.Active &&
-                     (
-                         u.Username == dto.LoginKey ||
-                     (u.Employee != null && u.Employee.Email == dto.LoginKey)
-        )
-    );
+                    u.Status == Constants.Active &&
+                    (
+                        u.Username == dto.LoginKey ||
+                        (u.Employee != null && u.Employee.Email == dto.LoginKey)
+                    )
+                );
 
             if (user == null)
                 return null;
 
+            //if (!user.IsActive) return null; // user bị khóa coi như login fail
+
             if (user.PasswordHash == null)
-                return null; // Google account không login bằng password
+                return null;
 
             if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
                 return null;
@@ -102,13 +137,52 @@ namespace HumanResourcesManager.BLL.Services
             return new UserSessionDTO
             {
                 UserId = user.UserId,
-
                 Username = user.Username,
-                FullName = user.Employee.FullName,
+
+                // 🔥 FIX QUAN TRỌNG
+                FullName = user.Employee != null
+                    ? user.Employee.FullName
+                    : user.Username, // fallback cho admin / hr
+
                 RoleCode = user.Role.RoleCode,
                 RoleName = user.Role.RoleName
             };
         }
+
+        //public UserSessionDTO? Login(LoginDTO dto)
+        //{
+        //    var user = _context.UserAccounts
+        //        .Include(u => u.Employee)
+        //        .Include(u => u.Role)
+        //        .FirstOrDefault(u =>
+        //            u.Status == Constants.Active &&
+        //            (
+        //                u.Username == dto.LoginKey ||
+        //                (u.Employee != null && u.Employee.Email == dto.LoginKey)
+        //            )
+        //        );
+
+        //    if (user == null)
+        //        return null;
+
+        //    if (string.IsNullOrEmpty(user.PasswordHash))
+        //        return null;
+
+        //    if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+        //        return null;
+
+        //    return new UserSessionDTO
+        //    {
+        //        UserId = user.UserId,
+        //        Username = user.Username,
+        //        FullName = user.Employee != null
+        //            ? user.Employee.FullName
+        //            : user.Username,
+        //        RoleCode = user.Role.RoleCode,
+        //        RoleName = user.Role.RoleName
+        //    };
+        //}
+
 
 
         //public void ResetPassword(string email, string newPass, string confirmPass)

@@ -1,0 +1,90 @@
+﻿@model HumanResourcesManager.BLL.DTOs.UserAccount.UserAccountUpdateDTO
+
+@{
+    ViewData["Title"] = "Cập nhật quyền hạn";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+
+    <div class="sm:mx-auto sm:w-full sm:max-w-md text-center mb-6">
+        <span class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-indigo-100 text-indigo-600 mb-4 shadow-sm">
+            <i class="fa-solid fa-user-gear text-2xl"></i>
+        </span>
+        <h2 class="text-3xl font-bold text-slate-900">Phân quyền tài khoản</h2>
+        <p class="mt-2 text-sm text-slate-600">
+            Thay đổi vai trò và quyền truy cập hệ thống.
+        </p>
+    </div>
+
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-8 px-4 shadow-xl rounded-2xl sm:px-10 border border-slate-100">
+
+            <form asp-controller="UserAccounts"
+                  asp-action="Edit"
+                  method="post"
+                  class="space-y-6">
+
+                <input asp-for="UserId" type="hidden" />
+
+                <div class="rounded-lg bg-blue-50 p-4 border border-blue-100 flex gap-3">
+                    <div class="flex-shrink-0">
+                        <i class="fa-solid fa-circle-info text-blue-500"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-blue-800">Thông tin chỉnh sửa</h3>
+                        <div class="mt-1 text-sm text-blue-700">
+                            Bạn đang thay đổi quyền hạn cho User ID: <span class="font-bold">@Model.UserId</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label asp-for="RoleCode" class="block text-sm font-medium text-slate-700 mb-1">
+                        Vai trò hệ thống <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-shield-halved text-slate-400"></i>
+                        </div>
+                        <select asp-for="RoleCode"
+                                class="pl-10 block w-full rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2.5 transition-shadow cursor-pointer bg-white">
+                            <option value="">-- Chọn vai trò --</option>
+                            <option value="ADMIN">Admin (Quản trị viên)</option>
+                            <option value="HR">HR (Nhân sự)</option>
+                            <option value="EMP">Employee (Nhân viên)</option>
+                            @* <option value="USER">User (Người dùng)</option> *@
+                        </select>
+                    </div>
+                    <span asp-validation-for="RoleCode" class="text-xs text-red-500 mt-1 block"></span>
+                    <p class="mt-2 text-xs text-slate-500">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-500 mr-1"></i>
+                        Lưu ý: Thay đổi quyền Admin có thể ảnh hưởng đến bảo mật hệ thống.
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-3 pt-4 border-t border-slate-100 mt-6">
+                    <button type="submit"
+                            class="flex-1 flex justify-center items-center gap-2 py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all">
+                        <i class="fa-solid fa-check"></i> Lưu thay đổi
+                    </button>
+
+                    <a asp-controller="UserAccounts"
+                       asp-action="Index"
+                       class="flex-1 flex justify-center items-center gap-2 py-2.5 px-4 border border-slate-300 rounded-lg shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all">
+                        Hủy bỏ
+                    </a>
+                </div>
+
+            </form>
+        </div>
+
+        <p class="text-center text-xs text-slate-400 mt-6">
+            &copy; 2025 Human Resources Management System
+        </p>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,49 +1,132 @@
-﻿<div class="sidebar-wrapper">
-    <div class="logo-wrapper">
-        <a href="/admin">
-            <strong>HRM ADMIN</strong>
-        </a>
+﻿@using HumanResourcesManager.BLL.DTOs
+@using HumanResourcesManager.Helpers
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    var user = HttpContextAccessor.HttpContext?.Session
+        .GetObject<UserSessionDTO>("USER_SESSION");
+
+    var fullName = user?.FullName ?? "Guest";
+    var roleCode = user?.RoleCode ?? "N/A";
+    var firstLetter = !string.IsNullOrEmpty(fullName)
+        ? fullName.Substring(0, 1).ToUpper()
+        : "G";
+
+    var path = HttpContextAccessor.HttpContext?.Request.Path.Value?.ToLower() ?? "";
+}
+
+<aside class="w-64 bg-white border-r border-slate-200 flex-shrink-0">
+    <div class="h-full flex flex-col">
+
+        <!-- USER -->
+        <div class="p-5 border-b">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-indigo-600 text-white
+                            flex items-center justify-center font-bold">
+                    @firstLetter
+                </div>
+                <div>
+                    <p class="font-semibold text-slate-800">👋 @fullName</p>
+                    <p class="text-xs text-slate-500">@roleCode</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MENU -->
+        <nav class="flex-1 p-3 space-y-1 text-sm">
+
+            <!-- DASHBOARD -->
+            <a href="/HumanResourcesManager/admin"
+               class="flex items-center gap-3 px-3 py-2 rounded-xl
+               @(path == "/humanresourcesmanager/admin"
+                                ? "bg-indigo-50 text-indigo-700"
+                                : "text-slate-600 hover:bg-slate-100")">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                          d="M3 12l9-9 9 9M4 10v10h16V10" />
+                </svg>
+                Dashboard
+            </a>
+
+            <!-- USER ACCOUNTS -->
+            <a href="/HumanResourcesManager/admin/useraccounts"
+               class="flex items-center gap-3 px-3 py-2 rounded-xl
+               @(path.Contains("/admin/useraccounts")
+                                ? "bg-indigo-50 text-indigo-700"
+                                : "text-slate-600 hover:bg-slate-100")">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                          d="M17 20h5V4H2v16h5M12 12a4 4 0 100-8 4 4 0 000 8z" />
+                </svg>
+                Quản lý tài khoản
+            </a>
+
+            <!-- EMPLOYEES -->
+            <a href="/HumanResourcesManager/admin/employees"
+               class="flex items-center gap-3 px-3 py-2 rounded-xl
+               @(path.Contains("/admin/employees")
+                                ? "bg-indigo-50 text-indigo-700"
+                                : "text-slate-600 hover:bg-slate-100")">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14" />
+                </svg>
+                Nhân viên
+            </a>
+
+            <!-- DEPARTMENTS -->
+            <a href="/HumanResourcesManager/admin/departments"
+               class="flex items-center gap-3 px-3 py-2 rounded-xl
+               @(path.Contains("/admin/departments")
+                                ? "bg-indigo-50 text-indigo-700"
+                                : "text-slate-600 hover:bg-slate-100")">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                          d="M3 21V3h18v18M9 21v-6h6v6" />
+                </svg>
+                Phòng ban
+            </a>
+
+            <!-- ATTENDANCE -->
+            <a href="/HumanResourcesManager/admin/attendance"
+               class="flex items-center gap-3 px-3 py-2 rounded-xl
+               @(path.Contains("/admin/attendance")
+                                ? "bg-indigo-50 text-indigo-700"
+                                : "text-slate-600 hover:bg-slate-100")">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 6v6l4 2M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                </svg>
+                Chấm công
+            </a>
+
+            <!-- MY PROFILE -->
+            <a href="/HumanResourcesManager/admin/myprofile"
+               class="flex items-center gap-3 px-3 py-2 rounded-xl
+               @(path.Contains("/admin/myprofile")
+                                ? "bg-indigo-50 text-indigo-700"
+                                : "text-slate-600 hover:bg-slate-100")">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 12a5 5 0 100-10 5 5 0 000 10zM12 14a8 8 0 00-8 8h16" />
+                </svg>
+                Hồ sơ của tôi
+            </a>
+
+        </nav>
+
+        <!-- LOGOUT -->
+        <div class="p-3 border-t border-slate-100">
+            <a href="/HumanResourcesManager/Logout"
+               class="w-full bg-slate-50 hover:bg-red-50 text-slate-600 hover:text-red-600
+                      font-medium py-2.5 px-4 rounded-xl transition-colors
+                      flex items-center justify-center gap-2 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span>Đăng Xuất</span>
+            </a>
+        </div>
     </div>
-
-    <nav class="sidebar-main">
-        <ul class="sidebar-links">
-
-            <li>
-                <a href="/admin">
-                    <i class="ri-home-line"></i>
-                    <span>Tổng quan</span>
-                </a>
-            </li>
-
-            <li>
-                <a href="javascript:void(0)">
-                    <i class="ri-group-2-line"></i>
-                    <span>Người dùng</span>
-                </a>
-                <ul>
-                    <li><a href="/admin/users">Quản lý người dùng</a></li>
-                    <li><a href="/admin/users/create">Thêm người dùng</a></li>
-                </ul>
-            </li>
-
-            <li>
-                <a href="javascript:void(0)">
-                    <i class="ri-user-settings-fill"></i>
-                    <span>Vai trò</span>
-                </a>
-                <ul>
-                    <li><a href="/admin/roles">Danh sách vai trò</a></li>
-                    <li><a href="/admin/roles/assign">Gán vai trò</a></li>
-                </ul>
-            </li>
-
-            <li>
-                <a href="/admin/settings">
-                    <i class="ri-settings-3-line"></i>
-                    <span>Cấu hình hệ thống</span>
-                </a>
-            </li>
-
-        </ul>
-    </nav>
-</div>
+</aside>
