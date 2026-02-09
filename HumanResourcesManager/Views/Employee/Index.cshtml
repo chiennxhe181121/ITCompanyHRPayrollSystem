@@ -88,12 +88,13 @@
 					<form id="profileForm"
 						  method="post"
 						  action="/HumanResourcesManager/employee/update-profile"
+						  enctype="multipart/form-data"
 						  class="w-full space-y-6">
 
 						@Html.AntiForgeryToken()
 
 						<input type="hidden" id="profileAvatarData" name="ImgAvatar" value="">
-
+						<input type="hidden" name="RemoveAvatar" id="removeAvatarFlag" value="false" />
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-slate-100">
 
 							<!-- AVATAR + EDIT BUTTON (GIỮ NGUYÊN) -->
@@ -104,7 +105,11 @@
 									<span id="profileAvatarInitial">E</span>
 								</div>
 								<div id="profileAvatarActions" class="flex flex-col gap-2 hidden">
-									<input type="file" id="profileAvatarInput" accept="image/*" class="hidden">
+									<input type="file"
+										   id="profileAvatarInput"
+										   name="avatarFile"
+										   accept="image/*"
+										   class="hidden">
 									<button type="button" id="profileAvatarBtn"
 											class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition-colors">
 										Chọn ảnh

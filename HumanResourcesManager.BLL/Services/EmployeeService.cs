@@ -3,6 +3,7 @@ using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.DAL.Interfaces;
 using HumanResourcesManager.DAL.Models;
 using HumanResourcesManager.DAL.Repositories;
+using Microsoft.AspNetCore.Http;
 
 namespace HumanResourcesManager.BLL.Services
 {
@@ -127,17 +128,44 @@ namespace HumanResourcesManager.BLL.Services
             };
         }
 
-        public Employee? UpdateOwnProfile(
-            int userId,
-            EmployeeRequestDTO dto
-        )
+        public async Task<Employee?> UpdateOwnProfile(
+               int userId,
+               EmployeeRequestDTO dto,
+               IFormFile? avatarFile
+           )
         {
             var employee = _repo.GetByUserId(userId);
-
             if (employee == null)
                 return null;
 
-            employee.ImgAvatar = dto.ImgAvatar;
+            // ===== AVATAR BUSINESS LOGIC =====
+
+            // CASE 1: user bấm Remove
+            if (dto.RemoveAvatar)
+            {
+                employee.ImgAvatar = null;
+            }
+            // CASE 2: upload avatar mới
+            else if (avatarFile != null && avatarFile.Length > 0)
+            {
+                var folderPath = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot", "img", "employees", userId.ToString()
+                );
+
+                Directory.CreateDirectory(folderPath);
+
+                var filePath = Path.Combine(folderPath, "avatar.jpg");
+                using var stream = new FileStream(filePath, FileMode.Create);
+                await avatarFile.CopyToAsync(stream);
+
+                employee.ImgAvatar = $"/img/employees/{userId}/avatar.jpg";
+            }
+            // CASE 3: không đụng avatar → giữ nguyên
+            // (không cần code)
+
+            // ===== UPDATE PROFILE FIELDS =====
+
             employee.FullName = dto.FullName;
             employee.Email = dto.Email;
             employee.Gender = dto.Gender;
@@ -150,5 +178,6 @@ namespace HumanResourcesManager.BLL.Services
 
             return employee;
         }
+
     }
 }

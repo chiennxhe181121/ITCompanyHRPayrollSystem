@@ -1,5 +1,5 @@
 // Employee Dashboard - JavaScript giao diện (không dùng getCurrentUser/getDatabase/saveDatabase)
-let currentTab = 'profile';
+let currentTab = 'attendance';
 let currentPage = { attendance: 1, leaves: 1, overtime: 1, overtimeAvailable: 1, payroll: 1 };
 const itemsPerPage = 10;
 let profileEditMode = false;
@@ -41,12 +41,23 @@ let checkInPhotoData = null;
 let checkOutPhotoData = null;
 
 document.addEventListener('DOMContentLoaded', function () {
+    const savedTab = localStorage.getItem('lastActiveTab');
+    if (savedTab) {
+        currentTab = savedTab;
+        localStorage.removeItem('lastActiveTab');
+    } else {
+        currentTab = 'attendance';
+    }
+
+    switchTab(currentTab);
+
     loadStatsVisibility();
     initializePage();
+    loadProfileAvatarFromDB()
     loadStatsUI();
     updateStatsDisplay();
     updateStatButtonIcons();
-    loadTabContent(currentTab);
+    //loadTabContent(currentTab);
     updateClock();
     setInterval(updateClock, 1000);
 
@@ -78,47 +89,70 @@ document.addEventListener('DOMContentLoaded', function () {
     if (captureCheckOut) captureCheckOut.addEventListener('click', () => capturePhoto('checkOut'));
     if (submitCheckOut) submitCheckOut.addEventListener('click', submitCheckOutClick);
 
-    document.getElementById('profileEditSaveBtn')?.addEventListener('click', function () {
-        if (!profileEditMode) {
-            setProfileEditMode(true);
-        } else {
-            submitProfileForm(); // ❗ không reload
-        }
-    });
+    document.getElementById('profileEditSaveBtn')
+        ?.addEventListener('click', function (e) {
+            e.preventDefault(); // ❗ bắt buộc
+
+            if (!profileEditMode) {
+                setProfileEditMode(true);
+            } else {
+                submitProfileForm(); // CHỈ LÚC NÀY MỚI SAVE
+            }
+        });
 
     document.getElementById('addLeaveBtn')?.addEventListener('click', showLeaveModal);
 
-    document.getElementById('profileAvatarBtn')?.addEventListener('click', () => document.getElementById('profileAvatarInput')?.click());
-    document.getElementById('profileAvatarInput')?.addEventListener('change', function (e) {
-        const file = e.target.files?.[0];
-        if (!file || !file.type.startsWith('image/')) return;
-        const reader = new FileReader();
-        reader.onload = function () {
-            const dataEl = document.getElementById('profileAvatarData');
+    document.getElementById('profileAvatarBtn')
+        ?.addEventListener('click', () =>
+            document.getElementById('profileAvatarInput')?.click()
+        );
+
+    document.getElementById('profileAvatarInput')
+        ?.addEventListener('change', function (e) {
+
+            const file = e.target.files?.[0];
+            if (!file || !file.type.startsWith('image/')) return;
+
             const imgEl = document.getElementById('profileAvatarImg');
             const initialEl = document.getElementById('profileAvatarInitial');
             const removeBtn = document.getElementById('profileAvatarRemoveBtn');
-            if (dataEl) dataEl.value = reader.result;
-            if (imgEl) { imgEl.src = reader.result; imgEl.classList.remove('hidden'); }
+
+            // PREVIEW = Object URL (không base64)
+            const previewUrl = URL.createObjectURL(file);
+
+            if (imgEl) {
+                imgEl.src = previewUrl;
+                imgEl.classList.remove('hidden');
+            }
+
             if (initialEl) initialEl.classList.add('hidden');
             if (removeBtn) removeBtn.classList.remove('hidden');
-        };
-        reader.readAsDataURL(file);
-        e.target.value = '';
-    });
-    document.getElementById('profileAvatarRemoveBtn')?.addEventListener('click', function () {
-        const dataEl = document.getElementById('profileAvatarData');
-        const imgEl = document.getElementById('profileAvatarImg');
-        const initialEl = document.getElementById('profileAvatarInitial');
-        if (dataEl) dataEl.value = '';
-        if (imgEl) { imgEl.classList.add('hidden'); imgEl.src = ''; }
-        if (initialEl) {
-            initialEl.classList.remove('hidden');
-            const userName = document.getElementById('userName');
-            initialEl.textContent = (userName && userName.textContent) ? userName.textContent.charAt(0).toUpperCase() : 'E';
-        }
-        this.classList.add('hidden');
-    });
+        });
+
+    document.getElementById('profileAvatarRemoveBtn')
+        ?.addEventListener('click', function () {
+
+            const imgEl = document.getElementById('profileAvatarImg');
+            const initialEl = document.getElementById('profileAvatarInitial');
+            const fileInput = document.getElementById('profileAvatarInput');
+            const removeFlag = document.getElementById('removeAvatarFlag');
+
+            if (fileInput) fileInput.value = '';
+            if (removeFlag) removeFlag.value = 'true';
+
+            if (imgEl) {
+                imgEl.src = '';
+                imgEl.classList.add('hidden');
+            }
+
+            if (initialEl) {
+                initialEl.classList.remove('hidden');
+                initialEl.textContent =
+                    (window.currentEmployee?.fullName ?? 'E').charAt(0).toUpperCase();
+            }
+
+            this.classList.add('hidden');
+        });
 
     document.getElementById('overtimeBtnList')?.addEventListener('click', () => switchOvertimeView('available'));
     document.getElementById('overtimeBtnHistory')?.addEventListener('click', () => switchOvertimeView('history'));
@@ -310,28 +344,32 @@ function submitProfileForm() {
     const form = document.getElementById('profileForm');
     const formData = new FormData(form);
 
+    // nhớ tab hiện tại
+    localStorage.setItem('lastActiveTab', currentTab);
+
     fetch(form.action, {
         method: 'POST',
         body: formData,
         headers: {
             'RequestVerificationToken':
-                document.querySelector('input[name="__RequestVerificationToken"]').value
+                form.querySelector('input[name="__RequestVerificationToken"]').value
         }
     })
         .then(res => {
             if (!res.ok) throw new Error();
-            return res.text();
         })
         .then(() => {
-            setProfileEditMode(false);
+            //setProfileEditMode(false);
 
-            Swal.fire({
-                icon: 'success',
-                title: 'Cập nhật thành công',
-                text: 'Thông tin hồ sơ đã được lưu',
-                timer: 1500,
-                showConfirmButton: false
-            });
+            //Swal.fire({
+            //    icon: 'success',
+            //    title: 'Cập nhật thành công',
+            //    text: 'Thông tin hồ sơ đã được lưu',
+            //    timer: 1500,
+            //    showConfirmButton: false
+            //});
+
+            location.reload();
         })
         .catch(() => {
             Swal.fire({
@@ -352,12 +390,57 @@ Swal.fire({
 });
 
 function loadProfileUI() {
-    const fullName = document.getElementById('profileFullName');
+    if (!window.currentEmployee) return;
+
+    const e = window.currentEmployee;
+
+    const fullNameInput = document.getElementById('profileFullName');
+    const imgEl = document.getElementById('profileAvatarImg');
     const initialEl = document.getElementById('profileAvatarInitial');
-    const userName = document.getElementById('userName');
-    if (fullName && !fullName.value && userName) fullName.value = userName.textContent.trim() || '';
-    if (initialEl && userName) initialEl.textContent = (userName.textContent || 'E').trim().charAt(0).toUpperCase();
+    const removeBtn = document.getElementById('profileAvatarRemoveBtn');
+
+    // Full name
+    if (fullNameInput && !fullNameInput.value)
+        fullNameInput.value = e.fullName ?? '';
+
+    // Avatar render theo DB
+    if (e.imgAvatar) {
+        imgEl.src = e.imgAvatar + '?v=' + Date.now(); // cache bust
+        imgEl.classList.remove('hidden');
+        initialEl.classList.add('hidden');
+        if (removeBtn) removeBtn.classList.remove('hidden');
+    } else {
+        imgEl.src = '';
+        imgEl.classList.add('hidden');
+        initialEl.classList.remove('hidden');
+        initialEl.textContent = (e.fullName ?? 'E').charAt(0).toUpperCase();
+        if (removeBtn) removeBtn.classList.add('hidden');
+    }
+
     setProfileEditMode(false);
+}
+
+function loadProfileAvatarFromDB() {
+    if (!window.currentEmployee) return;
+
+    const imgEl = document.getElementById('profileAvatarImg');
+    const initialEl = document.getElementById('profileAvatarInitial');
+    const removeBtn = document.getElementById('profileAvatarRemoveBtn');
+
+    const avatarPath = window.currentEmployee.imgAvatar;
+
+    if (avatarPath && avatarPath.trim() !== '') {
+        imgEl.src = avatarPath;
+        imgEl.classList.remove('hidden');
+        initialEl?.classList.add('hidden');
+        removeBtn?.classList.remove('hidden');
+    } else {
+        imgEl.classList.add('hidden');
+        initialEl.classList.remove('hidden');
+        initialEl.textContent =
+            window.currentEmployee.fullName?.charAt(0).toUpperCase() ?? 'E';
+        removeBtn?.classList.add('hidden');
+    }
 }
 
 function setProfileEditMode(editing) {
