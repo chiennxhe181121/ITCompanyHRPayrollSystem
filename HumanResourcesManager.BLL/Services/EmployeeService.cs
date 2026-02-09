@@ -2,6 +2,7 @@
 using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.DAL.Interfaces;
 using HumanResourcesManager.DAL.Models;
+using HumanResourcesManager.DAL.Repositories;
 
 namespace HumanResourcesManager.BLL.Services
 {
@@ -59,26 +60,6 @@ namespace HumanResourcesManager.BLL.Services
             };
         }
 
-        public EmployeeResponseDTO? GetByUserId(int id)
-        {
-            var e = _repo.GetByUserId(id);
-
-            return new EmployeeResponseDTO
-            {
-                EmployeeCode = e.EmployeeCode,
-                FullName = e.FullName,
-                Gender = e.Gender,
-                DateOfBirth = e.DateOfBirth,
-                Email = e.Email,
-                Phone = e.Phone,
-                Address = e.Address,
-                ImgAvatar = e.ImgAvatar,
-                HireDate = e.HireDate,
-                DepartmentName = e.Department.DepartmentName,
-                PositionName = e.Position.PositionName
-            };
-        }
-
         public void Create(EmployeeDTO dto)
         {
             var emp = new Employee
@@ -124,6 +105,50 @@ namespace HumanResourcesManager.BLL.Services
         {
             _repo.SoftDelete(id);
             _repo.Save();
+        }
+
+        public EmployeeResponseDTO? GetOwnProfile(int userId)
+        {
+            var e = _repo.GetByUserId(userId);
+
+            return new EmployeeResponseDTO
+            {
+                EmployeeCode = e.EmployeeCode,
+                FullName = e.FullName,
+                Gender = e.Gender,
+                DateOfBirth = e.DateOfBirth,
+                Email = e.Email,
+                Phone = e.Phone,
+                Address = e.Address,
+                ImgAvatar = e.ImgAvatar,
+                HireDate = e.HireDate,
+                DepartmentName = e.Department.DepartmentName,
+                PositionName = e.Position.PositionName
+            };
+        }
+
+        public Employee? UpdateOwnProfile(
+            int userId,
+            EmployeeRequestDTO dto
+        )
+        {
+            var employee = _repo.GetByUserId(userId);
+
+            if (employee == null)
+                return null;
+
+            employee.ImgAvatar = dto.ImgAvatar;
+            employee.FullName = dto.FullName;
+            employee.Email = dto.Email;
+            employee.Gender = dto.Gender;
+            employee.DateOfBirth = dto.DateOfBirth;
+            employee.Phone = dto.Phone;
+            employee.Address = dto.Address;
+
+            _repo.Update(employee);
+            _repo.Save();
+
+            return employee;
         }
     }
 }

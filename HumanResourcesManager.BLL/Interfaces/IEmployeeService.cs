@@ -1,9 +1,10 @@
-﻿using System;
+﻿using HumanResourcesManager.BLL.DTOs;
+using HumanResourcesManager.DAL.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using HumanResourcesManager.BLL.DTOs;
 
 namespace HumanResourcesManager.BLL.Interfaces
 {
@@ -11,9 +12,10 @@ namespace HumanResourcesManager.BLL.Interfaces
     {
         IEnumerable<EmployeeDTO> GetAll();
         EmployeeDTO? GetById(int id);
-        EmployeeResponseDTO? GetByUserId(int id);
         void Create(EmployeeDTO dto);
         void Update(EmployeeDTO dto);
         void Delete(int id);
+        EmployeeResponseDTO? GetOwnProfile(int userId);
+        Employee? UpdateOwnProfile(int userId, EmployeeRequestDTO dto);
     }
 }
