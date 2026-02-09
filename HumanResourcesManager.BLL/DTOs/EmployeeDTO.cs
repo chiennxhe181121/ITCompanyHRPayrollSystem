@@ -26,7 +26,7 @@
         public string Email { get; set; } = null!;
         public string Phone { get; set; } = null!;
         public string? Address { get; set; }
-        public string? ImgAvatar { get; set; }
+        public bool RemoveAvatar { get; set; }
     }
     public class EmployeeResponseDTO
     {

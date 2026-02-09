@@ -1,5 +1,6 @@
 ﻿using HumanResourcesManager.BLL.DTOs;
 using HumanResourcesManager.DAL.Models;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,10 @@ namespace HumanResourcesManager.BLL.Interfaces
         void Update(EmployeeDTO dto);
         void Delete(int id);
         EmployeeResponseDTO? GetOwnProfile(int userId);
-        Employee? UpdateOwnProfile(int userId, EmployeeRequestDTO dto);
+        Task<Employee?> UpdateOwnProfile(
+               int userId,
+               EmployeeRequestDTO dto,
+               IFormFile? avatarFile
+           );
     }
 }

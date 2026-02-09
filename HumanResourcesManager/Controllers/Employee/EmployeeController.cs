@@ -19,13 +19,20 @@ namespace HumanResourcesManager.Controllers.Employee
 
         [HttpPost("update-profile")]
         [ValidateAntiForgeryToken]
-        public IActionResult UpdateProfile(EmployeeRequestDTO dto)
+        public async Task<IActionResult> UpdateProfile(
+            EmployeeRequestDTO dto,
+            IFormFile? avatarFile
+        )
         {
             int userId = int.Parse(
                 User.FindFirstValue(ClaimTypes.NameIdentifier)!
             );
 
-            var result = _employeeService.UpdateOwnProfile(userId, dto);
+            var result = await _employeeService.UpdateOwnProfile(
+                userId,
+                dto,
+                avatarFile
+            );
 
             if (result == null)
                 return BadRequest();
