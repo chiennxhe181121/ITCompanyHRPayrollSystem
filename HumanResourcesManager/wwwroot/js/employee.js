@@ -1,5 +1,5 @@
 // Employee Dashboard - JavaScript giao diện (không dùng getCurrentUser/getDatabase/saveDatabase)
-let currentTab = 'attendance';
+let currentTab = 'profile';
 let currentPage = { attendance: 1, leaves: 1, overtime: 1, overtimeAvailable: 1, payroll: 1 };
 const itemsPerPage = 10;
 let profileEditMode = false;
@@ -78,16 +78,15 @@ document.addEventListener('DOMContentLoaded', function () {
     if (captureCheckOut) captureCheckOut.addEventListener('click', () => capturePhoto('checkOut'));
     if (submitCheckOut) submitCheckOut.addEventListener('click', submitCheckOutClick);
 
-    document.getElementById('addLeaveBtn')?.addEventListener('click', showLeaveModal);
-
     document.getElementById('profileEditSaveBtn')?.addEventListener('click', function () {
-        if (profileEditMode) {
-            saveProfileUI();
-            setProfileEditMode(false);
-        } else {
+        if (!profileEditMode) {
             setProfileEditMode(true);
+        } else {
+            submitProfileForm(); // ❗ không reload
         }
     });
+
+    document.getElementById('addLeaveBtn')?.addEventListener('click', showLeaveModal);
 
     document.getElementById('profileAvatarBtn')?.addEventListener('click', () => document.getElementById('profileAvatarInput')?.click());
     document.getElementById('profileAvatarInput')?.addEventListener('change', function (e) {
@@ -111,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const dataEl = document.getElementById('profileAvatarData');
         const imgEl = document.getElementById('profileAvatarImg');
         const initialEl = document.getElementById('profileAvatarInitial');
-        if (dataEl) dataEl.value = 'REMOVE';
+        if (dataEl) dataEl.value = '';
         if (imgEl) { imgEl.classList.add('hidden'); imgEl.src = ''; }
         if (initialEl) {
             initialEl.classList.remove('hidden');
@@ -156,7 +155,6 @@ function initializePage() {
         updateSidebarAvatar(null, e.fullName.charAt(0).toUpperCase());
     }
 }
-
 
 function updateSidebarAvatar(avatarDataUrl, initialLetter) {
     const img = document.getElementById('sidebarAvatarImg');
@@ -308,6 +306,51 @@ function submitCheckOutClick() {
 }
 
 // ===== PROFILE (chỉ giao diện) =====
+function submitProfileForm() {
+    const form = document.getElementById('profileForm');
+    const formData = new FormData(form);
+
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'RequestVerificationToken':
+                document.querySelector('input[name="__RequestVerificationToken"]').value
+        }
+    })
+        .then(res => {
+            if (!res.ok) throw new Error();
+            return res.text();
+        })
+        .then(() => {
+            setProfileEditMode(false);
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Cập nhật thành công',
+                text: 'Thông tin hồ sơ đã được lưu',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        })
+        .catch(() => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Có lỗi xảy ra',
+                text: 'Không thể cập nhật hồ sơ'
+            });
+        });
+}
+
+Swal.fire({
+    toast: true,
+    position: 'top-end',
+    icon: 'success',
+    title: 'Đã lưu hồ sơ',
+    showConfirmButton: false,
+    timer: 1200
+});
+
 function loadProfileUI() {
     const fullName = document.getElementById('profileFullName');
     const initialEl = document.getElementById('profileAvatarInitial');
@@ -330,27 +373,59 @@ function setProfileEditMode(editing) {
     if (!btn) return;
     if (editing) {
         btn.textContent = 'Lưu thay đổi';
-        if (fullName) { fullName.removeAttribute('readonly'); fullName.classList.remove('bg-slate-50'); fullName.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500'); }
-        if (email) { email.removeAttribute('readonly'); email.classList.remove('bg-slate-50'); email.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500'); }
-        if (phone) { phone.removeAttribute('readonly'); phone.classList.remove('bg-slate-50'); phone.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500'); }
-        if (gender) { fullName.removeAttribute('readonly'); gender.classList.remove('bg-slate-50'); gender.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500'); }
-        if (dob) { email.removeAttribute('readonly'); dob.classList.remove('bg-slate-50'); dob.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500'); }
-        if (address) { phone.removeAttribute('readonly'); address.classList.remove('bg-slate-50'); address.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500'); }
+        if (fullName) { fullName.removeAttribute('readonly'); fullName.classList.remove('bg-slate-50'); fullName.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
+        if (email) { email.removeAttribute('readonly'); email.classList.remove('bg-slate-50'); email.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
+        if (phone) { phone.removeAttribute('readonly'); phone.classList.remove('bg-slate-50'); phone.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
+        if (gender) {
+            gender.removeAttribute('disabled');
+            gender.classList.remove('bg-slate-50');
+            gender.classList.add(
+                'border-slate-300',
+                'focus:ring-2',
+                'focus:ring-blue-500/20',
+                'focus:border-blue-500', 'text-slate-800'
+            );
+        }
+        if (dob) {
+            dob.removeAttribute('readonly');
+            dob.classList.remove('bg-slate-50');
+            dob.classList.add(
+                'border-slate-300',
+                'focus:ring-2',
+                'focus:ring-blue-500/20',
+                'focus:border-blue-500', 'text-slate-800'
+            );
+        }
+        if (address) {
+            address.removeAttribute('readonly');
+            address.classList.remove('bg-slate-50');
+            address.classList.add(
+                'border-slate-300',
+                'focus:ring-2',
+                'focus:ring-blue-500/20',
+                'focus:border-blue-500', 'text-slate-800'
+            );
+        }
         if (avatarActions) avatarActions.classList.remove('hidden');
     } else {
         btn.textContent = 'Chỉnh sửa thông tin';
-        if (fullName) { fullName.setAttribute('readonly', 'readonly'); fullName.classList.add('bg-slate-50'); fullName.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500'); }
-        if (email) { email.setAttribute('readonly', 'readonly'); email.classList.add('bg-slate-50'); email.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500'); }
-        if (phone) { phone.setAttribute('readonly', 'readonly'); phone.classList.add('bg-slate-50'); phone.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500'); }
-        if (gender) { gender.setAttribute('readonly', 'readonly'); gender.classList.add('bg-slate-50'); gender.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500'); }
-        if (dob) { dob.setAttribute('readonly', 'readonly'); dob.classList.add('bg-slate-50'); dob.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500'); }
-        if (address) { address.setAttribute('readonly', 'readonly'); address.classList.add('bg-slate-50'); address.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500'); }
+        if (fullName) { fullName.setAttribute('readonly', 'readonly'); fullName.classList.add('bg-slate-50'); fullName.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
+        if (email) { email.setAttribute('readonly', 'readonly'); email.classList.add('bg-slate-50'); email.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
+        if (phone) { phone.setAttribute('readonly', 'readonly'); phone.classList.add('bg-slate-50'); phone.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
+        if (gender) {
+            gender.setAttribute('disabled', 'disabled');
+            gender.classList.add('bg-slate-50');
+            gender.classList.remove(
+                'border-slate-300',
+                'focus:ring-2',
+                'focus:ring-blue-500/20',
+                'focus:border-blue-500', 'text-slate-800'
+            );
+        }
+        if (dob) { dob.setAttribute('readonly', 'readonly'); dob.classList.add('bg-slate-50'); dob.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
+        if (address) { address.setAttribute('readonly', 'readonly'); address.classList.add('bg-slate-50'); address.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
         if (avatarActions) avatarActions.classList.add('hidden');
     }
-}
-
-function saveProfileUI() {
-    alert('Chức năng lưu hồ sơ sẽ kết nối API khi backend sẵn sàng.');
 }
 
 // ===== BẢNG DỮ LIỆU (chỉ giao diện - hiển thị trống) =====
