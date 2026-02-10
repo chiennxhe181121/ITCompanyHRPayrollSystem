@@ -134,6 +134,33 @@
                                         <span class="font-medium text-slate-700">@u.FullName</span>
                                     </div>
                                 </td>
+                                @* <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3 min-w-[200px]">
+
+                                        <div class="relative flex-shrink-0 w-10 h-10">
+                                            @if (!string.IsNullOrEmpty(u.Avatar) && u.EmployeeId != null)
+                                            {
+                                                <img src="~/img/employees/@u.EmployeeId/@u.Avatar"
+                                                     asp-append-version="true"
+                                                     alt="@u.Username"
+                                                     class="w-full h-full rounded-full object-cover border-2 border-white shadow-sm ring-1 ring-slate-200 absolute inset-0 z-10"
+                                                     onerror="this.style.display='none'; document.getElementById('fallback-@u.UserId').style.display='flex';" />
+                                            }
+
+                                    <div id="fallback-@u.UserId"
+                                         class="w-full h-full rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs font-bold border-2 border-white shadow-sm ring-1 ring-slate-200 @(!string.IsNullOrEmpty(u.Avatar) ? "hidden" : "flex")">
+                                        @(string.IsNullOrEmpty(u.FullName)
+                                                                                ? u.Username?.Substring(0, 1).ToUpper()
+                                                                                : u.FullName?.Substring(0, 1).ToUpper())
+                                    </div>
+                                </div>
+
+                                        <div class="flex flex-col overflow-hidden">
+                                            <span class="font-bold text-slate-700 text-sm truncate">@u.FullName</span>
+                                            <span class="text-[11px] text-slate-400 truncate">@u.Email</span>
+                                        </div>
+                                    </div>
+                                </td> *@
 
                                 <td class="px-6 py-4 text-slate-500">
                                     @u.Email

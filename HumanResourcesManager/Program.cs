@@ -86,6 +86,8 @@ namespace HumanResourcesManager
             builder.Services.AddScoped<ILeaveRequestService, LeaveRequestService>();
 
             builder.Services.AddScoped<IUserAccountService, UserAccountService>(); // 08/02/2026
+            builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+
 
 
 
