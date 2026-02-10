@@ -4,52 +4,76 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
-namespace HumanResourcesManager.Controllers.Employee
+[Authorize(Policy = "EMP")]
+[Route("HumanResourcesManager/employee")]
+public class EmployeeController : Controller
 {
-    [Authorize(Policy = "EMP")]
-    [Route("HumanResourcesManager/employee")]
-    public class EmployeeController : Controller
+    private readonly IEmployeeService _employeeService;
+
+    public EmployeeController(IEmployeeService employeeService)
     {
-        private readonly IEmployeeService _employeeService;
+        _employeeService = employeeService;
+    }
 
-        public EmployeeController(IEmployeeService employeeService)
+    private int CurrentUserId =>
+        int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+    [HttpGet("attendance")]
+    public IActionResult Index()
+    {
+        var employee = _employeeService.GetOwnProfile(CurrentUserId);
+        return View(employee);
+    }
+
+    [HttpGet("profile")]
+    public IActionResult Profile()
+    {
+        var employee = _employeeService.GetOwnProfile(CurrentUserId);
+        return View("~/Views/Employee/ProfileTab.cshtml", employee);
+    }
+
+    [HttpGet("leaves")]
+    public IActionResult Leaves()
+    {
+        var employee = _employeeService.GetOwnProfile(CurrentUserId);
+        return View("~/Views/Employee/LeavesTab.cshtml", employee);
+    }
+
+    [HttpGet("overtime")]
+    public IActionResult Overtime()
+    {
+        var employee = _employeeService.GetOwnProfile(CurrentUserId);
+        return View("~/Views/Employee/OvertimeTab.cshtml", employee);
+    }
+
+    [HttpGet("payroll")]
+    public IActionResult Payroll()
+    {
+        var employee = _employeeService.GetOwnProfile(CurrentUserId);
+        return View("~/Views/Employee/PayrollTab.cshtml", employee);
+    }
+
+    // ===== Update =====
+    [HttpPost("update-profile")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateProfile(
+    EmployeeRequestDTO dto,
+    IFormFile? avatarFile
+)
+    {
+        var result = await _employeeService.UpdateOwnProfile(
+            CurrentUserId,
+            dto,
+            avatarFile
+        );
+
+        if (result == null)
         {
-            _employeeService = employeeService;
+            TempData["Error"] = "Không thể cập nhật hồ sơ";
+            return RedirectToAction("Profile");
         }
 
-        [HttpPost("update-profile")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateProfile(
-            EmployeeRequestDTO dto,
-            IFormFile? avatarFile
-        )
-        {
-            int userId = int.Parse(
-                User.FindFirstValue(ClaimTypes.NameIdentifier)!
-            );
-
-            var result = await _employeeService.UpdateOwnProfile(
-                userId,
-                dto,
-                avatarFile
-            );
-
-            if (result == null)
-                return BadRequest();
-
-            return Ok();
-        }
-
-        public IActionResult Index()
-        {
-            int userId = int.Parse(
-                User.FindFirstValue(ClaimTypes.NameIdentifier)!
-            );
-
-            // dùng userId để lấy dữ liệu
-            var employee = _employeeService.GetOwnProfile(userId);
-
-            return View(employee);
-        }
+        TempData["Success"] = "Cập nhật thành công";
+        return RedirectToAction("Profile");
     }
 }

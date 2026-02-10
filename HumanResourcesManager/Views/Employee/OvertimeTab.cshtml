@@ -1,0 +1,76 @@
+﻿@model HumanResourcesManager.BLL.DTOs.EmployeeResponseDTO
+
+@{
+	Layout = "~/Views/Employee/_EmployeeLayout.cshtml";
+}
+
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto bg-slate-50/50">
+	@await Html.PartialAsync("_EmployeeHeader")
+
+	<div class="p-5 lg:p-8">
+		@await Html.PartialAsync("_EmployeeStats")
+
+		<!-- Tabs Content -->
+		<div class="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
+			<!-- Overtime Tab -->
+			<div id="overtimeTab" class="tab-content">
+				<div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
+					<h2 class="text-lg font-semibold text-slate-800">Tăng Ca</h2>
+					<p class="text-sm text-slate-500 mt-1">Nhận việc tăng ca từ lịch do quản lý tạo</p>
+					<div class="flex flex-wrap gap-3 mt-4">
+						<button type="button" id="overtimeBtnList" class="overtime-sub-btn min-w-[160px] px-5 py-2.5 rounded-xl text-sm font-medium transition-all bg-blue-600 text-white shadow-sm hover:bg-blue-700" data-overtime-view="available">
+							<span class="flex items-center justify-center gap-2">
+								<svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+								Danh sách tăng ca
+							</span>
+						</button>
+						<button type="button" id="overtimeBtnHistory" class="overtime-sub-btn min-w-[160px] px-5 py-2.5 rounded-xl text-sm font-medium transition-all bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800"
+								data-overtime-view="history">
+							<span class="flex items-center justify-center gap-2">
+								<svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+								Lịch sử nhận tăng ca
+							</span>
+						</button>
+					</div>
+				</div>
+				<div class="p-6">
+					<div id="overtimeViewAvailable" class="overtime-view">
+						<div class="overflow-x-auto rounded-xl border border-slate-200/80">
+							<table class="employee-table w-full">
+								<thead>
+									<tr class="bg-slate-50 border-b border-slate-200">
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ngày</th>
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Thời Gian</th>
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Mô Tả</th>
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Hành Động</th>
+									</tr>
+								</thead>
+								<tbody id="overtimeAvailableBody"></tbody>
+							</table>
+						</div>
+						<p id="overtimeAvailableEmpty" class="text-sm text-slate-500 py-6 text-center hidden">Chưa có lịch tăng ca nào để nhận.</p>
+						<div id="overtimeAvailablePagination" class="pagination mt-4"></div>
+					</div>
+					<div id="overtimeViewHistory" class="overtime-view hidden">
+						<div class="overflow-x-auto rounded-xl border border-slate-200/80">
+							<table class="employee-table w-full">
+								<thead>
+									<tr class="bg-slate-50 border-b border-slate-200">
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ngày</th>
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Thời Gian</th>
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tổng Giờ</th>
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Lý Do</th>
+										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Trạng Thái</th>
+									</tr>
+								</thead>
+								<tbody id="overtimeTableBody"></tbody>
+							</table>
+						</div>
+						<div id="overtimePagination" class="pagination mt-6"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</main>
