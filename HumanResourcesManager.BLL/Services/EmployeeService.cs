@@ -4,6 +4,7 @@ using HumanResourcesManager.DAL.Interfaces;
 using HumanResourcesManager.DAL.Models;
 using HumanResourcesManager.DAL.Repositories;
 using Microsoft.AspNetCore.Http;
+using Volo.Abp;
 
 namespace HumanResourcesManager.BLL.Services
 {
@@ -108,11 +109,11 @@ namespace HumanResourcesManager.BLL.Services
             _repo.Save();
         }
 
-        public EmployeeResponseDTO? GetOwnProfile(int userId)
+        public EmployeeOwnerProfileDTO? GetOwnProfile(int userId)
         {
             var e = _repo.GetByUserId(userId);
 
-            return new EmployeeResponseDTO
+            return new EmployeeOwnerProfileDTO
             {
                 EmployeeCode = e.EmployeeCode,
                 FullName = e.FullName,
@@ -128,24 +129,93 @@ namespace HumanResourcesManager.BLL.Services
             };
         }
 
+        private void ValidateUpdateOwnProfile(
+            int userId,
+            Employee employee,
+            EmployeeOwnerProfileDTO dto,
+            IFormFile? avatarFile
+        )
+        {
+            // ===== EMAIL UNIQUE =====
+            if (_repo.ExistsByEmail(dto.Email, userId))
+                throw new BusinessException("EmailAlreadyExists")
+                {
+                    Details = "Email already exists"
+                };
+
+            // ===== AGE =====
+            var today = DateTime.Today;
+
+            // 1. Future date
+            if (dto.DateOfBirth > today)
+                throw new BusinessException("DateOfBirthInFuture")
+                {
+                    Details = "Date of birth cannot be in the future"
+                };
+
+            // 2. Age >= 18
+            var age = today.Year - dto.DateOfBirth.Year;
+            if (dto.DateOfBirth.Date > today.AddYears(-age))
+                age--;
+
+            if (age < 18)
+                throw new BusinessException("EmployeeTooYoung")
+                {
+                    Details = "Employee must be at least 18 years old"
+                };
+
+            // 3. Too old
+            if (age > 100)
+                throw new BusinessException("DateOfBirthInvalid")
+                {
+                    Details = "Invalid date of birth"
+                };
+
+            // ===== AVATAR VALIDATION =====
+            if (avatarFile != null)
+            {
+                // size <= 2MB
+                if (avatarFile.Length > 2 * 1024 * 1024)
+                    throw new BusinessException("AvatarTooLarge")
+                    {
+                        Details = "Avatar size must be <= 2MB"
+                    };
+
+                // type
+                var allowedTypes = new[] { "image/jpeg", "image/png" };
+                if (!allowedTypes.Contains(avatarFile.ContentType))
+                    throw new BusinessException("AvatarInvalidType")
+                    {
+                        Details = "Invalid avatar file type"
+                    };
+            }
+
+            // ===== REMOVE AVATAR CONSISTENCY =====
+            if (dto.RemoveAvatar && avatarFile != null)
+                throw new BusinessException("AvatarConflict")
+                {
+                    Details = "Cannot upload and remove avatar at the same time"
+                };
+        }
+
         public async Task<Employee?> UpdateOwnProfile(
-               int userId,
-               EmployeeRequestDTO dto,
-               IFormFile? avatarFile
-           )
+            int userId,
+            EmployeeOwnerProfileDTO dto,
+            IFormFile? avatarFile
+        )
         {
             var employee = _repo.GetByUserId(userId);
             if (employee == null)
                 return null;
 
-            // ===== AVATAR BUSINESS LOGIC =====
+            // VALIDATE HERE
+            ValidateUpdateOwnProfile(userId, employee, dto, avatarFile);
 
-            // CASE 1: user bấm Remove
+            // ===== AVATAR BUSINESS LOGIC =====
             if (dto.RemoveAvatar)
             {
                 employee.ImgAvatar = null;
             }
-            // CASE 2: upload avatar mới
             else if (avatarFile != null && avatarFile.Length > 0)
             {
                 var folderPath = Path.Combine(
@@ -161,11 +231,8 @@ namespace HumanResourcesManager.BLL.Services
 
                 employee.ImgAvatar = $"/img/employees/{userId}/avatar.jpg";
             }
-            // CASE 3: không đụng avatar → giữ nguyên
-            // (không cần code)
 
-            // ===== UPDATE PROFILE FIELDS =====
-
+            // ===== UPDATE PROFILE =====
             employee.FullName = dto.FullName;
             employee.Email = dto.Email;
             employee.Gender = dto.Gender;
@@ -178,6 +245,5 @@ namespace HumanResourcesManager.BLL.Services
 
             return employee;
         }
-
     }
 }

@@ -3,6 +3,7 @@ using HumanResourcesManager.BLL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Volo.Abp;
 
 [Authorize(Policy = "EMP")]
 [Route("HumanResourcesManager/employee")]
@@ -53,27 +54,40 @@ public class EmployeeController : Controller
         return View("~/Views/Employee/PayrollTab.cshtml", employee);
     }
 
-    // ===== Update =====
+    // ===== Update Profile =====
     [HttpPost("update-profile")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateProfile(
-    EmployeeRequestDTO dto,
-    IFormFile? avatarFile
-)
+        EmployeeOwnerProfileDTO model,
+        IFormFile? avatarFile
+    )
     {
-        var result = await _employeeService.UpdateOwnProfile(
-            CurrentUserId,
-            dto,
-            avatarFile
-        );
-
-        if (result == null)
+        // ===== ANNOTATION VALIDATION =====
+        ModelState.Remove(nameof(EmployeeOwnerProfileDTO.EmployeeCode));
+        ModelState.Remove(nameof(EmployeeOwnerProfileDTO.DepartmentName));
+        ModelState.Remove(nameof(EmployeeOwnerProfileDTO.PositionName));
+        ModelState.Remove(nameof(EmployeeOwnerProfileDTO.HireDate));
+        if (!ModelState.IsValid)
         {
-            TempData["Error"] = "Không thể cập nhật hồ sơ";
-            return RedirectToAction("Profile");
+            return View("~/Views/Employee/ProfileTab.cshtml", model);
+            // hoặc đúng path view mày đang dùng
         }
 
-        TempData["Success"] = "Cập nhật thành công";
-        return RedirectToAction("Profile");
+        try
+        {
+            await _employeeService.UpdateOwnProfile(
+                CurrentUserId,
+                model,
+                avatarFile
+            );
+
+            TempData["Success"] = "Cập nhật thành công";
+            return RedirectToAction("Profile");
+        }
+        catch (BusinessException ex)
+        {
+            ModelState.AddModelError(nameof(model.DateOfBirth), ex.Details);
+            return View("ProfileTab", model);
+        }
     }
 }

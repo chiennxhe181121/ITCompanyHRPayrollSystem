@@ -34,6 +34,24 @@ function updateStatButtonIcons() {
     });
 }
 
+function updateClock() {
+    const el = document.getElementById('currentTime');
+    if (!el) return;
+    const now = new Date();
+    el.textContent = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function loadStatsUI() {
+    const monthEl = document.getElementById('monthAttendance');
+    if (monthEl) { monthEl.dataset.value = '0'; monthEl.textContent = '0'; }
+    const overtimeEl = document.getElementById('overtimeHours');
+    if (overtimeEl) { overtimeEl.dataset.value = '0h'; overtimeEl.textContent = '0h'; }
+    const salaryEl = document.getElementById('currentSalary');
+    if (salaryEl) { salaryEl.dataset.value = '--'; salaryEl.textContent = '--'; }
+    const leavesEl = document.getElementById('leavesRemaining');
+    if (leavesEl) leavesEl.dataset.value = leavesEl.textContent || '0';
+}
+
 // ===== DOM =====
 document.addEventListener('DOMContentLoaded', function () {
     const page = document.body.dataset.page;
@@ -87,14 +105,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('profileEditSaveBtn')
         ?.addEventListener('click', function (e) {
-            e.preventDefault(); // vẫn giữ, vì button type=button
+            e.preventDefault();
 
             if (!profileEditMode) {
                 setProfileEditMode(true);
-            } else {
-                document.getElementById('profileForm').submit();
+                return;
             }
+
+            // ===== ĐANG EDIT → VALIDATE =====
+            if (!validateProfileForm()) {
+                // có lỗi → CHẶN SUBMIT
+                return;
+            }
+
+            // OK → SUBMIT
+            document.getElementById('profileForm').submit();
         });
+
+    // ===== CLEAR ERROR WHEN USER INPUT =====
+    ['profileFullName', 'profileEmail', 'profilePhone', 'profileDob'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        el.addEventListener('input', () => {
+            el.classList.remove('border-red-500');
+            el.closest('div')?.querySelector('.field-error')?.remove();
+        });
+    });
 
     document.getElementById('addLeaveBtn')?.addEventListener('click', showLeaveModal);
 
@@ -120,6 +157,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 imgEl.classList.remove('hidden');
                 imgEl.onload = () => URL.revokeObjectURL(previewUrl);
             }
+
+            // SYNC SIDEBAR NGAY BẰNG BLOB
+            updateSidebarAvatar(previewUrl);
 
             initialEl?.classList.add('hidden');
             removeBtn?.classList.remove('hidden');
@@ -340,22 +380,130 @@ function setProfileEditMode(editing) {
     }
 }
 
-function updateClock() {
-    const el = document.getElementById('currentTime');
-    if (!el) return;
-    const now = new Date();
-    el.textContent = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-}
+function validateProfileForm() {
+    let isValid = true;
 
-function loadStatsUI() {
-    const monthEl = document.getElementById('monthAttendance');
-    if (monthEl) { monthEl.dataset.value = '0'; monthEl.textContent = '0'; }
-    const overtimeEl = document.getElementById('overtimeHours');
-    if (overtimeEl) { overtimeEl.dataset.value = '0h'; overtimeEl.textContent = '0h'; }
-    const salaryEl = document.getElementById('currentSalary');
-    if (salaryEl) { salaryEl.dataset.value = '--'; salaryEl.textContent = '--'; }
-    const leavesEl = document.getElementById('leavesRemaining');
-    if (leavesEl) leavesEl.dataset.value = leavesEl.textContent || '0';
+    // ===== CLEAR OLD ERRORS =====
+    document.querySelectorAll('.field-error').forEach(e => e.remove());
+    document.querySelectorAll('.border-red-500').forEach(e =>
+        e.classList.remove('border-red-500')
+    );
+
+    function showError(input, message) {
+        if (!input) return;
+
+        const err = document.createElement('div');
+        err.className = 'field-error text-red-500 text-xs mt-1';
+        err.innerText = message;
+
+        input.classList.add('border-red-500');
+        input.closest('div')?.appendChild(err);
+    }
+
+    // ===== FULL NAME =====
+    const fullName = document.getElementById('profileFullName');
+    if (fullName && !fullName.hasAttribute('readonly')) {
+        if (!fullName.value.trim()) {
+            showError(fullName, 'Họ và tên không được để trống');
+            isValid = false;
+        } else if (fullName.value.length > 100) {
+            showError(fullName, 'Họ và tên tối đa 100 ký tự');
+            isValid = false;
+        }
+    }
+
+    // ===== EMAIL =====
+    const email = document.getElementById('profileEmail');
+    if (email && !email.hasAttribute('readonly')) {
+        if (!email.value.trim()) {
+            showError(email, 'Email không được để trống');
+            isValid = false;
+        } else if (!/^\S+@\S+\.\S+$/.test(email.value)) {
+            showError(email, 'Email không đúng định dạng');
+            isValid = false;
+        }
+        // ❗ email unique KHÔNG validate được ở FE
+    }
+
+    // ===== PHONE =====
+    const phone = document.getElementById('profilePhone');
+    if (phone && !phone.hasAttribute('readonly')) {
+        if (!phone.value.trim()) {
+            showError(phone, 'Số điện thoại không được để trống');
+            isValid = false;
+        } else if (!/^\d{10,11}$/.test(phone.value)) {
+            showError(phone, 'Số điện thoại phải 10–11 chữ số');
+            isValid = false;
+        }
+    }
+
+    // ===== DATE OF BIRTH =====
+    const dob = document.getElementById('profileDob');
+    if (dob && !dob.hasAttribute('readonly')) {
+        if (!dob.value) {
+            showError(dob, 'Ngày sinh không được để trống');
+            isValid = false;
+        } else {
+            const birth = new Date(dob.value);
+            const today = new Date();
+
+            // 1️⃣ future date
+            if (birth > today) {
+                showError(dob, 'Ngày sinh không được ở tương lai');
+                isValid = false;
+            } else {
+                let age = today.getFullYear() - birth.getFullYear();
+                const m = today.getMonth() - birth.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+                    age--;
+                }
+
+                // 2️⃣ age < 18
+                if (age < 18) {
+                    showError(dob, 'Nhân viên phải đủ 18 tuổi');
+                    isValid = false;
+                }
+
+                // 3️⃣ too old
+                if (age > 100) {
+                    showError(dob, 'Ngày sinh không hợp lệ');
+                    isValid = false;
+                }
+            }
+        }
+    }
+
+    // ===== AVATAR =====
+    const avatarInput = document.getElementById('profileAvatar');
+    const removeAvatar = document.getElementById('removeAvatar');
+
+    if (avatarInput && avatarInput.files.length > 0) {
+        const file = avatarInput.files[0];
+
+        // size <= 2MB
+        if (file.size > 2 * 1024 * 1024) {
+            showError(avatarInput, 'Avatar phải nhỏ hơn hoặc bằng 2MB');
+            isValid = false;
+        }
+
+        // type
+        const allowedTypes = ['image/jpeg', 'image/png'];
+        if (!allowedTypes.includes(file.type)) {
+            showError(avatarInput, 'Avatar chỉ chấp nhận JPG hoặc PNG');
+            isValid = false;
+        }
+
+        // upload + remove
+        if (removeAvatar && removeAvatar.checked) {
+            showError(
+                avatarInput,
+                'Không thể vừa upload vừa xóa avatar'
+            );
+            isValid = false;
+        }
+    }
+
+    return isValid;
 }
 
 let checkInStream = null;

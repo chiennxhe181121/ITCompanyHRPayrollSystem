@@ -1,4 +1,4 @@
-﻿@model HumanResourcesManager.BLL.DTOs.EmployeeResponseDTO
+﻿@model HumanResourcesManager.BLL.DTOs.EmployeeOwnerProfileDTO
 
 @{
 	Layout = "~/Views/Employee/_EmployeeLayout.cshtml";
@@ -164,6 +164,9 @@
 
 						</div>
 					</form>
+					<div class="text-red-600 text-sm">
+						@Html.ValidationSummary()
+					</div>
 				</div>
 			</div>
 		</div>
