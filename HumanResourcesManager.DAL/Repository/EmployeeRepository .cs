@@ -43,6 +43,15 @@ namespace HumanResourcesManager.DAL.Repositories
                 .FirstOrDefault();
         }
 
+        public bool ExistsByEmail(string email, int excludeUserId)
+        {
+            return _context.Employees.Any(e =>
+                e.Email == email &&
+                e.UserId != excludeUserId &&
+                e.Status != -1
+            );
+        }
+
         public void Add(Employee employee)
         {
             _context.Employees.Add(employee);

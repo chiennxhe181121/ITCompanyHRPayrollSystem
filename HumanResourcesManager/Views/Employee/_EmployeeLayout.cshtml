@@ -10,7 +10,18 @@
 	<link rel="stylesheet" href="/css/styles.css">
 </head>
 
-<body class="bg-slate-50 min-h-screen">
+@{
+	    var page = ViewContext.RouteData.Values["attendance"]
+		        ?? ViewContext.RouteData.Values["profile"]
+		        ?? ViewContext.RouteData.Values["leaves"]
+		        ?? ViewContext.RouteData.Values["overtime"]
+		        ?? ViewContext.RouteData.Values["payroll"];
+
+	    var route = Context.Request.Path.Value?.Split('/').Last().ToLower();
+}
+
+<body class="bg-slate-50 min-h-screen" data-page="@route">
+
 	@await Html.PartialAsync("_Loading")
 	<script>
 		window.currentEmployee = @Html.Raw(Json.Serialize(Model));

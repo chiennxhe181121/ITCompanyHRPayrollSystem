@@ -173,6 +173,27 @@ namespace HumanResourcesManager.DAL.Data
                       .HasForeignKey(lr => lr.LeaveTypeId);
             });
 
+            // ===================== AnnualLeaveBalance =====================
+            modelBuilder.Entity<AnnualLeaveBalance>(entity =>
+            {
+                entity.HasKey(alb => alb.AnnualLeaveBalanceId);
+
+                entity.Property(alb => alb.EntitledDays)
+                      .HasPrecision(5, 2);
+
+                entity.Property(alb => alb.UsedDays)
+                      .HasPrecision(5, 2);
+
+                entity.HasOne(alb => alb.Employee)
+                      .WithMany(e => e.AnnualLeaveBalances)
+                      .HasForeignKey(alb => alb.EmployeeId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // 🔥 mỗi nhân viên chỉ có 1 record mỗi năm
+                entity.HasIndex(alb => new { alb.EmployeeId, alb.Year })
+                      .IsUnique();
+            });
+
             // ===================== Payroll =====================
             modelBuilder.Entity<Payroll>(entity =>
             {
@@ -181,7 +202,7 @@ namespace HumanResourcesManager.DAL.Data
                 entity.Property(p => p.BasicSalary).HasPrecision(18, 2);
                 entity.Property(p => p.TotalOT).HasPrecision(18, 2);
                 entity.Property(p => p.TotalAllowance).HasPrecision(18, 2);
-                entity.Property(p => p.LatePenalty).HasPrecision(18, 2);
+                entity.Property(p => p.MissingMinutesPenalty).HasPrecision(18, 2);
                 entity.Property(p => p.NetSalary).HasPrecision(18, 2);
 
                 entity.HasOne(p => p.Employee)

@@ -1,0 +1,43 @@
+﻿@model HumanResourcesManager.BLL.DTOs.EmployeeOwnerProfileDTO
+
+@{
+	Layout = "~/Views/Employee/_EmployeeLayout.cshtml";
+}
+
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto bg-slate-50/50">
+	@await Html.PartialAsync("_EmployeeHeader")
+
+	<div class="p-5 lg:p-8">
+		@await Html.PartialAsync("_EmployeeStats")
+
+		<!-- Tabs Content -->
+		<div class="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
+			<!-- Payroll Tab -->
+			<div id="payrollTab" class="tab-content">
+				<div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
+					<h2 class="text-lg font-semibold text-slate-800">Bảng Lương</h2>
+				</div>
+				<div class="p-6">
+					<div class="overflow-x-auto rounded-xl border border-slate-200/80">
+						<table class="employee-table w-full">
+							<thead>
+								<tr class="bg-slate-50 border-b border-slate-200">
+									<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tháng</th>
+									<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Lương Cơ Bản</th>
+									<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tăng Ca</th>
+									<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Phạt</th>
+									<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Phụ Cấp</th>
+									<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Thực Lĩnh</th>
+									<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Trạng Thái</th>
+								</tr>
+							</thead>
+							<tbody id="payrollTableBody"></tbody>
+						</table>
+					</div>
+					<div id="payrollPagination" class="pagination mt-6"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</main>
