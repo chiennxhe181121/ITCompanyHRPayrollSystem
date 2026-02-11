@@ -12,6 +12,7 @@ namespace HumanResourcesManager.DAL.Interfaces
         IEnumerable<Employee> GetAll();
         Employee? GetById(int id);
         Employee? GetByUserId(int id);
+        bool ExistsByEmail(string email, int excludeUserId);
         void Add(Employee employee);
         void Update(Employee employee);
         void SoftDelete(int id);

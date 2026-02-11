@@ -3,53 +3,98 @@ using HumanResourcesManager.BLL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Volo.Abp;
 
-namespace HumanResourcesManager.Controllers.Employee
+[Authorize(Policy = "EMP")]
+[Route("HumanResourcesManager/employee")]
+public class EmployeeController : Controller
 {
-    [Authorize(Policy = "EMP")]
-    [Route("HumanResourcesManager/employee")]
-    public class EmployeeController : Controller
-    {
-        private readonly IEmployeeService _employeeService;
+    private readonly IEmployeeService _employeeService;
 
-        public EmployeeController(IEmployeeService employeeService)
+    public EmployeeController(IEmployeeService employeeService)
+    {
+        _employeeService = employeeService;
+    }
+
+    private int CurrentUserId =>
+        int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+    // ===== Attendance =====
+    // view attendance
+    [HttpGet("attendance")]
+    public IActionResult Index()
+    {
+        var employee = _employeeService.GetOwnProfile(CurrentUserId);
+        return View(employee);
+    }
+
+    // ===== Profile =====
+    // view profile
+    [HttpGet("profile")]
+    public IActionResult Profile()
+    {
+        var employee = _employeeService.GetOwnProfile(CurrentUserId);
+        return View("~/Views/Employee/ProfileTab.cshtml", employee);
+    }
+
+    // update profile
+    [HttpPost("update-profile")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateProfile(
+        EmployeeOwnerProfileDTO model,
+        IFormFile? avatarFile
+    )
+    {
+        // ===== ANNOTATION VALIDATION =====
+        ModelState.Remove(nameof(EmployeeOwnerProfileDTO.EmployeeCode));
+        ModelState.Remove(nameof(EmployeeOwnerProfileDTO.DepartmentName));
+        ModelState.Remove(nameof(EmployeeOwnerProfileDTO.PositionName));
+        ModelState.Remove(nameof(EmployeeOwnerProfileDTO.HireDate));
+        if (!ModelState.IsValid)
         {
-            _employeeService = employeeService;
+            return View("~/Views/Employee/ProfileTab.cshtml", model);
+            // hoặc đúng path view mày đang dùng
         }
 
-        [HttpPost("update-profile")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateProfile(
-            EmployeeRequestDTO dto,
-            IFormFile? avatarFile
-        )
+        try
         {
-            int userId = int.Parse(
-                User.FindFirstValue(ClaimTypes.NameIdentifier)!
-            );
-
-            var result = await _employeeService.UpdateOwnProfile(
-                userId,
-                dto,
+            await _employeeService.UpdateOwnProfile(
+                CurrentUserId,
+                model,
                 avatarFile
             );
 
-            if (result == null)
-                return BadRequest();
-
-            return Ok();
+            TempData["Success"] = "Cập nhật thành công";
+            return RedirectToAction("Profile");
         }
-
-        public IActionResult Index()
+        catch (BusinessException ex)
         {
-            int userId = int.Parse(
-                User.FindFirstValue(ClaimTypes.NameIdentifier)!
+            ModelState.AddModelError(
+                string.Empty,
+                ex.Details ?? ex.Message
             );
-
-            // dùng userId để lấy dữ liệu
-            var employee = _employeeService.GetOwnProfile(userId);
-
-            return View(employee);
+            return View("ProfileTab", model);
         }
+    }
+
+    [HttpGet("leaves")]
+    public IActionResult Leaves()
+    {
+        var employee = _employeeService.GetOwnProfile(CurrentUserId);
+        return View("~/Views/Employee/LeavesTab.cshtml", employee);
+    }
+
+    [HttpGet("overtime")]
+    public IActionResult Overtime()
+    {
+        var employee = _employeeService.GetOwnProfile(CurrentUserId);
+        return View("~/Views/Employee/OvertimeTab.cshtml", employee);
+    }
+
+    [HttpGet("payroll")]
+    public IActionResult Payroll()
+    {
+        var employee = _employeeService.GetOwnProfile(CurrentUserId);
+        return View("~/Views/Employee/PayrollTab.cshtml", employee);
     }
 }

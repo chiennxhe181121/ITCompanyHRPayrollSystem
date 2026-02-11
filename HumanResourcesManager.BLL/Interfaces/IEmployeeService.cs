@@ -16,10 +16,10 @@ namespace HumanResourcesManager.BLL.Interfaces
         void Create(EmployeeDTO dto);
         void Update(EmployeeDTO dto);
         void Delete(int id);
-        EmployeeResponseDTO? GetOwnProfile(int userId);
+        EmployeeOwnerProfileDTO? GetOwnProfile(int userId);
         Task<Employee?> UpdateOwnProfile(
                int userId,
-               EmployeeRequestDTO dto,
+               EmployeeOwnerProfileDTO dto,
                IFormFile? avatarFile
            );
     }

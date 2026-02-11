@@ -43,6 +43,42 @@ namespace HumanResourcesManager.DAL.Migrations
                     b.ToTable("Allowances");
                 });
 
+            modelBuilder.Entity("HumanResourcesManager.DAL.Models.AnnualLeaveBalance", b =>
+                {
+                    b.Property<int>("AnnualLeaveBalanceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AnnualLeaveBalanceId"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("EntitledDays")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("float(5)");
+
+                    b.Property<double>("RemainingDays")
+                        .HasColumnType("float");
+
+                    b.Property<double>("UsedDays")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("float(5)");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("AnnualLeaveBalanceId");
+
+                    b.HasIndex("EmployeeId", "Year")
+                        .IsUnique();
+
+                    b.ToTable("AnnualLeaveBalance");
+                });
+
             modelBuilder.Entity("HumanResourcesManager.DAL.Models.Attendance", b =>
                 {
                     b.Property<int>("AttendanceId")
@@ -54,13 +90,22 @@ namespace HumanResourcesManager.DAL.Migrations
                     b.Property<TimeSpan?>("CheckIn")
                         .HasColumnType("time");
 
+                    b.Property<string>("CheckInImagePath")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<TimeSpan?>("CheckOut")
                         .HasColumnType("time");
+
+                    b.Property<string>("CheckOutImagePath")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
-                    b.Property<int>("LateMinutes")
+                    b.Property<int>("MissingMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("WorkDate")
@@ -123,6 +168,9 @@ namespace HumanResourcesManager.DAL.Migrations
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("DepartmentId");
 
@@ -277,20 +325,23 @@ namespace HumanResourcesManager.DAL.Migrations
                     b.Property<double>("ActualOTHours")
                         .HasColumnType("float");
 
-                    b.Property<TimeSpan>("CheckInTime")
+                    b.Property<TimeSpan>("CheckIn")
                         .HasColumnType("time");
 
-                    b.Property<TimeSpan>("CheckOutTime")
+                    b.Property<string>("CheckInImagePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<TimeSpan>("CheckOut")
                         .HasColumnType("time");
 
-                    b.Property<string>("Note")
+                    b.Property<string>("CheckOutImagePath")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("OverTimeRequestId")
                         .HasColumnType("int");
 
-                    b.Property<long>("Status")
-                        .HasColumnType("bigint");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -366,7 +417,7 @@ namespace HumanResourcesManager.DAL.Migrations
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("LatePenalty")
+                    b.Property<decimal>("MissingMinutesPenalty")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
@@ -433,10 +484,22 @@ namespace HumanResourcesManager.DAL.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PositionName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("PositionId");
 
@@ -498,6 +561,17 @@ namespace HumanResourcesManager.DAL.Migrations
                         .IsUnique();
 
                     b.ToTable("UserAccounts");
+                });
+
+            modelBuilder.Entity("HumanResourcesManager.DAL.Models.AnnualLeaveBalance", b =>
+                {
+                    b.HasOne("HumanResourcesManager.DAL.Models.Employee", "Employee")
+                        .WithMany("AnnualLeaveBalances")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("HumanResourcesManager.DAL.Models.Attendance", b =>
@@ -661,6 +735,8 @@ namespace HumanResourcesManager.DAL.Migrations
 
             modelBuilder.Entity("HumanResourcesManager.DAL.Models.Employee", b =>
                 {
+                    b.Navigation("AnnualLeaveBalances");
+
                     b.Navigation("Attendances");
 
                     b.Navigation("Contracts");

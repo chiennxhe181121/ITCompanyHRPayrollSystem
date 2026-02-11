@@ -1,0 +1,236 @@
+﻿@model HumanResourcesManager.BLL.DTOs.Position.PositionCreateUpdateDTO
+
+@{
+    ViewData["Title"] = "Cập Nhật Chức Vụ";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="min-h-screen bg-slate-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+        <div class="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-emerald-100/50 mix-blend-multiply filter blur-3xl animate-blob"></div>
+        <div class="absolute top-1/2 -right-24 w-96 h-96 rounded-full bg-teal-100/50 mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
+    </div>
+
+    <div class="relative z-10 sm:mx-auto sm:w-full sm:max-w-xl animate__animated animate__fadeInUp">
+
+        <a href="/HumanResourcesManager/admin/positions" class="inline-flex items-center text-sm text-slate-500 hover:text-emerald-600 mb-6 transition-colors group">
+            <i class="fa-solid fa-arrow-left-long mr-2 transition-transform group-hover:-translate-x-1"></i>
+            Quay lại danh sách
+        </a>
+
+        <div class="bg-white shadow-2xl rounded-3xl overflow-hidden border border-slate-100">
+            <div class="bg-gradient-to-r from-emerald-600 to-teal-700 px-8 py-10 text-white relative">
+                <div class="relative z-10">
+                    <h2 class="text-3xl font-extrabold tracking-tight">Cập Nhật Chức Vụ</h2>
+                    <p class="mt-2 text-emerald-100 text-sm opacity-90">Điều chỉnh thông tin chức danh và mức lương.</p>
+                </div>
+                <i class="fa-solid fa-pen-to-square absolute right-8 top-1/2 -translate-y-1/2 text-7xl opacity-10 rotate-12"></i>
+            </div>
+
+            <form method="post" class="p-8 space-y-6">
+                <input type="hidden" asp-for="PositionId" />
+                <input type="hidden" asp-for="Status" />
+
+                <div class="bg-emerald-50/50 rounded-2xl p-4 flex items-center gap-3 border border-emerald-100">
+                    <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-fingerprint text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Đang chỉnh sửa</p>
+                        <p class="text-sm font-bold text-slate-800">
+                            Mã chức vụ: <span class="font-mono text-emerald-600">#@Model.PositionId</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label asp-for="PositionName" class="block text-sm font-bold text-slate-700 ml-1">
+                        Tên chức vụ <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-briefcase text-slate-400 group-focus-within:text-emerald-500 transition-colors"></i>
+                        </div>
+                        <input asp-for="PositionName"
+                               class="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all duration-200" />
+                    </div>
+                    <span asp-validation-for="PositionName" class="text-xs text-red-500 font-medium ml-1"></span>
+                </div>
+
+                <div class="space-y-1">
+                    <label asp-for="BaseSalary" class="block text-sm font-bold text-slate-700 ml-1">
+                        Lương cơ bản (VNĐ) <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-coins text-slate-400 group-focus-within:text-emerald-500 transition-colors"></i>
+                        </div>
+
+                        <input type="text"
+                               id="salaryDisplay"
+                               value="@Model.BaseSalary.ToString("N0")"
+                               class="block w-full pl-11 pr-16 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all duration-200 font-mono font-bold text-emerald-700"
+                               oninput="formatCurrency(this)" />
+
+                        <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                            <span class="text-slate-400 font-bold text-xs">VNĐ</span>
+                        </div>
+
+                        <input asp-for="BaseSalary" type="hidden" id="salaryHidden" />
+                    </div>
+                    <p id="salaryText" class="text-xs text-emerald-600 font-medium ml-1 italic mt-1 min-h-[1.25rem]"></p>
+                    <span asp-validation-for="BaseSalary" class="text-xs text-red-500 font-medium ml-1"></span>
+                </div>
+
+                <div class="space-y-1">
+                    <label asp-for="Description" class="block text-sm font-bold text-slate-700 ml-1">Mô tả công việc</label>
+                    <div class="relative group">
+                        <div class="absolute top-3 left-4 flex items-start pointer-events-none">
+                            <i class="fa-solid fa-align-left text-slate-400 group-focus-within:text-emerald-500 transition-colors"></i>
+                        </div>
+                        <textarea asp-for="Description" rows="3" class="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all duration-200"></textarea>
+                    </div>
+                    <span asp-validation-for="Description" class="text-xs text-red-500 font-medium ml-1"></span>
+                </div>
+
+                <div class="flex items-center gap-3 pt-6 border-t border-slate-100">
+                    <a href="/HumanResourcesManager/admin/positions" class="flex-1 py-3 px-4 text-center rounded-2xl border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-all duration-200">Huỷ bỏ</a>
+                    <button type="submit" class="flex-[2] inline-flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-2xl text-sm font-bold shadow-lg shadow-emerald-200 hover:shadow-emerald-300 transition-all duration-300 transform hover:-translate-y-0.5 active:scale-95">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>Lưu thay đổi</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <style>
+        @@keyframes blob {
+            0% {
+                transform: translate(0px, 0px) scale(1);
+            }
+
+            33% {
+                transform: translate(30px, -50px) scale(1.1);
+            }
+
+            66% {
+                transform: translate(-20px, 20px) scale(0.9);
+            }
+
+            100% {
+                transform: translate(0px, 0px) scale(1);
+            }
+        }
+
+        .animate-blob {
+            animation: blob 7s infinite;
+        }
+
+        .animation-delay-2000 {
+            animation-delay: 2s;
+        }
+    </style>
+
+    <script>
+        // --- LOGIC ĐỌC SỐ TIẾNG VIỆT CHUẨN ---
+        const DOCSO = {
+            chuSo: ["không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"],
+            tien: ["", "nghìn", "triệu", "tỷ", "nghìn tỷ", "triệu tỷ"],
+
+            doc3so: function(so) {
+                let tram = Math.floor(so / 100);
+                let chuc = Math.floor((so % 100) / 10);
+                let donVi = so % 10;
+                let ketQua = "";
+
+                if (tram == 0 && chuc == 0 && donVi == 0) return "";
+
+                if (tram != 0) {
+                    ketQua += this.chuSo[tram] + " trăm ";
+                    if (chuc == 0 && donVi != 0) ketQua += "linh ";
+                }
+
+                if (chuc != 0 && chuc != 1) {
+                    ketQua += this.chuSo[chuc] + " mươi ";
+                    if (chuc == 0 && donVi != 0) ketQua += "linh ";
+                }
+
+                if (chuc == 1) ketQua += "mười ";
+
+                switch (donVi) {
+                    case 1:
+                        if (chuc > 1) ketQua += "mốt ";
+                        else ketQua += this.chuSo[donVi];
+                        break;
+                    case 5:
+                        if (chuc == 0) ketQua += this.chuSo[donVi];
+                        else ketQua += "lăm ";
+                        break;
+                    default:
+                        if (donVi != 0) {
+                            ketQua += this.chuSo[donVi];
+                        }
+                        break;
+                }
+                return ketQua;
+            },
+
+            doc: function(so) {
+                if (so === 0) return "Không đồng";
+                let lan = 0;
+                let i = 0;
+                let soTemp = so;
+                let ketQua = "";
+                let viTri = [];
+
+                if (so < 0) return "Số âm";
+
+                while (so > 0) {
+                    viTri[lan] = so % 1000;
+                    so = Math.floor(so / 1000);
+                    lan++;
+                }
+
+                for (i = lan - 1; i >= 0; i--) {
+                    if (viTri[i] != 0) {
+                        ketQua += this.doc3so(viTri[i]) + " " + this.tien[i] + " ";
+                    }
+                }
+
+                return ketQua.replace(/\s+/g, ' ').trim();
+            }
+        };
+
+        // Kích hoạt ngay khi trang Edit tải xong
+        document.addEventListener("DOMContentLoaded", function() {
+            const input = document.getElementById('salaryDisplay');
+            if(input && input.value) {
+                formatCurrency(input);
+            }
+        });
+
+        function formatCurrency(input) {
+            let value = input.value.replace(/[^0-9]/g, '');
+            document.getElementById('salaryHidden').value = value;
+
+            if (!value) {
+                input.value = '';
+                document.getElementById('salaryText').innerText = '';
+                return;
+            }
+
+            input.value = new Intl.NumberFormat('en-US').format(value);
+
+            const number = parseInt(value, 10);
+            if (!isNaN(number)) {
+                let text = DOCSO.doc(number);
+                text = text.charAt(0).toUpperCase() + text.slice(1);
+                document.getElementById('salaryText').innerText = 'Bằng chữ: ' + text + ' đồng';
+            }
+        }
+    </script>
+}
