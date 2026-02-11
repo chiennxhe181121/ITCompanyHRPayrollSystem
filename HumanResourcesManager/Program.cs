@@ -5,6 +5,7 @@ using HumanResourcesManager.BLL.Services;
 using HumanResourcesManager.DAL.Data;
 using HumanResourcesManager.DAL.Interfaces;
 using HumanResourcesManager.DAL.Repositories;
+using HumanResourcesManager.DAL.Repository;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
@@ -76,6 +77,7 @@ namespace HumanResourcesManager
 
             builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+            builder.Services.AddScoped<IPositionRepository, PositionRepository>(); // 09/02/2026
 
             // Dependency Injection: Business Services (BLL)
             builder.Services.AddScoped<IAuthService, AuthService>();
@@ -87,7 +89,7 @@ namespace HumanResourcesManager
 
             builder.Services.AddScoped<IUserAccountService, UserAccountService>(); // 08/02/2026
             builder.Services.AddScoped<IDepartmentService, DepartmentService>();
-
+            builder.Services.AddScoped<IPositionService, PositionService>(); // 09/02/2026
 
 
 

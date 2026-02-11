@@ -37,9 +37,9 @@ namespace HumanResourcesManager.DAL.Data
             if (!context.Positions.Any())
             {
                 context.Positions.AddRange(
-                    new Position { PositionName = "HR Executive", BaseSalary = 8000000 },
-                    new Position { PositionName = "Software Engineer", BaseSalary = 15000000 },
-                    new Position { PositionName = "Accountant", BaseSalary = 12000000 }
+                    new Position { PositionName = "HR Executive", BaseSalary = 8000000, Status = Constants.Active, CreatedAt = DateTime.Now },// Hoàng thêm status và createdat 
+                    new Position { PositionName = "Software Engineer", BaseSalary = 15000000 , Status = Constants.Active, CreatedAt = DateTime.Now },
+                    new Position { PositionName = "Accountant", BaseSalary = 12000000, Status = Constants.Active, CreatedAt = DateTime.Now }
                 );
                 context.SaveChanges();
             }

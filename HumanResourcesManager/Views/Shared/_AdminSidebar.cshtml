@@ -3,130 +3,168 @@
 @inject IHttpContextAccessor HttpContextAccessor
 
 @{
-    var user = HttpContextAccessor.HttpContext?.Session
-        .GetObject<UserSessionDTO>("USER_SESSION");
-
+    var user = HttpContextAccessor.HttpContext?.Session.GetObject<UserSessionDTO>("USER_SESSION");
     var fullName = user?.FullName ?? "Guest";
     var roleCode = user?.RoleCode ?? "N/A";
-    var firstLetter = !string.IsNullOrEmpty(fullName)
-        ? fullName.Substring(0, 1).ToUpper()
-        : "G";
-
+    var firstLetter = !string.IsNullOrEmpty(fullName) ? fullName.Substring(0, 1).ToUpper() : "G";
     var path = HttpContextAccessor.HttpContext?.Request.Path.Value?.ToLower() ?? "";
+
+    string IsActive(string checkPath, bool exact = false)
+    {
+        if (exact) return path == checkPath ? "active" : "";
+        return path.Contains(checkPath) ? "active" : "";
+    }
 }
 
-<aside class="w-64 bg-white border-r border-slate-200 flex-shrink-0">
-    <div class="h-full flex flex-col">
+<aside class="w-72 bg-white border-r border-slate-200 flex-shrink-0 h-screen sticky top-0 font-sans z-30 hidden lg:block shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+    <div class="h-full flex flex-col justify-between">
 
-        <!-- USER -->
-        <div class="p-5 border-b">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-full bg-indigo-600 text-white
-                            flex items-center justify-center font-bold">
-                    @firstLetter
-                </div>
-                <div>
-                    <p class="font-semibold text-slate-800">👋 @fullName</p>
-                    <p class="text-xs text-slate-500">@roleCode</p>
+        <div>
+            <div class="h-16 flex items-center px-6 border-b border-slate-100">
+                <div class="flex items-center gap-2 text-indigo-700 font-extrabold text-xl tracking-tight">
+                    <i class="fa-solid fa-layer-group text-2xl"></i>
+                    <span>HRM System</span>
                 </div>
             </div>
+
+            <div class="p-5">
+                <div class="flex items-center gap-4 p-3 rounded-2xl bg-slate-50 border border-slate-100">
+                    <div class="relative">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold shadow-md shadow-indigo-200">
+                            @firstLetter
+                        </div>
+                        <span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="font-bold text-slate-800 text-sm truncate">@fullName</p>
+                        <p class="text-xs text-slate-500 font-medium truncate">@roleCode</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="px-4 space-y-6 overflow-y-auto custom-scrollbar" style="max-height: calc(100vh - 220px);">
+
+                <div>
+                    <p class="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Tổng quan</p>
+                    <div class="space-y-1">
+                        <a href="/HumanResourcesManager/admin"
+                           class="nav-item @(IsActive("/humanresourcesmanager/admin", true))">
+                            <span class="nav-icon"><i class="fa-solid fa-chart-pie"></i></span>
+                            <span class="font-medium">Dashboard</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Quản lý hệ thống</p>
+                    <div class="space-y-1">
+                        <a href="/HumanResourcesManager/admin/useraccounts"
+                           class="nav-item @(IsActive("/admin/useraccounts"))">
+                            <span class="nav-icon"><i class="fa-solid fa-users-gear"></i></span>
+                            <span class="font-medium">Tài khoản</span>
+                        </a>
+
+                        <a href="/HumanResourcesManager/admin/employees"
+                           class="nav-item @(IsActive("/admin/employees"))">
+                            <span class="nav-icon"><i class="fa-solid fa-id-card-clip"></i></span>
+                            <span class="font-medium">Nhân viên</span>
+                        </a>
+
+                        <a href="/HumanResourcesManager/admin/departments"
+                           class="nav-item @(IsActive("/admin/departments"))">
+                            <span class="nav-icon"><i class="fa-solid fa-building-user"></i></span>
+                            <span class="font-medium">Phòng ban</span>
+                        </a>
+
+                        <a href="/HumanResourcesManager/admin/positions"
+                           class="nav-item @(IsActive("/admin/positions"))">
+                            <span class="nav-icon"><i class="fa-solid fa-briefcase"></i></span>
+                            <span class="font-medium">Chức vụ</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Cá nhân</p>
+                    <div class="space-y-1">
+                        <a href="/HumanResourcesManager/admin/myprofile"
+                           class="nav-item @(IsActive("/admin/myprofile"))">
+                            <span class="nav-icon"><i class="fa-solid fa-user-pen"></i></span>
+                            <span class="font-medium">Hồ sơ của tôi</span>
+                        </a>
+                    </div>
+                </div>
+
+            </nav>
         </div>
 
-        <!-- MENU -->
-        <nav class="flex-1 p-3 space-y-1 text-sm">
-
-            <!-- DASHBOARD -->
-            <a href="/HumanResourcesManager/admin"
-               class="flex items-center gap-3 px-3 py-2 rounded-xl
-               @(path == "/humanresourcesmanager/admin"
-                                ? "bg-indigo-50 text-indigo-700"
-                                : "text-slate-600 hover:bg-slate-100")">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                          d="M3 12l9-9 9 9M4 10v10h16V10" />
-                </svg>
-                Dashboard
-            </a>
-
-            <!-- USER ACCOUNTS -->
-            <a href="/HumanResourcesManager/admin/useraccounts"
-               class="flex items-center gap-3 px-3 py-2 rounded-xl
-               @(path.Contains("/admin/useraccounts")
-                                ? "bg-indigo-50 text-indigo-700"
-                                : "text-slate-600 hover:bg-slate-100")">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                          d="M17 20h5V4H2v16h5M12 12a4 4 0 100-8 4 4 0 000 8z" />
-                </svg>
-                Quản lý tài khoản
-            </a>
-
-            <!-- EMPLOYEES -->
-            <a href="/HumanResourcesManager/admin/employees"
-               class="flex items-center gap-3 px-3 py-2 rounded-xl
-               @(path.Contains("/admin/employees")
-                                ? "bg-indigo-50 text-indigo-700"
-                                : "text-slate-600 hover:bg-slate-100")">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14" />
-                </svg>
-                Nhân viên
-            </a>
-
-            <!-- DEPARTMENTS -->
-            <a href="/HumanResourcesManager/admin/departments"
-               class="flex items-center gap-3 px-3 py-2 rounded-xl
-               @(path.Contains("/admin/departments")
-                                ? "bg-indigo-50 text-indigo-700"
-                                : "text-slate-600 hover:bg-slate-100")">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                          d="M3 21V3h18v18M9 21v-6h6v6" />
-                </svg>
-                Phòng ban
-            </a>
-
-            <!-- ATTENDANCE -->
-            <a href="/HumanResourcesManager/admin/attendance"
-               class="flex items-center gap-3 px-3 py-2 rounded-xl
-               @(path.Contains("/admin/attendance")
-                                ? "bg-indigo-50 text-indigo-700"
-                                : "text-slate-600 hover:bg-slate-100")">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                          d="M12 6v6l4 2M12 2a10 10 0 100 20 10 10 0 000-20z" />
-                </svg>
-                Chấm công
-            </a>
-
-            <!-- MY PROFILE -->
-            <a href="/HumanResourcesManager/admin/myprofile"
-               class="flex items-center gap-3 px-3 py-2 rounded-xl
-               @(path.Contains("/admin/myprofile")
-                                ? "bg-indigo-50 text-indigo-700"
-                                : "text-slate-600 hover:bg-slate-100")">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                          d="M12 12a5 5 0 100-10 5 5 0 000 10zM12 14a8 8 0 00-8 8h16" />
-                </svg>
-                Hồ sơ của tôi
-            </a>
-
-        </nav>
-
-        <!-- LOGOUT -->
-        <div class="p-3 border-t border-slate-100">
+        <div class="p-4 border-t border-slate-100 bg-slate-50/50">
             <a href="/HumanResourcesManager/Logout"
-               class="w-full bg-slate-50 hover:bg-red-50 text-slate-600 hover:text-red-600
-                      font-medium py-2.5 px-4 rounded-xl transition-colors
-                      flex items-center justify-center gap-2 text-sm">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                <span>Đăng Xuất</span>
+               class="group flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all duration-200 shadow-sm">
+                <i class="fa-solid fa-arrow-right-from-bracket transition-transform group-hover:-translate-x-1"></i>
+                <span>Đăng xuất</span>
             </a>
         </div>
     </div>
 </aside>
+
+<style>
+    /* Base style cho Nav Item */
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 16px;
+        border-radius: 12px;
+        color: #64748b; /* slate-500 */
+        transition: all 0.2s ease-in-out;
+        font-size: 0.875rem; /* 14px */
+    }
+
+        /* Icon trong Nav Item */
+        .nav-item .nav-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            font-size: 1.1rem;
+            transition: transform 0.2s;
+        }
+
+        /* Hover State */
+        .nav-item:hover {
+            background-color: #f1f5f9; /* slate-100 */
+            color: #4f46e5; /* indigo-600 */
+        }
+
+            .nav-item:hover .nav-icon {
+                transform: translateX(3px); /* Di chuyển icon nhẹ */
+            }
+
+        /* ACTIVE STATE (WOW Effect) */
+        .nav-item.active {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); /* Indigo to Purple */
+            color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); /* Shadow màu indigo */
+            font-weight: 600;
+        }
+
+            .nav-item.active .nav-icon {
+                color: rgba(255,255,255,0.9);
+            }
+
+    /* Custom Scrollbar cho sidebar gọn */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1;
+        border-radius: 20px;
+    }
+</style>
