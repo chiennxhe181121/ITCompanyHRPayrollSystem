@@ -19,6 +19,8 @@ public class EmployeeController : Controller
     private int CurrentUserId =>
         int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+    // ===== Attendance =====
+    // view attendance
     [HttpGet("attendance")]
     public IActionResult Index()
     {
@@ -26,6 +28,8 @@ public class EmployeeController : Controller
         return View(employee);
     }
 
+    // ===== Profile =====
+    // view profile
     [HttpGet("profile")]
     public IActionResult Profile()
     {
@@ -33,28 +37,7 @@ public class EmployeeController : Controller
         return View("~/Views/Employee/ProfileTab.cshtml", employee);
     }
 
-    [HttpGet("leaves")]
-    public IActionResult Leaves()
-    {
-        var employee = _employeeService.GetOwnProfile(CurrentUserId);
-        return View("~/Views/Employee/LeavesTab.cshtml", employee);
-    }
-
-    [HttpGet("overtime")]
-    public IActionResult Overtime()
-    {
-        var employee = _employeeService.GetOwnProfile(CurrentUserId);
-        return View("~/Views/Employee/OvertimeTab.cshtml", employee);
-    }
-
-    [HttpGet("payroll")]
-    public IActionResult Payroll()
-    {
-        var employee = _employeeService.GetOwnProfile(CurrentUserId);
-        return View("~/Views/Employee/PayrollTab.cshtml", employee);
-    }
-
-    // ===== Update Profile =====
+    // update profile
     [HttpPost("update-profile")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateProfile(
@@ -86,8 +69,32 @@ public class EmployeeController : Controller
         }
         catch (BusinessException ex)
         {
-            ModelState.AddModelError(nameof(model.DateOfBirth), ex.Details);
+            ModelState.AddModelError(
+                string.Empty,
+                ex.Details ?? ex.Message
+            );
             return View("ProfileTab", model);
         }
+    }
+
+    [HttpGet("leaves")]
+    public IActionResult Leaves()
+    {
+        var employee = _employeeService.GetOwnProfile(CurrentUserId);
+        return View("~/Views/Employee/LeavesTab.cshtml", employee);
+    }
+
+    [HttpGet("overtime")]
+    public IActionResult Overtime()
+    {
+        var employee = _employeeService.GetOwnProfile(CurrentUserId);
+        return View("~/Views/Employee/OvertimeTab.cshtml", employee);
+    }
+
+    [HttpGet("payroll")]
+    public IActionResult Payroll()
+    {
+        var employee = _employeeService.GetOwnProfile(CurrentUserId);
+        return View("~/Views/Employee/PayrollTab.cshtml", employee);
     }
 }

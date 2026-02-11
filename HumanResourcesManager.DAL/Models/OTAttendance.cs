@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HumanResourcesManager.DAL.Enum;
+using System;
 
 namespace HumanResourcesManager.DAL.Models
 {
@@ -11,16 +12,13 @@ namespace HumanResourcesManager.DAL.Models
         public OverTimeRequest OverTimeRequest { get; set; } = null!;
 
         // Thời gian OT thực tế
-        public TimeSpan CheckInTime { get; set; }
-        public TimeSpan CheckOutTime { get; set; }
+        public TimeSpan CheckIn { get; set; }
+        public TimeSpan CheckOut { get; set; }
+        public string? CheckInImagePath { get; set; }
+        public string? CheckOutImagePath { get; set; }
 
         // Số giờ OT thực tế (tính tự động)
         public double ActualOTHours { get; private set; }
-
-        // CheckedIn | CheckedOut | Invalid
-        public long Status { get; set; }
-
-        public string? Note { get; set; }
-        
+        public AttendanceStatus Status { get; set; }        
     }
 }

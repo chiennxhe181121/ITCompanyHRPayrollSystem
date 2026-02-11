@@ -18,11 +18,9 @@ namespace HumanResourcesManager.DAL.Models
         public decimal BasicSalary { get; set; }
         public decimal TotalOT { get; set; }
         public decimal TotalAllowance { get; set; }
-        public decimal LatePenalty { get; set; }
+        public decimal MissingMinutesPenalty { get; set; }
         public decimal NetSalary { get; set; }
-
         public DateTime CreatedDate { get; set; }
-
         public ICollection<PayrollDetail> PayrollDetails { get; set; } = new List<PayrollDetail>();
     }
 

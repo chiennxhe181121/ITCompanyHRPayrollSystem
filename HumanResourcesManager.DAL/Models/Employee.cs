@@ -44,5 +44,6 @@
         public ICollection<Payroll> Payrolls { get; set; } = new List<Payroll>();
         public ICollection<EmployeeAllowance> EmployeeAllowances { get; set; } = new List<EmployeeAllowance>();
         public ICollection<OverTimeRequest> OverTimeRequests { get; set; } = new List<OverTimeRequest>();
+        public ICollection<AnnualLeaveBalance> AnnualLeaveBalances { get; set; } = new List<AnnualLeaveBalance>();
     }
 }

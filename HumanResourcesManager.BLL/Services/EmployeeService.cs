@@ -140,20 +140,20 @@ namespace HumanResourcesManager.BLL.Services
             if (_repo.ExistsByEmail(dto.Email, userId))
                 throw new BusinessException("EmailAlreadyExists")
                 {
-                    Details = "Email already exists"
+                    Details = "Email đã tồn tại, vui lòng sử dụng email khác"
                 };
 
-            // ===== AGE =====
+            // ===== DATE OF BIRTH =====
             var today = DateTime.Today;
 
-            // 1. Future date
+            // 1. Ngày sinh ở tương lai
             if (dto.DateOfBirth > today)
                 throw new BusinessException("DateOfBirthInFuture")
                 {
-                    Details = "Date of birth cannot be in the future"
+                    Details = "Ngày sinh không được lớn hơn ngày hiện tại"
                 };
 
-            // 2. Age >= 18
+            // 2. Tuổi >= 18
             var age = today.Year - dto.DateOfBirth.Year;
             if (dto.DateOfBirth.Date > today.AddYears(-age))
                 age--;
@@ -161,14 +161,14 @@ namespace HumanResourcesManager.BLL.Services
             if (age < 18)
                 throw new BusinessException("EmployeeTooYoung")
                 {
-                    Details = "Employee must be at least 18 years old"
+                    Details = "Nhân viên phải từ 18 tuổi trở lên"
                 };
 
-            // 3. Too old
+            // 3. Quá già (data không hợp lệ)
             if (age > 100)
                 throw new BusinessException("DateOfBirthInvalid")
                 {
-                    Details = "Invalid date of birth"
+                    Details = "Ngày sinh không hợp lệ"
                 };
 
             // ===== AVATAR VALIDATION =====
@@ -178,7 +178,7 @@ namespace HumanResourcesManager.BLL.Services
                 if (avatarFile.Length > 2 * 1024 * 1024)
                     throw new BusinessException("AvatarTooLarge")
                     {
-                        Details = "Avatar size must be <= 2MB"
+                        Details = "Dung lượng ảnh đại diện không được vượt quá 2MB"
                     };
 
                 // type
@@ -186,7 +186,7 @@ namespace HumanResourcesManager.BLL.Services
                 if (!allowedTypes.Contains(avatarFile.ContentType))
                     throw new BusinessException("AvatarInvalidType")
                     {
-                        Details = "Invalid avatar file type"
+                        Details = "Chỉ chấp nhận ảnh định dạng JPG hoặc PNG"
                     };
             }
 
@@ -194,7 +194,7 @@ namespace HumanResourcesManager.BLL.Services
             if (dto.RemoveAvatar && avatarFile != null)
                 throw new BusinessException("AvatarConflict")
                 {
-                    Details = "Cannot upload and remove avatar at the same time"
+                    Details = "Không thể vừa tải ảnh mới vừa xoá ảnh đại diện"
                 };
         }
 

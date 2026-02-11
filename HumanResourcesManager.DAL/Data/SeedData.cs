@@ -161,7 +161,7 @@ namespace HumanResourcesManager.DAL.Data
                         BasicSalary = 8000000,
                         TotalOT = 0,
                         TotalAllowance = 500000,
-                        LatePenalty = 0,
+                        MissingMinutesPenalty = 0,
                         NetSalary = 8500000
                     },
                     new Payroll
@@ -170,7 +170,7 @@ namespace HumanResourcesManager.DAL.Data
                         BasicSalary = 15000000,
                         TotalOT = 2000000,
                         TotalAllowance = 800000,
-                        LatePenalty = 0,
+                        MissingMinutesPenalty = 0,
                         NetSalary = 17800000
                     }
                 );

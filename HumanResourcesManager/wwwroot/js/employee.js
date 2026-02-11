@@ -41,6 +41,19 @@ function updateClock() {
     el.textContent = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
+function updateCurrentDate() {
+    const el = document.getElementById('currentDate');
+    if (!el) return;
+
+    const now = new Date();
+    el.textContent = now.toLocaleDateString('vi-VN', {
+        weekday: 'long',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+}
+
 function loadStatsUI() {
     const monthEl = document.getElementById('monthAttendance');
     if (monthEl) { monthEl.dataset.value = '0'; monthEl.textContent = '0'; }
@@ -74,11 +87,18 @@ document.addEventListener('DOMContentLoaded', function () {
             break;
     }
 
+    // dùng để fallback khi hủy chỉnh sửa profile
+    const dobInput = document.getElementById('profileDob');
+    if (dobInput) {
+        dobInput.dataset.originalValue = dobInput.value;
+    }
+
     loadStatsUI();
     loadStatsVisibility();
     initializePage();
     updateStatsDisplay();
     updateStatButtonIcons();
+    updateCurrentDate();
     updateClock();
     setInterval(updateClock, 1000);
 
@@ -102,6 +122,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (startCheckOut) startCheckOut.addEventListener('click', () => startCamera('checkOut'));
     if (captureCheckOut) captureCheckOut.addEventListener('click', () => capturePhoto('checkOut'));
     if (submitCheckOut) submitCheckOut.addEventListener('click', submitCheckOutClick);
+
+    document.getElementById('profileCancelBtn')
+        ?.addEventListener('click', cancelProfileEdit);
 
     document.getElementById('profileEditSaveBtn')
         ?.addEventListener('click', function (e) {
@@ -157,9 +180,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 imgEl.classList.remove('hidden');
                 imgEl.onload = () => URL.revokeObjectURL(previewUrl);
             }
-
-            // SYNC SIDEBAR NGAY BẰNG BLOB
-            updateSidebarAvatar(previewUrl);
 
             initialEl?.classList.add('hidden');
             removeBtn?.classList.remove('hidden');
@@ -324,6 +344,7 @@ function setProfileEditMode(editing) {
     const avatarActions = document.getElementById('profileAvatarActions');
     if (!btn) return;
     if (editing) {
+        document.getElementById('profileCancelBtn')?.classList.remove('hidden');
         btn.textContent = 'Lưu thay đổi';
         if (fullName) { fullName.removeAttribute('readonly'); fullName.classList.remove('bg-slate-50'); fullName.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
         if (email) { email.removeAttribute('readonly'); email.classList.remove('bg-slate-50'); email.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
@@ -360,6 +381,7 @@ function setProfileEditMode(editing) {
         }
         if (avatarActions) avatarActions.classList.remove('hidden');
     } else {
+        document.getElementById('profileCancelBtn')?.classList.add('hidden');
         btn.textContent = 'Chỉnh sửa thông tin';
         if (fullName) { fullName.setAttribute('readonly', 'readonly'); fullName.classList.add('bg-slate-50'); fullName.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
         if (email) { email.setAttribute('readonly', 'readonly'); email.classList.add('bg-slate-50'); email.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
@@ -378,6 +400,52 @@ function setProfileEditMode(editing) {
         if (address) { address.setAttribute('readonly', 'readonly'); address.classList.add('bg-slate-50'); address.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
         if (avatarActions) avatarActions.classList.add('hidden');
     }
+}
+
+function cancelProfileEdit() {
+    if (!window.currentEmployee) return;
+
+    const e = window.currentEmployee;
+
+    // reset form fields
+    document.getElementById('profileFullName').value = e.fullName ?? '';
+    document.getElementById('profileEmail').value = e.email ?? '';
+    document.getElementById('profilePhone').value = e.phone ?? '';
+    document.getElementById('profileGender').value = e.gender ?? '';
+    const dobInput = document.getElementById('profileDob');
+    if (dobInput) {
+        dobInput.value = dobInput.dataset.originalValue || '';
+    }
+    document.getElementById('profileAddress').value = e.address ?? '';
+
+    // reset avatar về DB
+    loadProfileAvatarFromDB();
+
+    // clear file input + remove flag
+    const fileInput = document.getElementById('profileAvatarInput');
+    if (fileInput) fileInput.value = '';
+
+    const removeFlag = document.getElementById('removeAvatarFlag');
+    if (removeFlag) removeFlag.value = 'false';
+
+    // clear validate errors
+    document.querySelectorAll('.field-error').forEach(e => e.remove());
+    document.querySelectorAll('.border-red-500').forEach(e => e.classList.remove('border-red-500'));
+
+    // exit edit mode
+    setProfileEditMode(false);
+}
+
+function normalizeDateForInput(dateStr) {
+    if (!dateStr) return '';
+
+    // nếu đã đúng dạng yyyy-mm-dd
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+
+    const d = new Date(dateStr);
+    if (isNaN(d)) return '';
+
+    return d.toISOString().split('T')[0];
 }
 
 function validateProfileForm() {
