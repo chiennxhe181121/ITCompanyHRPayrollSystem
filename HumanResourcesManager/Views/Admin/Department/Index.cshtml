@@ -1,0 +1,359 @@
+﻿@model IEnumerable<HumanResourcesManager.BLL.DTOs.Department.DepartmentListDTO>
+
+@{
+    ViewData["Title"] = "Quản Lý Phòng Ban";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    // Lấy dữ liệu từ ViewBag
+    string keyword = ViewBag.Keyword as string;
+    int? status = ViewBag.Status as int?;
+
+    //  Đảm bảo currentPage luôn >= 1 để không bị lỗi tính toán STT
+    int currentPage = (ViewBag.CurrentPage == null || ViewBag.CurrentPage < 1) ? 1 : ViewBag.CurrentPage;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    int pageSize = 10;
+    int stt = (currentPage - 1) * pageSize;
+}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+<div id="notification-area" class="fixed top-5 right-5 z-50 space-y-2 pointer-events-none">
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert-toast pointer-events-auto flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-xl shadow-lg border-l-4 border-red-500 animate__animated animate__fadeInRight" role="alert">
+            <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-red-500 bg-red-100 rounded-lg">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
+            <div class="ml-3 text-sm font-medium text-red-600">@TempData["Error"]</div>
+        </div>
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-toast pointer-events-auto flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-xl shadow-lg border-l-4 border-green-500 animate__animated animate__fadeInRight" role="alert">
+            <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div class="ml-3 text-sm font-medium text-green-600">@TempData["Success"]</div>
+        </div>
+    }
+</div>
+
+<div class="px-8 py-6 bg-white border-b border-slate-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="animate__animated animate__fadeInLeft">
+        <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight flex items-center gap-3">
+            <span class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+                <i class="fa-solid fa-building"></i>
+            </span>
+            Quản Lý Phòng Ban
+        </h2>
+        <p class="text-sm text-slate-500 mt-1 ml-14">Quản lý cơ cấu tổ chức và nhân sự trực thuộc.</p>
+    </div>
+
+    <a asp-action="Create"
+       class="animate__animated animate__fadeInRight group inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-0.5">
+        <i class="fa-solid fa-plus transition-transform group-hover:rotate-90"></i>
+        <span>Thêm mới</span>
+    </a>
+</div>
+
+<div class="px-8 py-5 bg-slate-50 border-b border-slate-200 sticky top-0 z-20 backdrop-blur-sm bg-slate-50/90">
+    <div class="flex flex-col lg:flex-row gap-4 justify-between items-end lg:items-center">
+
+        <form method="get" class="flex flex-wrap gap-3 items-center w-full lg:w-auto">
+            <div class="relative group w-full sm:w-64">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors"></i>
+                <input name="keyword" value="@keyword" placeholder="Tìm kiếm phòng ban..."
+                       class="w-full pl-10 pr-3 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none shadow-sm transition-all" />
+            </div>
+
+            <div class="w-full sm:w-40">
+                <select name="status" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm cursor-pointer">
+                    <option value="">-- Trạng thái --</option>
+                    <option value="1" selected="@(status == 1)">Active</option>
+                    <option value="0" selected="@(status == 0)">Inactive</option>
+                </select>
+            </div>
+
+            <button class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors">
+                Lọc
+            </button>
+            <a asp-action="Index" class="bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 px-3 py-2.5 rounded-xl text-sm transition-colors" title="Làm mới">
+                <i class="fa-solid fa-rotate-right"></i>
+            </a>
+        </form>
+
+        <div class="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+            <button id="btnListView" onclick="switchView('list')" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-500 hover:text-indigo-600">
+                <i class="fa-solid fa-list mr-1"></i> List
+            </button>
+            <button id="btnGridView" onclick="switchView('grid')" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-500 hover:text-indigo-600">
+                <i class="fa-solid fa-border-all mr-1"></i> Grid
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="p-8 bg-slate-100 min-h-screen">
+
+    @if (!Model.Any())
+    {
+        <div class="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-slate-300 animate__animated animate__fadeInUp">
+            <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                <i class="fa-solid fa-inbox text-4xl text-slate-300"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-600">Không tìm thấy dữ liệu</h3>
+            <p class="text-slate-400 text-sm">Thử thay đổi bộ lọc hoặc thêm phòng ban mới.</p>
+        </div>
+    }
+    else
+    {
+        <div id="listViewContainer" class="animate__animated animate__fadeIn">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-slate-50/50 text-slate-600 font-bold uppercase text-xs tracking-wider border-b border-slate-200">
+                            <tr>
+                                <th class="px-6 py-4 text-center w-16">#</th>
+                                <th class="px-6 py-4">Tên phòng ban</th>
+                                <th class="px-6 py-4 w-1/3">Mô tả</th>
+                                <th class="px-6 py-4 text-center">Nhân sự</th>
+                                <th class="px-6 py-4 text-center">Trạng thái</th>
+                                <th class="px-6 py-4 text-right">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @foreach (var item in Model)
+                            {
+                                <tr class="hover:bg-indigo-50/30 transition-colors group">
+                                    <td class="px-6 py-4 text-center text-slate-400 font-medium">@(++stt)</td>
+
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-lg shadow-sm group-hover:scale-110 transition-transform duration-200">
+                                                <i class="fa-regular fa-building"></i>
+                                            </div>
+                                            <span class="font-bold text-slate-700 text-sm">@item.DepartmentName</span>
+                                        </div>
+                                    </td>
+
+                                    <td class="px-6 py-4 text-slate-500">
+                                        <span class="line-clamp-1">@(string.IsNullOrEmpty(item.Description) ? "—" : item.Description)</span>
+                                    </td>
+
+                                    <td class="px-6 py-4 text-center">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-blue-200 bg-blue-50 text-blue-700 text-xs font-bold">
+                                            <i class="fa-solid fa-users"></i> @item.EmployeeCount
+                                        </span>
+                                    </td>
+
+                                    <td class="px-6 py-4 text-center">
+                                        @if (item.Status == 1)
+                                        {
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-green-200 bg-green-50 text-green-700 text-xs font-bold">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> Active
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-slate-200 bg-slate-100 text-slate-600 text-xs font-bold">
+                                                Inactive
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="flex items-center justify-end gap-2 opacity-80 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
+                                            <a asp-action="Edit" asp-route-id="@item.DepartmentId" asp-route-page="@currentPage" asp-route-keyword="@keyword" asp-route-status="@status"
+                                               class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-indigo-600 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all shadow-sm" title="Sửa">
+                                                <i class="fa-solid fa-pen text-xs"></i>
+                                            </a>
+
+                                            @if (item.Status == 1)
+                                            {
+                                                <button onclick="confirmAction(@item.DepartmentId, 'Inactive')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all shadow-sm" title="Xóa">
+                                                    <i class="fa-solid fa-trash text-xs"></i>
+                                                </button>
+                                                <form id="action-form-inactive-@item.DepartmentId" asp-action="Inactive" asp-route-id="@item.DepartmentId" asp-route-page="@currentPage" asp-route-keyword="@keyword" asp-route-status="@status" method="post" class="hidden"></form>
+                                            }
+                                            else
+                                            {
+                                                <button onclick="confirmAction(@item.DepartmentId, 'Active')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-green-600 hover:bg-green-600 hover:text-white hover:border-green-600 transition-all shadow-sm" title="Kích hoạt">
+                                                    <i class="fa-solid fa-rotate-left text-xs"></i>
+                                                </button>
+                                                <form id="action-form-active-@item.DepartmentId" asp-action="Active" asp-route-id="@item.DepartmentId" asp-route-page="@currentPage" asp-route-keyword="@keyword" asp-route-status="@status" method="post" class="hidden"></form>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="gridViewContainer" class="hidden animate__animated animate__fadeIn">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                @foreach (var item in Model)
+                {
+                    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative group overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-1.5 @(item.Status == 1 ? "bg-indigo-500" : "bg-slate-300")"></div>
+
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-12 h-12 rounded-xl @(item.Status == 1 ? "bg-indigo-50 text-indigo-600" : "bg-slate-100 text-slate-400") flex items-center justify-center text-xl shadow-inner">
+                                <i class="fa-solid fa-building-user"></i>
+                            </div>
+                            <div class="dropdown">
+                                @if (item.Status == 1)
+                                {
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-500">Inactive</span>
+                                }
+                            </div>
+                        </div>
+
+                        <h3 class="text-lg font-bold text-slate-800 mb-1 truncate">@item.DepartmentName</h3>
+                        <p class="text-xs text-slate-500 mb-4 h-10 line-clamp-2">@(string.IsNullOrEmpty(item.Description) ? "Không có mô tả" : item.Description)</p>
+
+                        <div class="flex items-center justify-between border-t border-slate-100 pt-4 mt-2">
+                            <div class="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                                <i class="fa-solid fa-users text-blue-500"></i> @item.EmployeeCount nhân sự
+                            </div>
+
+                            <div class="flex gap-2">
+                                <a asp-action="Edit" asp-route-id="@item.DepartmentId" asp-route-page="@currentPage" asp-route-keyword="@keyword" asp-route-status="@status" class="w-8 h-8 rounded-full bg-slate-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-colors">
+                                    <i class="fa-solid fa-pen text-xs"></i>
+                                </a>
+                                @if (item.Status == 1)
+                                {
+                                    <button onclick="confirmAction(@item.DepartmentId, 'Inactive')" class="w-8 h-8 rounded-full bg-slate-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors">
+                                        <i class="fa-solid fa-trash text-xs"></i>
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button onclick="confirmAction(@item.DepartmentId, 'Active')" class="w-8 h-8 rounded-full bg-slate-50 text-green-600 flex items-center justify-center hover:bg-green-600 hover:text-white transition-colors">
+                                        <i class="fa-solid fa-rotate-left text-xs"></i>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (totalPages > 1)
+        {
+            <div class="mt-8 flex justify-center">
+                <nav class="inline-flex rounded-xl shadow-sm bg-white p-1.5 gap-1 border border-slate-200">
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        <a href="?page=@i&keyword=@keyword&status=@status"
+                           class="w-9 h-9 flex items-center justify-center rounded-lg text-sm font-bold transition-all @(i == currentPage ? "bg-indigo-600 text-white shadow-md scale-105" : "text-slate-600 hover:bg-slate-100")">
+                            @i
+                        </a>
+                    }
+                </nav>
+            </div>
+        }
+    }
+</div>
+
+<script>
+    // --- 1. AUTO HIDE ALERTS (3s) ---
+    document.addEventListener("DOMContentLoaded", function () {
+        const alerts = document.querySelectorAll(".alert-toast");
+        if (alerts.length > 0) {
+            setTimeout(() => {
+                alerts.forEach(el => {
+                    el.classList.remove("animate__fadeInRight");
+                    el.classList.add("animate__fadeOutRight");
+                    el.addEventListener('animationend', () => el.remove());
+                });
+            }, 3000); // Tự tắt sau 3 giây
+        }
+
+        // Khôi phục view mode từ localStorage
+        const savedMode = localStorage.getItem('deptViewMode') || 'list';
+        switchView(savedMode);
+    });
+
+    // --- 2. SWITCH VIEW MODE (List <-> Grid) ---
+    function switchView(mode) {
+        const listContainer = document.getElementById('listViewContainer');
+        const gridContainer = document.getElementById('gridViewContainer');
+        const btnList = document.getElementById('btnListView');
+        const btnGrid = document.getElementById('btnGridView');
+
+        if (mode === 'grid') {
+            listContainer.classList.add('hidden');
+            gridContainer.classList.remove('hidden');
+
+            // Style active button
+            btnGrid.classList.add('bg-indigo-100', 'text-indigo-700');
+            btnList.classList.remove('bg-indigo-100', 'text-indigo-700');
+        } else {
+            gridContainer.classList.add('hidden');
+            listContainer.classList.remove('hidden');
+
+            // Style active button
+            btnList.classList.add('bg-indigo-100', 'text-indigo-700');
+            btnGrid.classList.remove('bg-indigo-100', 'text-indigo-700');
+        }
+
+        // Lưu trạng thái vào localStorage
+        localStorage.setItem('deptViewMode', mode);
+    }
+
+    // --- 3. SWEETALERT CONFIRM ACTION ---
+    function confirmAction(id, actionType) {
+        let title, text, btnColor, btnText, icon;
+
+        if (actionType === 'Inactive') {
+            title = 'Xóa phòng ban?';
+            text = "Phòng ban sẽ chuyển sang trạng thái Inactive. Nhân viên trong phòng có thể bị ảnh hưởng!";
+            btnColor = '#ef4444'; // Red
+            btnText = 'Chắc chắn rồi, xóa nó!';
+            icon = 'warning';
+        } else {
+            title = 'Kích hoạt lại?';
+            text = "Khôi phục hoạt động cho phòng ban này.";
+            btnColor = '#10b981'; // Green
+            btnText = 'Chắc chắn rồi, kích hoạt!';
+            icon = 'question';
+        }
+
+        Swal.fire({
+            title: title,
+            text: text,
+            icon: icon,
+            showCancelButton: true,
+            confirmButtonColor: btnColor,
+            cancelButtonColor: '#64748b',
+            confirmButtonText: btnText,
+            cancelButtonText: 'Hủy',
+            background: '#fff',
+            customClass: {
+                popup: 'rounded-2xl shadow-xl',
+                confirmButton: 'rounded-lg px-4 py-2 font-bold',
+                cancelButton: 'rounded-lg px-4 py-2 font-medium',
+                title: 'text-slate-800',
+                htmlContainer: 'text-slate-500'
+            },
+            buttonsStyling: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Submit form ẩn tương ứng theo ID và Action
+                const formId = actionType === 'Inactive' ? 'action-form-inactive-' + id : 'action-form-active-' + id;
+                const form = document.getElementById(formId);
+                if(form) form.submit();
+            }
+        });
+    }
+</script>

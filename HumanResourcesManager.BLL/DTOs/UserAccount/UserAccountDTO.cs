@@ -15,6 +15,9 @@ namespace HumanResourcesManager.BLL.DTOs.UserAccount
         public string? FullName { get; set; }
         public string? Email { get; set; }
 
+        //public int? EmployeeId { get; set; } // 👈 THÊM DÒNG NÀY
+        //public string? Avatar { get; set; } // URL or path to avatar image
+
         public string RoleCode { get; set; } = null!;
         public string RoleName { get; set; } = null!;
         public int Status { get; set; }
