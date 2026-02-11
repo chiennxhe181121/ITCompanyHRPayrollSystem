@@ -31,6 +31,10 @@ namespace HumanResourcesManager.BLL.Services
                     UserId = x.UserId,
                     Username = x.Username,
                     FullName = x.Employee != null ? x.Employee.FullName : "(Chưa gán nhân viên)",
+                    // 👇 THÊM DÒNG NÀY ĐỂ LẤY ID NHÂN VIÊN
+                    //EmployeeId = x.Employee != null ? x.Employee.EmployeeId : null,
+                    //// 👇 THÊM DÒNG NÀY (Lấy ảnh từ bảng Employee)
+                    //Avatar = x.Employee != null ? x.Employee.ImgAvatar : null,
                     Email = x.Employee?.Email,
                     RoleName = x.Role.RoleName,
                     Status = x.Status,
