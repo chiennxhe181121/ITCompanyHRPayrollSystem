@@ -1,3 +1,4 @@
+using HumanResourcesManager.DAL.Enum;
 using HumanResourcesManager.DAL.Models;
 using HumanResourcesManager.DAL.Shared;
 
@@ -174,6 +175,75 @@ namespace HumanResourcesManager.DAL.Data
                         NetSalary = 17800000
                     }
                 );
+                context.SaveChanges();
+            }
+
+            // ===================== ATTENDANCE =====================
+            if (!context.Attendances.Any())
+            {
+                var employeeId = 3; // EMP003
+
+                var baseDate = DateTime.Today.AddDays(-19);
+
+                var attendances = new List<Attendance>();
+
+                for (int i = 0; i < 20; i++)
+                {
+                    var workDate = baseDate.AddDays(i);
+
+                    AttendanceStatus status;
+                    TimeSpan? checkIn = new TimeSpan(8, 0, 0);
+                    TimeSpan? checkOut = new TimeSpan(17, 0, 0);
+                    int missingMinutes = 0;
+
+                    // Random tình huống demo
+                    if (i % 7 == 0)
+                    {
+                        status = AttendanceStatus.AWOL;
+                        checkIn = null;
+                        checkOut = null;
+                    }
+                    else if (i % 5 == 0)
+                    {
+                        status = AttendanceStatus.ApprovedLeave;
+                        checkIn = null;
+                        checkOut = null;
+                    }
+                    else if (i % 6 == 0)
+                    {
+                        status = AttendanceStatus.InsufficientWork;
+                        missingMinutes = 60; // thiếu 1 tiếng
+                    }
+                    else if (i % 4 == 0)
+                    {
+                        status = AttendanceStatus.MissingCheckIn;
+                        checkIn = null;
+                    }
+                    else if (i % 3 == 0)
+                    {
+                        status = AttendanceStatus.MissingCheckOut;
+                        checkOut = null;
+                    }
+                    else
+                    {
+                        status = AttendanceStatus.Normal;
+                        missingMinutes = i * 2; // giả lập đi trễ nhẹ
+                    }
+
+                    attendances.Add(new Attendance
+                    {
+                        EmployeeId = employeeId,
+                        WorkDate = workDate,
+                        CheckIn = checkIn,
+                        CheckOut = checkOut,
+                        MissingMinutes = missingMinutes,
+                        CheckInImagePath = null,
+                        CheckOutImagePath = null,
+                        Status = status
+                    });
+                }
+
+                context.Attendances.AddRange(attendances);
                 context.SaveChanges();
             }
         }
