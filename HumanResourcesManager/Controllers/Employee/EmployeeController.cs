@@ -10,22 +10,37 @@ using Volo.Abp;
 public class EmployeeController : Controller
 {
     private readonly IEmployeeService _employeeService;
+    private readonly IAttendanceService _attendanceService;
 
-    public EmployeeController(IEmployeeService employeeService)
+    public EmployeeController(
+        IEmployeeService employeeService,
+        IAttendanceService attendanceService)
     {
         _employeeService = employeeService;
+        _attendanceService = attendanceService;
     }
 
+    // Lấy userId từ session
     private int CurrentUserId =>
         int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
     // ===== Attendance =====
     // view attendance
     [HttpGet("attendance")]
-    public IActionResult Index()
+    public IActionResult Index(int page = 1)
     {
-        var employee = _employeeService.GetOwnProfile(CurrentUserId);
-        return View(employee);
+
+        if (page <= 0)
+            return RedirectToAction(nameof(Index), new { page = 1 });
+
+        int pageSize = 3;
+
+        var model = _attendanceService.GetEmployeeAttendance(
+                    CurrentUserId,
+                    page,
+                    pageSize);
+
+        return View(model);
     }
 
     // ===== Profile =====

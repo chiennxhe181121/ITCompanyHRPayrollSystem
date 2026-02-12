@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     switch (page) {
         case "attendance":
-            loadAttendanceUI();
+            //loadAttendanceUI();
             break;
         case "profile":
             loadProfileUI();
@@ -226,6 +226,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // ===== SIDEBAR =====
+// cần sửa
 function initializePage() {
     if (!window.currentEmployee) return;
 
@@ -239,11 +240,14 @@ function initializePage() {
     const position = document.getElementById('userPosition');
     if (position) position.textContent = e.positionName;
 
-    // Avatar
     if (e.imgAvatar) {
         updateSidebarAvatar(e.imgAvatar);
     } else {
-        updateSidebarAvatar(null, e.fullName.charAt(0).toUpperCase());
+        const initial = e.fullName
+            ? e.fullName.charAt(0).toUpperCase()
+            : "?";
+
+        updateSidebarAvatar(null, initial);
     }
 }
 
@@ -541,35 +545,35 @@ function validateProfileForm() {
         }
     }
 
-    // ===== AVATAR =====
-    const avatarInput = document.getElementById('profileAvatar');
-    const removeAvatar = document.getElementById('removeAvatar');
+    //// ===== AVATAR =====
+    //const avatarInput = document.getElementById('profileAvatar');
+    //const removeAvatar = document.getElementById('removeAvatar');
 
-    if (avatarInput && avatarInput.files.length > 0) {
-        const file = avatarInput.files[0];
+    //if (avatarInput && avatarInput.files.length > 0) {
+    //    const file = avatarInput.files[0];
 
-        // size <= 2MB
-        if (file.size > 2 * 1024 * 1024) {
-            showError(avatarInput, 'Avatar phải nhỏ hơn hoặc bằng 2MB');
-            isValid = false;
-        }
+    //    // size <= 2MB
+    //    if (file.size > 2 * 1024 * 1024) {
+    //        showError(avatarInput, 'Avatar phải nhỏ hơn hoặc bằng 2MB');
+    //        isValid = false;
+    //    }
 
-        // type
-        const allowedTypes = ['image/jpeg', 'image/png'];
-        if (!allowedTypes.includes(file.type)) {
-            showError(avatarInput, 'Avatar chỉ chấp nhận JPG hoặc PNG');
-            isValid = false;
-        }
+    //    // type
+    //    const allowedTypes = ['image/jpeg', 'image/png'];
+    //    if (!allowedTypes.includes(file.type)) {
+    //        showError(avatarInput, 'Avatar chỉ chấp nhận JPG hoặc PNG');
+    //        isValid = false;
+    //    }
 
-        // upload + remove
-        if (removeAvatar && removeAvatar.checked) {
-            showError(
-                avatarInput,
-                'Không thể vừa upload vừa xóa avatar'
-            );
-            isValid = false;
-        }
-    }
+    //    // upload + remove
+    //    if (removeAvatar && removeAvatar.checked) {
+    //        showError(
+    //            avatarInput,
+    //            'Không thể vừa upload vừa xóa avatar'
+    //        );
+    //        isValid = false;
+    //    }
+    //}
 
     return isValid;
 }
@@ -672,12 +676,12 @@ function submitCheckOutClick() {
 }
 
 // ===== BẢNG DỮ LIỆU (chỉ giao diện - hiển thị trống) =====
-function loadAttendanceUI() {
-    const tbody = document.getElementById('attendanceTableBody');
-    if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-500">Chưa có dữ liệu chấm công</td></tr>';
-    document.getElementById('attendancePagination').innerHTML = '';
-}
+//function loadAttendanceUI() {
+//    const tbody = document.getElementById('attendanceTableBody');
+//    if (!tbody) return;
+//    tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-500">Chưa có dữ liệu chấm công</td></tr>';
+//    document.getElementById('attendancePagination').innerHTML = '';
+//}
 
 function loadLeavesUI() {
     const tbody = document.getElementById('leavesTableBody');

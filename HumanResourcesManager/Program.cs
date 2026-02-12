@@ -78,6 +78,7 @@ namespace HumanResourcesManager
             builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             builder.Services.AddScoped<IEmployeeService, EmployeeService>();
             builder.Services.AddScoped<IPositionRepository, PositionRepository>(); // 09/02/2026
+            builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
 
             // Dependency Injection: Business Services (BLL)
             builder.Services.AddScoped<IAuthService, AuthService>();
@@ -90,8 +91,7 @@ namespace HumanResourcesManager
             builder.Services.AddScoped<IUserAccountService, UserAccountService>(); // 08/02/2026
             builder.Services.AddScoped<IDepartmentService, DepartmentService>();
             builder.Services.AddScoped<IPositionService, PositionService>(); // 09/02/2026
-
-
+            builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 
             // Session configuration
             builder.Services.AddDistributedMemoryCache();
