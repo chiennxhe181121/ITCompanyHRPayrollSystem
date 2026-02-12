@@ -1,5 +1,6 @@
 ﻿using HumanResourcesManager.BLL.DTOs;
 using HumanResourcesManager.BLL.Interfaces;
+using HumanResourcesManager.DAL.Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -27,18 +28,21 @@ public class EmployeeController : Controller
     // ===== Attendance =====
     // view attendance
     [HttpGet("attendance")]
-    public IActionResult Index(int page = 1)
+    public IActionResult Index(
+        int page = 1,
+        int pageSize = 3,
+        int? month = null,
+        int? year = null,
+        AttendanceStatus? status = null)
     {
-
-        if (page <= 0)
-            return RedirectToAction(nameof(Index), new { page = 1 });
-
-        int pageSize = 3;
-
         var model = _attendanceService.GetEmployeeAttendance(
-                    CurrentUserId,
-                    page,
-                    pageSize);
+            CurrentUserId,
+            page,
+            pageSize,
+            month,
+            year,
+            status
+        );
 
         return View(model);
     }

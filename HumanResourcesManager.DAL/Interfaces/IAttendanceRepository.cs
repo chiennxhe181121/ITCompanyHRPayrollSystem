@@ -13,8 +13,7 @@ namespace HumanResourcesManager.DAL.Interfaces
         void Update(Attendance attendance);
         void Delete(int id);
         void Save();
-
-        List<Attendance> GetByEmployeeId(int employeeId, int page, int pageSize);
-        int CountByEmployeeId(int employeeId);
+        IQueryable<Attendance> GetQueryableByEmployeeId(int employeeId);
+        int CountWorkingDays(int employeeId);
     }
 }

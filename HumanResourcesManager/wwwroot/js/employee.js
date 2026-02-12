@@ -315,12 +315,6 @@ function loadProfileAvatarFromDB() {
         imgEl.classList.remove('hidden');
         initialEl?.classList.add('hidden');
         removeBtn?.classList.remove('hidden');
-
-        // SYNC SIDEBAR Ở ĐÂY
-        updateSidebarAvatar(
-            avatarPath + '?v=' + Date.now(),
-            window.currentEmployee.fullName?.charAt(0).toUpperCase()
-        );
     } else {
         imgEl.src = '';
         imgEl.classList.add('hidden');
@@ -328,11 +322,6 @@ function loadProfileAvatarFromDB() {
         initialEl.textContent =
             window.currentEmployee.fullName?.charAt(0).toUpperCase() ?? 'E';
         removeBtn?.classList.add('hidden');
-
-        updateSidebarAvatar(
-            null,
-            window.currentEmployee.fullName?.charAt(0).toUpperCase()
-        );
     }
 }
 

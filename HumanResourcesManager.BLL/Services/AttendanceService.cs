@@ -18,41 +18,63 @@ namespace HumanResourcesManager.BLL.Services
             _employeeRepository = employeeRepository;
         }
 
-        public EmployeeAttendanceViewDTO GetEmployeeAttendance(int currentUserId, int page, int pageSize)
+        public EmployeeAttendanceViewDTO GetEmployeeAttendance(
+            int currentUserId,
+            int page,
+            int pageSize,
+            int? month,
+            int? year,
+            AttendanceStatus? status)
         {
             var employee = _employeeRepository.GetByUserId(currentUserId);
 
             if (employee == null)
-            {
-                throw new Exception("Employee not found for current user.");
-            }
+                throw new Exception("Employee not found.");
 
             var employeeId = employee.EmployeeId;
 
-            // 1️⃣ Validate pageSize
             if (pageSize <= 0)
                 pageSize = 10;
 
-            // 2️⃣ Tổng record
-            var totalRecords = _attendanceRepository.CountByEmployeeId(employeeId);
+            if (page < 1)
+                page = 1;
 
-            // 3️⃣ Tính totalPages
+            // 🔥 1️⃣ Lấy query gốc
+            var query = _attendanceRepository
+                .GetQueryableByEmployeeId(employeeId);
+
+            // 🔥 2️⃣ Filter theo tháng
+            if (month.HasValue && month > 0)
+                query = query.Where(a => a.WorkDate.Month == month.Value);
+
+            // 🔥 3️⃣ Filter theo năm
+            if (year.HasValue && year > 0)
+                query = query.Where(a => a.WorkDate.Year == year.Value);
+
+            // 🔥 4️⃣ Filter theo status (nên dùng enum int)
+            if (status.HasValue)
+                query = query.Where(a => a.Status == status.Value);
+
+            // 🔥 5️⃣ Sắp xếp
+            query = query.OrderByDescending(a => a.WorkDate);
+
+            // 🔥 6️⃣ Tổng record sau khi filter
+            var totalRecords = query.Count();
+
             var totalPages = totalRecords == 0
                 ? 1
                 : (int)Math.Ceiling((double)totalRecords / pageSize);
 
-            // 4️⃣ Validate page
-            if (page < 1)
-                page = 1;
-
             if (page > totalPages)
                 page = totalPages;
 
-            // 5️⃣ Lấy data từ repo
-            var attendances = _attendanceRepository
-                .GetByEmployeeId(employeeId, page, pageSize);
+            // 🔥 7️⃣ Paging
+            var attendances = query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
 
-            // 6️⃣ Map sang DTO
+            // 🔥 8️⃣ Map DTO
             var records = attendances.Select(a => new AttendanceRowDTO
             {
                 WorkDate = a.WorkDate,
@@ -64,14 +86,18 @@ namespace HumanResourcesManager.BLL.Services
                 Status = GetStatusText(a.Status)
             }).ToList();
 
-            // 7️⃣ Trả về ViewDTO
             return new EmployeeAttendanceViewDTO
             {
                 Records = records,
                 CurrentPage = page,
                 TotalPages = totalPages,
                 PageSize = pageSize,
-                TotalRecords = totalRecords
+                TotalRecords = totalRecords,
+
+                // giữ lại filter để view render lại
+                SelectedMonth = month,
+                SelectedYear = year,
+                SelectedStatus = status
             };
         }
 
