@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace HumanResourcesManager.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class HumanManagerDB : Migration
+    public partial class InitDatabase : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -32,7 +32,8 @@ namespace HumanResourcesManager.DAL.Migrations
                     DepartmentId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     DepartmentName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -60,7 +61,11 @@ namespace HumanResourcesManager.DAL.Migrations
                     PositionId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     PositionName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    BaseSalary = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false)
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BaseSalary = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -148,6 +153,30 @@ namespace HumanResourcesManager.DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AnnualLeaveBalance",
+                columns: table => new
+                {
+                    AnnualLeaveBalanceId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    EmployeeId = table.Column<int>(type: "int", nullable: false),
+                    Year = table.Column<int>(type: "int", nullable: false),
+                    EntitledDays = table.Column<double>(type: "float(5)", precision: 5, scale: 2, nullable: false),
+                    UsedDays = table.Column<double>(type: "float(5)", precision: 5, scale: 2, nullable: false),
+                    RemainingDays = table.Column<double>(type: "float", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AnnualLeaveBalance", x => x.AnnualLeaveBalanceId);
+                    table.ForeignKey(
+                        name: "FK_AnnualLeaveBalance_Employees_EmployeeId",
+                        column: x => x.EmployeeId,
+                        principalTable: "Employees",
+                        principalColumn: "EmployeeId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Attendances",
                 columns: table => new
                 {
@@ -157,7 +186,10 @@ namespace HumanResourcesManager.DAL.Migrations
                     WorkDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CheckIn = table.Column<TimeSpan>(type: "time", nullable: true),
                     CheckOut = table.Column<TimeSpan>(type: "time", nullable: true),
-                    LateMinutes = table.Column<int>(type: "int", nullable: false)
+                    MissingMinutes = table.Column<int>(type: "int", nullable: false),
+                    CheckInImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CheckOutImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -292,7 +324,7 @@ namespace HumanResourcesManager.DAL.Migrations
                     BasicSalary = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     TotalOT = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     TotalAllowance = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    LatePenalty = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    MissingMinutesPenalty = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     NetSalary = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -314,11 +346,12 @@ namespace HumanResourcesManager.DAL.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     OverTimeRequestId = table.Column<int>(type: "int", nullable: false),
-                    CheckInTime = table.Column<TimeSpan>(type: "time", nullable: false),
-                    CheckOutTime = table.Column<TimeSpan>(type: "time", nullable: false),
+                    CheckIn = table.Column<TimeSpan>(type: "time", nullable: false),
+                    CheckOut = table.Column<TimeSpan>(type: "time", nullable: false),
+                    CheckInImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CheckOutImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ActualOTHours = table.Column<double>(type: "float", nullable: false),
-                    Status = table.Column<long>(type: "bigint", nullable: false),
-                    Note = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -351,6 +384,12 @@ namespace HumanResourcesManager.DAL.Migrations
                         principalColumn: "PayrollId",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AnnualLeaveBalance_EmployeeId_Year",
+                table: "AnnualLeaveBalance",
+                columns: new[] { "EmployeeId", "Year" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Attendances_EmployeeId",
@@ -441,6 +480,9 @@ namespace HumanResourcesManager.DAL.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AnnualLeaveBalance");
+
             migrationBuilder.DropTable(
                 name: "Attendances");
 
