@@ -30,15 +30,17 @@
 
 						<input type="hidden" id="profileAvatarData" name="ImgAvatar" value="">
 						<input type="hidden" name="RemoveAvatar" id="removeAvatarFlag" value="false" />
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-slate-100">
+						<!-- PROFILE HEADER -->
+						<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-6 border-b border-slate-100">
 
-							<!-- AVATAR + EDIT BUTTON (GIỮ NGUYÊN) -->
+							<!-- LEFT: AVATAR -->
 							<div class="flex items-center gap-4">
 								<div id="profileAvatarPreview"
 									 class="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-2xl font-bold text-white ring-2 ring-slate-200 shadow-inner flex-shrink-0">
 									<img id="profileAvatarImg" class="w-full h-full object-cover hidden" alt="">
 									<span id="profileAvatarInitial">E</span>
 								</div>
+
 								<div id="profileAvatarActions" class="flex flex-col gap-2 hidden">
 									<input type="file"
 										   id="profileAvatarInput"
@@ -56,23 +58,35 @@
 								</div>
 							</div>
 
-							<div class="flex items-center justify-end md:justify-start gap-3">
-								<button type="button" id="profileEditSaveBtn"
-										class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-sm transition-colors">
-									Chỉnh sửa thông tin
+							<!-- RIGHT: ACTION BUTTONS -->
+							<div class="flex flex-col sm:flex-row gap-3">
+								<button type="button"
+										id="profileEditSaveBtn"
+										class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-sm transition-colors">
+
+									<i class="bi bi-pencil"></i>
+									<span>Chỉnh sửa thông tin</span>
 								</button>
+
 								<button type="button"
 										id="profileCancelBtn"
-										class="hidden px-5 py-2.5
-											   bg-red-600 hover:bg-red-700
-											   text-white font-medium
-											   rounded-xl shadow-sm
-											   focus:outline-none focus:ring-2 focus:ring-red-500/40
-											   transition-colors">
+										class="hidden px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl shadow-sm transition-colors">
 									Huỷ thay đổi
 								</button>
+
+								<a asp-action="ChangePassword"
+								   asp-controller="Employee"
+								   id="profileChangePasswordBtn"
+								   class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-700 hover:bg-slate-800 text-white font-medium rounded-xl shadow-sm transition-colors">
+
+									<i class="bi bi-shield-lock"></i>
+									<span>Đổi mật khẩu</span>
+								</a>
 							</div>
 
+							<div></div>
+						</div>
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
 							<!-- HỌ TÊN -->
 							<div>
 								<label class="block text-sm font-medium text-slate-600 mb-1.5">Họ và tên</label>
@@ -171,7 +185,6 @@
 									   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
 									   readonly>
 							</div>
-
 						</div>
 					</form>
 					<div class="text-red-600 text-sm">

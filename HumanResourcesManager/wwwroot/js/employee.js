@@ -327,7 +327,10 @@ function loadProfileAvatarFromDB() {
 
 function setProfileEditMode(editing) {
     profileEditMode = editing;
+
     const btn = document.getElementById('profileEditSaveBtn');
+    const changePasswordBtn = document.getElementById('profileChangePasswordBtn');
+
     const fullName = document.getElementById('profileFullName');
     const email = document.getElementById('profileEmail');
     const phone = document.getElementById('profilePhone');
@@ -335,66 +338,106 @@ function setProfileEditMode(editing) {
     const dob = document.getElementById('profileDob');
     const address = document.getElementById('profileAddress');
     const avatarActions = document.getElementById('profileAvatarActions');
+
     if (!btn) return;
+
     if (editing) {
+
         document.getElementById('profileCancelBtn')?.classList.remove('hidden');
         btn.textContent = 'Lưu thay đổi';
-        if (fullName) { fullName.removeAttribute('readonly'); fullName.classList.remove('bg-slate-50'); fullName.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
-        if (email) { email.removeAttribute('readonly'); email.classList.remove('bg-slate-50'); email.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
-        if (phone) { phone.removeAttribute('readonly'); phone.classList.remove('bg-slate-50'); phone.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
+
+        // 🔥 Ẩn đổi mật khẩu khi đang edit
+        if (changePasswordBtn) {
+            changePasswordBtn.classList.add('hidden');
+        }
+
+        if (fullName) {
+            fullName.removeAttribute('readonly');
+            fullName.classList.remove('bg-slate-50');
+            fullName.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
+        }
+
+        if (email) {
+            email.removeAttribute('readonly');
+            email.classList.remove('bg-slate-50');
+            email.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
+        }
+
+        if (phone) {
+            phone.removeAttribute('readonly');
+            phone.classList.remove('bg-slate-50');
+            phone.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
+        }
+
         if (gender) {
             gender.removeAttribute('disabled');
             gender.classList.remove('bg-slate-50');
-            gender.classList.add(
-                'border-slate-300',
-                'focus:ring-2',
-                'focus:ring-blue-500/20',
-                'focus:border-blue-500', 'text-slate-800'
-            );
+            gender.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
         }
+
         if (dob) {
             dob.removeAttribute('readonly');
             dob.classList.remove('bg-slate-50');
-            dob.classList.add(
-                'border-slate-300',
-                'focus:ring-2',
-                'focus:ring-blue-500/20',
-                'focus:border-blue-500', 'text-slate-800'
-            );
+            dob.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
         }
+
         if (address) {
             address.removeAttribute('readonly');
             address.classList.remove('bg-slate-50');
-            address.classList.add(
-                'border-slate-300',
-                'focus:ring-2',
-                'focus:ring-blue-500/20',
-                'focus:border-blue-500', 'text-slate-800'
-            );
+            address.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
         }
+
         if (avatarActions) avatarActions.classList.remove('hidden');
+
     } else {
+
         document.getElementById('profileCancelBtn')?.classList.add('hidden');
         btn.textContent = 'Chỉnh sửa thông tin';
-        if (fullName) { fullName.setAttribute('readonly', 'readonly'); fullName.classList.add('bg-slate-50'); fullName.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
-        if (email) { email.setAttribute('readonly', 'readonly'); email.classList.add('bg-slate-50'); email.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
-        if (phone) { phone.setAttribute('readonly', 'readonly'); phone.classList.add('bg-slate-50'); phone.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
+
+        // 🔥 Hiển thị lại đổi mật khẩu
+        if (changePasswordBtn) {
+            changePasswordBtn.classList.remove('hidden');
+        }
+
+        if (fullName) {
+            fullName.setAttribute('readonly', 'readonly');
+            fullName.classList.add('bg-slate-50');
+            fullName.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
+        }
+
+        if (email) {
+            email.setAttribute('readonly', 'readonly');
+            email.classList.add('bg-slate-50');
+            email.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
+        }
+
+        if (phone) {
+            phone.setAttribute('readonly', 'readonly');
+            phone.classList.add('bg-slate-50');
+            phone.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
+        }
+
         if (gender) {
             gender.setAttribute('disabled', 'disabled');
             gender.classList.add('bg-slate-50');
-            gender.classList.remove(
-                'border-slate-300',
-                'focus:ring-2',
-                'focus:ring-blue-500/20',
-                'focus:border-blue-500', 'text-slate-800'
-            );
+            gender.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
         }
-        if (dob) { dob.setAttribute('readonly', 'readonly'); dob.classList.add('bg-slate-50'); dob.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
-        if (address) { address.setAttribute('readonly', 'readonly'); address.classList.add('bg-slate-50'); address.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
+
+        if (dob) {
+            dob.setAttribute('readonly', 'readonly');
+            dob.classList.add('bg-slate-50');
+            dob.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
+        }
+
+        if (address) {
+            address.setAttribute('readonly', 'readonly');
+            address.classList.add('bg-slate-50');
+            address.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
+        }
+
         if (avatarActions) avatarActions.classList.add('hidden');
     }
 }
-
 function cancelProfileEdit() {
     if (!window.currentEmployee) return;
 

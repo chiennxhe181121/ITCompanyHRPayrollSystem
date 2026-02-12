@@ -96,6 +96,14 @@ public class EmployeeController : Controller
         }
     }
 
+    // View change password
+    [HttpGet("profile/change-password")]
+    public IActionResult ChangePassword()
+    {
+        return View("~/Views/Employee/ChangePassword.cshtml");
+    }
+
+    // ===== Leaves =====
     [HttpGet("leaves")]
     public IActionResult Leaves()
     {
