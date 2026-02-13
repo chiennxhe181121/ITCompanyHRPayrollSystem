@@ -5,7 +5,9 @@ using HumanResourcesManager.DAL.Interfaces;
 using HumanResourcesManager.DAL.Models;
 using HumanResourcesManager.DAL.Shared;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http; 
+using Microsoft.AspNetCore.Http;
+using System.Globalization;
+using System.Text;
 
 
 // HoangDH 
@@ -84,7 +86,6 @@ namespace HumanResourcesManager.BLL.Services
             if (_empRepo.ExistsEmail(dto.Email)) { message = "DUPLICATE_EMAIL"; return false; }
             if (_empRepo.ExistsPhone(dto.Phone)) { message = "DUPLICATE_PHONE"; return false; }
 
-            //  1: Tạo đối tượng (Ảnh tạm thời null)
             var emp = new Employee
             {
                 EmployeeCode = GenerateEmployeeCode(),
@@ -101,16 +102,18 @@ namespace HumanResourcesManager.BLL.Services
                 ImgAvatar = null
             };
 
-            // Logic UserAccount
             if (dto.IsCreateAccount)
             {
                 int roleId = _empRepo.GetRoleIdByCode("EMP");
                 if (roleId == 0) { message = "SYSTEM_ERROR: Role 'EMP' not found"; return false; }
 
                 string pass = !string.IsNullOrEmpty(dto.Password) ? dto.Password : "12345678";
+
+                string autoUsername = GenerateSystemUsername(dto.FullName, emp.EmployeeCode);
                 emp.UserAccount = new UserAccount
                 {
-                    Username = dto.Email,
+                    //Username = dto.Email,
+                    Username = autoUsername, // <-- Gán Username mới
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(pass),
                     RoleId = roleId,
                     Status = Constants.Active
@@ -119,18 +122,16 @@ namespace HumanResourcesManager.BLL.Services
 
             try
             {
-                // 2: Lưu DB lần 1 để lấy ID
                 _empRepo.Add(emp);
-                _empRepo.Save(); // --> Sinh ra emp.EmployeeId (Ví dụ: 10)
+                _empRepo.Save(); 
 
-                // 3: Nếu có ảnh -> Lưu ảnh theo ID -> Update DB lần 2
                 if (dto.AvatarFile != null)
                 {
                     string avatarPath = SaveAvatarImage(dto.AvatarFile, emp.EmployeeId);
 
                     emp.ImgAvatar = avatarPath;
                     _empRepo.Update(emp);
-                    _empRepo.Save(); // Chốt đơn đường dẫn ảnh
+                    _empRepo.Save(); 
                 }
 
                 return true;
@@ -142,7 +143,6 @@ namespace HumanResourcesManager.BLL.Services
             }
         }
 
-        // --- 3. UPDATE (Sửa + Ảnh) ---
         public bool UpdateEmployee(ADEmployeeUpdateDTO dto, out string message)
         {
             message = "";
@@ -152,7 +152,6 @@ namespace HumanResourcesManager.BLL.Services
             var emp = _empRepo.GetById(dto.EmployeeId);
             if (emp == null) { message = "Not found"; return false; }
 
-            // Update thông tin
             emp.FullName = dto.FullName;
             emp.Gender = dto.Gender;
             emp.DateOfBirth = dto.DateOfBirth;
@@ -165,22 +164,22 @@ namespace HumanResourcesManager.BLL.Services
 
             try
             {
-                // Nếu có chọn ảnh mới -> Ghi đè ảnh cũ -> Update đường dẫn
                 if (dto.AvatarFile != null)
                 {
                     string newPath = SaveAvatarImage(dto.AvatarFile, emp.EmployeeId);
                     emp.ImgAvatar = newPath;
                 }
-                // Nếu dto.AvatarFile == null thì giữ nguyên emp.ImgAvatar cũ trong DB
 
-                // Logic tạo thêm Account lúc sửa (nếu chưa có)
                 if (emp.UserAccount == null && dto.IsCreateAccount)
                 {
                     int roleId = _empRepo.GetRoleIdByCode("EMP");
                     string pass = !string.IsNullOrEmpty(dto.Password) ? dto.Password : "12345678";
+
+                    string autoUsername = GenerateSystemUsername(dto.FullName, emp.EmployeeCode);
                     emp.UserAccount = new UserAccount
                     {
-                        Username = dto.Email,
+                        //Username = dto.Email,
+                        Username = autoUsername, // <-- Gán Username mới
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword(pass),
                         RoleId = roleId,
                         Status = Constants.Active,
@@ -275,6 +274,54 @@ namespace HumanResourcesManager.BLL.Services
 
             _empRepo.Update(emp);
             _empRepo.Save();
+        }
+
+
+
+
+        private string RemoveSign4VietnameseString(string str)
+        {
+            if (string.IsNullOrEmpty(str)) return str;
+
+            string formD = str.Normalize(NormalizationForm.FormD);
+            StringBuilder sb = new StringBuilder();
+
+            foreach (char ch in formD)
+            {
+                UnicodeCategory uc = CharUnicodeInfo.GetUnicodeCategory(ch);
+                if (uc != UnicodeCategory.NonSpacingMark)
+                {
+                    sb.Append(ch);
+                }
+            }
+            string result = sb.ToString().Normalize(NormalizationForm.FormC);
+
+            return result.Replace('đ', 'd').Replace('Đ', 'D');
+        }
+
+        private string GenerateSystemUsername(string fullName, string empCode)
+        {
+            if (string.IsNullOrEmpty(fullName)) return empCode.ToLower();
+
+            string unsignedName = RemoveSign4VietnameseString(fullName).ToLower().Trim();
+
+            // Tách chuỗi (Dao Huy Hoang -> ["dao", "huy", "hoang"])
+            var parts = unsignedName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            if (parts.Length == 0) return empCode.ToLower();
+
+            // Lấy tên (phần tử cuối)
+            string name = parts[parts.Length - 1]; // "hoang"
+
+            // Lấy ký tự đầu của họ và đệm (các phần tử trước)
+            string initials = "";
+            for (int i = 0; i < parts.Length - 1; i++)
+            {
+                initials += parts[i][0]; 
+            }
+
+            //  Ghép chuỗi: hoang + dh + emp...
+            return $"{name}{initials}{empCode.ToLower()}";
         }
 
 
