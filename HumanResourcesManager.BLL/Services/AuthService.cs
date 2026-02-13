@@ -145,7 +145,9 @@ namespace HumanResourcesManager.BLL.Services
                     : user.Username, // fallback cho admin / hr
 
                 RoleCode = user.Role.RoleCode,
-                RoleName = user.Role.RoleName
+                RoleName = user.Role.RoleName,
+                // 🔥 Lấy Avatar từ Employee (nếu có)
+                ImgAvatar = user.Employee?.ImgAvatar
             };
         }
 
@@ -303,6 +305,7 @@ namespace HumanResourcesManager.BLL.Services
                     RoleId = empRoleId,
                     Status = Constants.Active,
                     Employee = employee               // 🔗 1–1
+
                 };
 
                 _context.UserAccounts.Add(user);
@@ -321,7 +324,8 @@ namespace HumanResourcesManager.BLL.Services
                 Username = account.Username,
                 FullName = account.Employee!.FullName,
                 RoleCode = account.Role!.RoleCode,
-                RoleName = account.Role.RoleName
+                RoleName = account.Role.RoleName,
+                ImgAvatar = account.Employee?.ImgAvatar //  Thêm 
             };
         }
 

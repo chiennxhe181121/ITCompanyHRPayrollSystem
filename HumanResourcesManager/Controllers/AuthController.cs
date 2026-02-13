@@ -72,7 +72,7 @@ namespace HumanResourcesManager.Controllers
                 return View(dto);
             }
 
-          
+
 
             // ✅ 1. Lưu session (phụ)
             HttpContext.Session.SetString(

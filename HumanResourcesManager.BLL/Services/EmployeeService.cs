@@ -1,4 +1,5 @@
 ﻿using HumanResourcesManager.BLL.DTOs;
+using HumanResourcesManager.BLL.DTOs.Employee;
 using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.DAL.Interfaces;
 using HumanResourcesManager.DAL.Models;
@@ -140,7 +141,7 @@ namespace HumanResourcesManager.BLL.Services
             if (_repo.ExistsByEmail(dto.Email, userId))
                 throw new BusinessException("EmailAlreadyExists")
                 {
-                    Details = "Email đã tồn tại, vui lòng sử dụng email khác"
+                    Details = "Email (" + dto.Email + ") đã tồn tại, vui lòng sử dụng email khác"
                 };
 
             // ===== DATE OF BIRTH =====
@@ -171,31 +172,31 @@ namespace HumanResourcesManager.BLL.Services
                     Details = "Ngày sinh không hợp lệ"
                 };
 
-            // ===== AVATAR VALIDATION =====
-            if (avatarFile != null)
-            {
-                // size <= 2MB
-                if (avatarFile.Length > 2 * 1024 * 1024)
-                    throw new BusinessException("AvatarTooLarge")
-                    {
-                        Details = "Dung lượng ảnh đại diện không được vượt quá 2MB"
-                    };
+            //// ===== AVATAR VALIDATION =====
+            //if (avatarFile != null)
+            //{
+            //    // size <= 2MB
+            //    if (avatarFile.Length > 2 * 1024 * 1024)
+            //        throw new BusinessException("AvatarTooLarge")
+            //        {
+            //            Details = "Dung lượng ảnh đại diện không được vượt quá 2MB"
+            //        };
 
-                // type
-                var allowedTypes = new[] { "image/jpeg", "image/png" };
-                if (!allowedTypes.Contains(avatarFile.ContentType))
-                    throw new BusinessException("AvatarInvalidType")
-                    {
-                        Details = "Chỉ chấp nhận ảnh định dạng JPG hoặc PNG"
-                    };
-            }
+            //    // type
+            //    var allowedTypes = new[] { "image/jpeg", "image/png" };
+            //    if (!allowedTypes.Contains(avatarFile.ContentType))
+            //        throw new BusinessException("AvatarInvalidType")
+            //        {
+            //            Details = "Chỉ chấp nhận ảnh định dạng JPG hoặc PNG"
+            //        };
+            //}
 
-            // ===== REMOVE AVATAR CONSISTENCY =====
-            if (dto.RemoveAvatar && avatarFile != null)
-                throw new BusinessException("AvatarConflict")
-                {
-                    Details = "Không thể vừa tải ảnh mới vừa xoá ảnh đại diện"
-                };
+            //// ===== REMOVE AVATAR CONSISTENCY =====
+            //if (dto.RemoveAvatar && avatarFile != null)
+            //    throw new BusinessException("AvatarConflict")
+            //    {
+            //        Details = "Không thể vừa tải ảnh mới vừa xoá ảnh đại diện"
+            //    };
         }
 
         public async Task<Employee?> UpdateOwnProfile(

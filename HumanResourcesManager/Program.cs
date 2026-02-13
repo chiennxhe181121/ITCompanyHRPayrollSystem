@@ -1,4 +1,4 @@
-﻿using HumanResourcesManager.Auth;
+using HumanResourcesManager.Auth;
 using HumanResourcesManager.BLL.DTOs;
 using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.BLL.Services;
@@ -78,6 +78,8 @@ namespace HumanResourcesManager
             builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             builder.Services.AddScoped<IEmployeeService, EmployeeService>();
             builder.Services.AddScoped<IPositionRepository, PositionRepository>(); // 09/02/2026
+            builder.Services.AddScoped<IADEmployeeRepository, ADEmployeeRepository>(); // 10/02/2026
+            builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
 
             // Dependency Injection: Business Services (BLL)
             builder.Services.AddScoped<IAuthService, AuthService>();
@@ -90,8 +92,8 @@ namespace HumanResourcesManager
             builder.Services.AddScoped<IUserAccountService, UserAccountService>(); // 08/02/2026
             builder.Services.AddScoped<IDepartmentService, DepartmentService>();
             builder.Services.AddScoped<IPositionService, PositionService>(); // 09/02/2026
-
-
+            builder.Services.AddScoped<IADEmployeeService, ADEmployeeService>(); // 10/02/2026
+            builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 
             // Session configuration
             builder.Services.AddDistributedMemoryCache();
@@ -145,10 +147,11 @@ namespace HumanResourcesManager
             app.UseAuthentication();
             app.UseAuthorization();
 
-            // Default route mapping
+            // Default route
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+                pattern: "{controller=Home}/{action=Index}/{id?}"
+            );
 
             app.Run();
         }

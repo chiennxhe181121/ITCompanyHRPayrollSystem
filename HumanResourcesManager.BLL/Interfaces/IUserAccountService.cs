@@ -1,5 +1,6 @@
 ﻿using HumanResourcesManager.BLL.DTOs;
 using HumanResourcesManager.BLL.DTOs.Common;
+using HumanResourcesManager.BLL.DTOs.Employee;
 using HumanResourcesManager.BLL.DTOs.UserAccount;
 using HumanResourcesManager.DAL.Models;
 using System;
@@ -37,6 +38,7 @@ namespace HumanResourcesManager.BLL.Interfaces
             int pageSize
         );
 
+        ServiceResult ChangePassword(int userId, ChangePasswordDTO dto);
     }
 
 }

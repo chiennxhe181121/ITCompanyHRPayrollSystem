@@ -1,4 +1,5 @@
 ﻿using HumanResourcesManager.BLL.DTOs;
+using HumanResourcesManager.BLL.DTOs.Employee;
 using HumanResourcesManager.DAL.Models;
 using Microsoft.AspNetCore.Http;
 using System;

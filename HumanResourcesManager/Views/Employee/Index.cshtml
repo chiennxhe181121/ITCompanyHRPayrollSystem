@@ -1,4 +1,6 @@
-﻿@model HumanResourcesManager.BLL.DTOs.EmployeeOwnerProfileDTO
+﻿@using HumanResourcesManager.BLL.DTOs.Employee
+@using HumanResourcesManager.Helpers
+@model EmployeeAttendanceViewDTO
 
 @{
 	Layout = "~/Views/Employee/_EmployeeLayout.cshtml";
@@ -65,27 +67,371 @@
 					</div>
 
 					<!-- Attendance History -->
-					<div>
-						<h3 class="text-base font-semibold text-slate-800 mb-3">Lịch Sử Chấm Công</h3>
+					<div class="mt-6 bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+						<!-- Header + Filter -->
+						<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+
+							<!-- Title -->
+							<div>
+								<h3 class="text-lg font-semibold text-slate-800">
+									Lịch Sử Chấm Công
+								</h3>
+								<p class="text-xs text-slate-400 mt-1">
+									Xem và lọc lịch sử chấm công của bạn
+								</p>
+							</div>
+
+							<!-- Filter -->
+							<form method="get"
+								  class="flex flex-wrap items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 shadow-inner">
+
+								<!-- Page Size -->
+								<div>
+									<label class="block text-xs text-slate-500 mb-1">Số dòng / trang</label>
+									<select name="pageSize"
+											class="border rounded-lg px-3 py-2 text-sm">
+										<option value="3" selected="@(Model.PageSize == 3)">3</option>
+										<option value="5" selected="@(Model.PageSize == 5)">5</option>
+										<option value="10" selected="@(Model.PageSize == 10)">10</option>
+										<option value="20" selected="@(Model.PageSize == 20)">20</option>
+									</select>
+								</div>
+
+								<!-- Month -->
+								<select name="month"
+										class="text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+									<option value="">Tháng</option>
+									@for (int m = 1; m <= 12; m++)
+									{
+										<option value="@m"
+												selected="@(Model.SelectedMonth == m)">
+											Tháng @m
+										</option>
+									}
+								</select>
+
+								<!-- Year -->
+								<select name="year"
+										class="text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+									<option value="">Năm</option>
+									@for (int y = DateTime.Now.Year - 5; y <= DateTime.Now.Year; y++)
+									{
+										<option value="@y"
+												selected="@(Model.SelectedYear == y)">
+											@y
+										</option>
+									}
+								</select>
+
+								<!-- Status -->
+								<select name="status"
+										class="text-sm border border-slate-200 rounded-lg px-3 py-2">
+									<option value="">Tất cả trạng thái</option>
+
+									@foreach (var s in Enum.GetValues(typeof(HumanResourcesManager.DAL.Enum.AttendanceStatus)))
+									{
+										var enumValue = (HumanResourcesManager.DAL.Enum.AttendanceStatus)s;
+
+										<option value="@enumValue"
+												selected="@(Model.SelectedStatus == enumValue)">
+											@enumValue.ToDisplayName()
+										</option>
+									}
+								</select>
+
+								<!-- Buttons -->
+								<button type="submit"
+										class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700 transition shadow-sm">
+									Lọc
+								</button>
+
+								<a href="?page=1"
+								   class="px-4 py-2 text-sm border border-slate-200 rounded-lg bg-white hover:bg-slate-100 transition">
+									Reset
+								</a>
+
+							</form>
+						</div>
+
+						<!-- Bảng -->
 						<div class="overflow-x-auto rounded-xl border border-slate-200/80">
-							<table class="employee-table w-full">
+							<table class="min-w-full text-sm text-slate-700 border-collapse">
 								<thead>
-									<tr class="bg-slate-50 border-b border-slate-200">
-										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ngày</th>
-										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Check In</th>
-										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Check Out</th>
-										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Đi Muộn</th>
-										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Thời gian về sớm</th>
-										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tăng Ca</th>
+									<tr class="bg-slate-100 border-b border-slate-200">
+										<th class="py-3 px-4 text-center font-semibold uppercase tracking-wide text-xs">STT</th>
+										<th class="py-3 px-4 text-center font-semibold uppercase tracking-wide text-xs">Ngày</th>
+										<th class="py-3 px-4 text-center font-semibold uppercase tracking-wide text-xs">Giờ vào</th>
+										<th class="py-3 px-4 text-center font-semibold uppercase tracking-wide text-xs">Ảnh</th>
+										<th class="py-3 px-4 text-center font-semibold uppercase tracking-wide text-xs">Giờ ra</th>
+										<th class="py-3 px-4 text-center font-semibold uppercase tracking-wide text-xs">Ảnh</th>
+										<th class="py-3 px-4 text-center font-semibold uppercase tracking-wide text-xs">Thiếu (phút)</th>
+										<th class="py-3 px-4 text-center font-semibold uppercase tracking-wide text-xs">Trạng thái công việc</th>
 									</tr>
 								</thead>
-								<tbody id="attendanceTableBody"></tbody>
+
+								<tbody class="divide-y divide-slate-100">
+									@{
+										int pageSize = Model.PageSize;
+										int startIndex = (Model.CurrentPage - 1) * pageSize;
+										int index = 0;
+									}
+
+									@if (Model.Records != null && Model.Records.Any())
+									{
+										foreach (var item in Model.Records)
+										{
+											index++;
+											<tr class="hover:bg-slate-50 transition-colors duration-150">
+
+												<!-- STT -->
+												<td class="py-3 px-4 text-center text-slate-500 font-medium">
+													@(startIndex + index)
+												</td>
+
+												<!-- Work Date -->
+												<td class="py-3 px-4 text-center font-medium text-slate-800">
+													@item.WorkDate.ToString("dd/MM/yyyy")
+												</td>
+
+												<!-- Check In -->
+												<td class="py-3 px-4 text-center">
+													@(item.CheckIn?.ToString(@"hh\:mm") ?? "---")
+												</td>
+
+												<!-- Check In Image -->
+												<td class="py-3 px-4 text-center">
+													@if (!string.IsNullOrEmpty(item.CheckInImagePath))
+													{
+														<a href="@Url.Content(item.CheckInImagePath)" target="_blank"
+														   class="inline-flex items-center justify-center text-indigo-600 hover:text-indigo-800 transition">
+															👁
+														</a>
+													}
+													else
+													{
+														<span class="text-slate-300">—</span>
+													}
+												</td>
+
+												<!-- Check Out -->
+												<td class="py-3 px-4 text-center">
+													@(item.CheckOut?.ToString(@"hh\:mm") ?? "---")
+												</td>
+
+												<!-- Check Out Image -->
+												<td class="py-3 px-4 text-center">
+													@if (!string.IsNullOrEmpty(item.CheckOutImagePath))
+													{
+														<a href="@Url.Content(item.CheckOutImagePath)" target="_blank"
+														   class="inline-flex items-center justify-center text-indigo-600 hover:text-indigo-800 transition">
+															👁
+														</a>
+													}
+													else
+													{
+														<span class="text-slate-300">—</span>
+													}
+												</td>
+
+												<!-- Missing Minutes -->
+												<td class="py-3 px-4 text-center">
+													@if (item.MissingMinutes > 0)
+													{
+														<span class="px-2 py-1 rounded-md text-xs bg-orange-100 text-orange-700 font-medium">
+															@item.MissingMinutes
+														</span>
+													}
+													else
+													{
+														<span class="text-slate-400">0</span>
+													}
+										</td>
+
+										<!-- Status -->
+										<td class="py-3 px-4 text-center">
+											<span class="px-3 py-1 text-xs font-medium rounded-full
+                @(item.Status switch
+				 {
+					 "Đủ công" => "bg-green-100 text-green-700",
+					 "Thiếu công" => "bg-orange-100 text-orange-700",
+					 "Đang làm việc" => "bg-indigo-100 text-indigo-700",
+					 "Nghỉ có phép" => "bg-blue-100 text-blue-700",
+					 "Thiếu Check-in" => "bg-yellow-100 text-yellow-700",
+					 "Thiếu Check-out" => "bg-yellow-100 text-yellow-700",
+					 "Nghỉ không phép" => "bg-red-100 text-red-700",
+					 _ => "bg-gray-100 text-gray-600"
+				 })">
+												@item.Status
+											</span>
+										</td>
+
+									</tr>
+																		}
+									}
+									else
+									{
+										<tr>
+											<td colspan="8" class="py-12 text-center text-slate-500">
+												<div class="flex flex-col items-center space-y-2">
+													<span class="text-lg font-medium">Không có dữ liệu chấm công</span>
+													<span class="text-sm text-slate-400">
+														Hãy thử thay đổi bộ lọc hoặc chọn tháng khác
+													</span>
+												</div>
+											</td>
+										</tr>
+									}
+								</tbody>
 							</table>
 						</div>
-						<div id="attendancePagination" class="pagination mt-6"></div>
+
+						<!-- Phân Trang -->
+						@if (Model.Records != null && Model.Records.Any() && Model.TotalPages > 1)
+						{
+							int currentPage = Model.CurrentPage;
+							int totalPages = Model.TotalPages;
+							int pageWindow = 1;
+
+							int startPage = Math.Max(1, currentPage - pageWindow);
+							int endPage = Math.Min(totalPages, currentPage + pageWindow);
+
+							<div class="flex justify-center mt-6 space-x-1 items-center">
+
+								<!-- Prev -->
+								<a asp-action="Index"
+								   asp-route-page="@(currentPage - 1)"
+								   asp-route-pageSize="@Model.PageSize"
+								   asp-route-month="@Model.SelectedMonth"
+								   asp-route-year="@Model.SelectedYear"
+								   asp-route-status="@Model.SelectedStatus"
+								   class="px-3 py-1 border rounded-lg min-w-[36px] text-center transition
+		           @(currentPage > 1
+								  		  ? "bg-white hover:bg-slate-100"
+								  		  : "bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none")">
+								&lt;
+							</a>
+
+								<!-- Trang đầu -->
+							@if (startPage > 1)
+								{
+									<a asp-action="Index"
+									   asp-route-page="1"
+									   asp-route-pageSize="@Model.PageSize"
+									   asp-route-month="@Model.SelectedMonth"
+									   asp-route-year="@Model.SelectedYear"
+									   asp-route-status="@Model.SelectedStatus"
+									   class="px-3 py-1 border rounded-lg bg-white hover:bg-slate-100 min-w-[36px] text-center">
+										1
+									</a>
+
+									@if (startPage > 2)
+									{
+										<span class="px-2 text-slate-400">...</span>
+									}
+								}
+
+								<!-- Các trang quanh current -->
+								@for (int i = startPage; i <= endPage; i++)
+								{
+									<a asp-action="Index"
+									   asp-route-page="@i"
+									   asp-route-pageSize="@Model.PageSize"
+									   asp-route-month="@Model.SelectedMonth"
+									   asp-route-year="@Model.SelectedYear"
+									   asp-route-status="@Model.SelectedStatus"
+									   class="px-3 py-1 border rounded-lg min-w-[36px] text-center transition
+		               @(i == currentPage
+									  ? "bg-indigo-600 text-white"
+									  : "bg-white hover:bg-slate-100")">
+								@i
+							</a>
+														}
+
+								<!-- Trang cuối -->
+								@if (endPage < totalPages)
+								{
+									@if (endPage < totalPages - 1)
+									{
+										<span class="px-2 text-slate-400">...</span>
+									}
+
+									<a asp-action="Index"
+									   asp-route-page="@totalPages"
+									   asp-route-pageSize="@Model.PageSize"
+									   asp-route-month="@Model.SelectedMonth"
+									   asp-route-year="@Model.SelectedYear"
+									   asp-route-status="@Model.SelectedStatus"
+									   class="px-3 py-1 border rounded-lg bg-white hover:bg-slate-100 min-w-[36px] text-center">
+										@totalPages
+									</a>
+								}
+
+							<!-- Next -->
+							<a asp-action="Index"
+							   asp-route-page="@(currentPage + 1)"
+							   asp-route-pageSize="@Model.PageSize"
+							   asp-route-month="@Model.SelectedMonth"
+							   asp-route-year="@Model.SelectedYear"
+							   asp-route-status="@Model.SelectedStatus"
+							   class="px-3 py-1 border rounded-lg min-w-[36px] text-center transition
+           @(currentPage < totalPages
+						  ? "bg-white hover:bg-slate-100"
+						  : "bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none")">
+								&gt;
+							</a>
+
+							</div>
+												}
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
 </main>
+
+<!-- Validate Filter -->
+<script>
+	const monthSelect = document.querySelector("select[name='month']");
+	const yearSelect = document.querySelector("select[name='year']");
+
+	const currentDate = new Date();
+	const currentYear = currentDate.getFullYear();
+	const currentMonth = currentDate.getMonth() + 1;
+
+	function validateFutureDate() {
+		const selectedMonth = parseInt(monthSelect.value);
+		const selectedYear = parseInt(yearSelect.value);
+
+		if (!selectedMonth || !selectedYear) return;
+
+		// Nếu năm lớn hơn năm hiện tại
+		if (selectedYear > currentYear) {
+			alert("Không thể chọn năm trong tương lai.");
+			yearSelect.value = "";
+			monthSelect.value = "";
+			return;
+		}
+
+		// Nếu cùng năm nhưng tháng lớn hơn tháng hiện tại
+		if (selectedYear === currentYear && selectedMonth > currentMonth) {
+			alert("Không thể chọn tháng trong tương lai.");
+			monthSelect.value = "";
+		}
+	}
+
+	// Bắt buộc chọn year nếu đã chọn month
+	monthSelect.addEventListener("change", function () {
+		if (this.value) {
+			yearSelect.setAttribute("required", "required");
+		} else {
+			yearSelect.removeAttribute("required");
+		}
+
+		validateFutureDate();
+	});
+
+	// Khi đổi year cũng check tương lai
+	yearSelect.addEventListener("change", function () {
+		validateFutureDate();
+	});
+</script>

@@ -20,7 +20,9 @@ namespace HumanResourcesManager.BLL.DTOs.Position
         public string? Description { get; set; }
 
         [Required(ErrorMessage = "Lương cơ bản không được để trống")]
-        [Range(1000000, double.MaxValue, ErrorMessage = "Lương cơ bản phải từ 1.000.000 VNĐ trở lên")]
+        //[Range(1000000, double.MaxValue, ErrorMessage = "Lương cơ bản phải từ 1.000.000 VNĐ trở lên")]
+        // Giới hạn Min: 1 triệu, Max: 999 Nghìn Tỷ (15 số 9)
+        [Range(1000000, 999999999999999, ErrorMessage = "Lương cơ bản phải từ 1 triệu đến dưới 1 triệu tỷ VNĐ")]
         [Display(Name = "Lương cơ bản")]
         public decimal BaseSalary { get; set; }
 
