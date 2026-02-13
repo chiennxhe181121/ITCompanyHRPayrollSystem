@@ -9,5 +9,8 @@
         public string FullName { get; set; } = null!;
         public string RoleCode { get; set; } = null!;
         public string RoleName { get; set; } = null!;
+
+        //  Thêm ( 13/02 )
+        public string? ImgAvatar { get; set; }
     }
 }

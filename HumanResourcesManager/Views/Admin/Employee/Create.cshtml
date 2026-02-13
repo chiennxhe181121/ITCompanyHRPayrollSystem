@@ -1,0 +1,218 @@
+﻿@model HumanResourcesManager.BLL.DTOs.ADEmployee.ADEmployeeCreateDTO
+
+@{
+    ViewData["Title"] = "Thêm Nhân Viên Mới";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="min-h-screen bg-slate-50 flex justify-center py-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl w-full animate__animated animate__fadeInUp">
+
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-2xl font-extrabold text-slate-800">Hồ Sơ Nhân Viên Mới</h2>
+                <p class="text-sm text-slate-500">Nhập thông tin để khởi tạo hồ sơ nhân sự.</p>
+            </div>
+            <a href="/HumanResourcesManager/admin/employees" class="flex items-center text-sm text-slate-500 hover:text-blue-600 transition-colors group">
+                <i class="fa-solid fa-arrow-left-long mr-2 transition-transform group-hover:-translate-x-1"></i>
+                Quay lại danh sách
+            </a>
+        </div>
+
+        <div asp-validation-summary="ModelOnly" class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-r-lg shadow-sm animate__animated animate__headShake" role="alert"></div>
+
+        <form method="post" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            @Html.AntiForgeryToken()
+
+            <div class="lg:col-span-2 space-y-6">
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-regular fa-id-card text-blue-500"></i> Thông Tin Cá Nhân
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Họ và tên <span class="text-red-500">*</span></label>
+                            <input asp-for="FullName" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold text-slate-700" placeholder="Ví dụ: Nguyễn Văn A" />
+                            <span asp-validation-for="FullName" class="text-xs text-red-500 mt-1 block"></span>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày sinh <span class="text-red-500">*</span></label>
+                            <input asp-for="DateOfBirth" type="date" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" />
+                            <span asp-validation-for="DateOfBirth" class="text-xs text-red-500 mt-1 block"></span>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Giới tính <span class="text-red-500">*</span></label>
+                            <select asp-for="Gender" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none">
+                                <option value="">-- Chọn giới tính --</option>
+                                <option value="true">Nam</option>
+                                <option value="false">Nữ</option>
+                            </select>
+                            <span asp-validation-for="Gender" class="text-xs text-red-500 mt-1 block"></span>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Số điện thoại <span class="text-red-500">*</span></label>
+                            <input asp-for="Phone" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="09xxxxxxx" />
+                            <span asp-validation-for="Phone" class="text-xs text-red-500 mt-1 block"></span>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Email <span class="text-red-500">*</span></label>
+                            <input asp-for="Email" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="example@gmail.com" />
+                            <span asp-validation-for="Email" class="text-xs text-red-500 mt-1 block"></span>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Địa chỉ thường trú</label>
+                            <textarea asp-for="Address" rows="2" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Số nhà, đường, phường/xã..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-briefcase text-indigo-500"></i> Thông Tin Công Việc
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Phòng ban <span class="text-red-500">*</span></label>
+                            <div class="relative">
+                                <select asp-for="DepartmentId" asp-items="ViewBag.Departments" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none">
+                                    <option value="">-- Chọn phòng ban --</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                            </div>
+                            <span asp-validation-for="DepartmentId" class="text-xs text-red-500 mt-1 block"></span>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Chức vụ <span class="text-red-500">*</span></label>
+                            <div class="relative">
+                                <select asp-for="PositionId" asp-items="ViewBag.Positions" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none">
+                                    <option value="">-- Chọn chức vụ --</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                            </div>
+                            <span asp-validation-for="PositionId" class="text-xs text-red-500 mt-1 block"></span>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày vào làm <span class="text-red-500">*</span></label>
+                            <input asp-for="HireDate" type="date" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
+                            <span asp-validation-for="HireDate" class="text-xs text-red-500 mt-1 block"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center">
+                    <div class="w-28 h-28 mx-auto bg-slate-100 rounded-full flex items-center justify-center mb-4 border-4 border-slate-50 shadow-inner overflow-hidden relative group">
+                        <img id="avatarPreview" src="#" alt="Avatar" class="w-full h-full object-cover hidden" />
+                        <i id="avatarIcon" class="fa-regular fa-image text-3xl text-slate-300"></i>
+                    </div>
+
+                    <label for="avatarUpload" class="inline-block px-4 py-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold cursor-pointer hover:bg-blue-100 transition-colors">
+                        <i class="fa-solid fa-upload mr-1"></i> Chọn ảnh
+                    </label>
+                    <input type="file" id="avatarUpload" name="AvatarFile" class="hidden" accept="image/*" onchange="previewImage(this)" />
+                    <input asp-for="ImgAvatar" type="hidden" />
+
+                    <p class="text-[10px] text-slate-400 mt-2">Định dạng: JPG, PNG. Tối đa 2MB.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-user-shield text-emerald-500"></i> Tài Khoản
+                        </h3>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" asp-for="IsCreateAccount" id="toggleAccount" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        </label>
+                    </div>
+
+                    <p class="text-xs text-slate-500 mb-4">
+                        Cấp quyền truy cập hệ thống cho nhân viên này.
+                    </p>
+
+                    <div id="accountFields" class="space-y-4 hidden transition-all duration-300 border-t border-slate-100 pt-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Username</label>
+                            <input asp-for="Username" class="w-full px-4 py-2 bg-slate-100 border-transparent rounded-lg text-sm text-slate-500 focus:bg-white focus:border-emerald-500 focus:ring-0 transition-all cursor-not-allowed" placeholder="Tự động lấy theo Email" readonly />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Mật khẩu</label>
+                            <div class="relative">
+                                <input asp-for="Password" type="password" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="Mặc định: 12345678" />
+                                <i class="fa-regular fa-eye absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 cursor-pointer hover:text-slate-600"></i>
+                            </div>
+                        </div>
+                        <div class="text-xs text-emerald-600 font-medium bg-emerald-50 p-2 rounded border border-emerald-100">
+                            <i class="fa-solid fa-check-circle mr-1"></i> Role mặc định: <span class="font-bold">EMP</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3 pt-2">
+                    <button type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-lg shadow-blue-200 hover:shadow-blue-300 hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i> Lưu hồ sơ
+                    </button>
+                    <a href="/HumanResourcesManager/admin/employees" class="w-full py-3.5 rounded-xl bg-white border border-slate-200 text-slate-600 font-bold text-center hover:bg-slate-50 transition-all">
+                        Huỷ bỏ
+                    </a>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // 1. Logic Toggle Account
+        document.addEventListener("DOMContentLoaded", function() {
+            const toggle = document.getElementById('toggleAccount');
+            const fields = document.getElementById('accountFields');
+
+            function updateVisibility() {
+                if (toggle.checked) {
+                    fields.classList.remove('hidden');
+                    fields.classList.add('animate__animated', 'animate__fadeIn');
+                } else {
+                    fields.classList.add('hidden');
+                    fields.classList.remove('animate__animated', 'animate__fadeIn');
+                }
+            }
+            toggle.addEventListener('change', updateVisibility);
+            updateVisibility();
+        });
+
+        // 2. Logic Preview Image
+        function previewImage(input) {
+            const preview = document.getElementById('avatarPreview');
+            const icon = document.getElementById('avatarIcon');
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                    icon.classList.add('hidden');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}
