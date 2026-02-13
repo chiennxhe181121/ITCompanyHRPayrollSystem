@@ -6,28 +6,40 @@
     ViewData["Title"] = "Quản Lý Tài Khoản";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 
+    // Lấy các tham số filter
     string keyword = Context.Request.Query["keyword"];
     string roleCode = Context.Request.Query["roleCode"];
     string status = Context.Request.Query["status"];
 
+    // Lấy ID người dùng hiện tại để check (không cho tự khóa mình)
     int currentUserId = 0;
     int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out currentUserId);
 
-    int stt = (ViewBag.CurrentPage - 1) * 10;
+    // Tính số thứ tự (STT)
+    // Lưu ý: Nếu Controller đang phân trang 10 thì để 10, nếu test = 1 thì sửa thành 1
+    int pageSize = 10;
+    int stt = (ViewBag.CurrentPage - 1) * pageSize;
 }
 
 @if (TempData["Error"] != null)
 {
-    <div id="alert-error" class="mb-4 px-4 py-3 rounded-lg bg-red-100 text-red-700 border border-red-200 flex items-center gap-2 shadow-sm">
+    <div id="alert-error" class="mb-4 px-4 py-3 rounded-lg bg-red-100 text-red-700 border border-red-200 flex items-center gap-2 shadow-sm animate__animated animate__fadeIn">
         <i class="fa-solid fa-circle-exclamation text-lg"></i>
         <span class="font-medium">@TempData["Error"]</span>
+    </div>
+}
+@if (TempData["Success"] != null)
+{
+    <div id="alert-success" class="mb-4 px-4 py-3 rounded-lg bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center gap-2 shadow-sm animate__animated animate__fadeIn">
+        <i class="fa-solid fa-circle-check text-lg"></i>
+        <span class="font-medium">@TempData["Success"]</span>
     </div>
 }
 
 <div class="px-6 py-5 bg-white border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
         <h2 class="text-xl font-bold text-slate-800">Quản Lý Tài Khoản</h2>
-        <p class="text-sm text-slate-500 mt-1">Danh sách tài khoản người dùng hệ thống.</p>
+        <p class="text-sm text-slate-500 mt-1">Danh sách và phân quyền người dùng hệ thống.</p>
     </div>
 
     <a href="/HumanResourcesManager/admin/UserAccounts/Create"
@@ -38,6 +50,7 @@
 
 <div class="px-6 py-4 bg-slate-50 border-b border-slate-200">
     <form method="get" class="flex flex-wrap gap-3 items-end">
+
         <div class="w-full sm:w-auto flex-grow">
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Tìm kiếm</label>
             <div class="relative group">
@@ -52,6 +65,7 @@
             <select name="roleCode" class="border border-slate-300 rounded-lg px-3 py-2 w-36 text-sm focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm cursor-pointer hover:border-indigo-400">
                 <option value="">-- Tất cả --</option>
                 <option value="ADMIN" selected="@(roleCode == "ADMIN")">Admin</option>
+                <option value="MANAGER" selected="@(roleCode == "MANAGER")">Manager</option>
                 <option value="HR" selected="@(roleCode == "HR")">HR</option>
                 <option value="EMP" selected="@(roleCode == "EMP")">Employee</option>
             </select>
@@ -72,7 +86,7 @@
             </button>
             <a href="/HumanResourcesManager/admin/UserAccounts"
                class="bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 px-3 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
-               title="Reset bộ lọc">
+               title="Làm mới bộ lọc">
                 <i class="fa-solid fa-rotate-right"></i>
             </a>
         </div>
@@ -89,7 +103,7 @@
                         <th class="px-6 py-4">Username</th>
                         <th class="px-6 py-4">Họ tên</th>
                         <th class="px-6 py-4">Email</th>
-                        <th class="px-6 py-4 text-center">Role</th>
+                        <th class="px-6 py-4 text-center">Vai trò</th>
                         <th class="px-6 py-4 text-center">Trạng thái</th>
                         <th class="px-6 py-4 text-right">Hành động</th>
                     </tr>
@@ -111,9 +125,10 @@
                     {
                         foreach (var u in Model)
                         {
+                            // Logic check quyền
                             bool isSelf = (u.UserId == currentUserId);
-                            bool isAdmin = (u.RoleName == "Admin");
-                            bool canEdit = isSelf || !isAdmin;
+                            bool isTargetAdmin = (u.RoleName == "Admin" || u.RoleCode == "ADMIN");
+                            bool canEdit = isSelf || !isTargetAdmin; // Admin ko sửa được Admin khác (trừ chính mình)
 
                             <tr class="hover:bg-indigo-50/30 transition-colors group">
                                 <td class="px-6 py-4 text-center text-slate-400 font-medium">
@@ -128,39 +143,12 @@
 
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3 min-w-[180px]">
-                                        <div class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-bold border border-white shadow-sm">
+                                        <div class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-bold border border-white shadow-sm flex-shrink-0">
                                             @(string.IsNullOrEmpty(u.FullName) ? "?" : u.FullName[0].ToString().ToUpper())
                                         </div>
-                                        <span class="font-medium text-slate-700">@u.FullName</span>
+                                        <span class="font-medium text-slate-700 truncate">@u.FullName</span>
                                     </div>
                                 </td>
-                                @* <td class="px-6 py-4">
-                                    <div class="flex items-center gap-3 min-w-[200px]">
-
-                                        <div class="relative flex-shrink-0 w-10 h-10">
-                                            @if (!string.IsNullOrEmpty(u.Avatar) && u.EmployeeId != null)
-                                            {
-                                                <img src="~/img/employees/@u.EmployeeId/@u.Avatar"
-                                                     asp-append-version="true"
-                                                     alt="@u.Username"
-                                                     class="w-full h-full rounded-full object-cover border-2 border-white shadow-sm ring-1 ring-slate-200 absolute inset-0 z-10"
-                                                     onerror="this.style.display='none'; document.getElementById('fallback-@u.UserId').style.display='flex';" />
-                                            }
-
-                                    <div id="fallback-@u.UserId"
-                                         class="w-full h-full rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs font-bold border-2 border-white shadow-sm ring-1 ring-slate-200 @(!string.IsNullOrEmpty(u.Avatar) ? "hidden" : "flex")">
-                                        @(string.IsNullOrEmpty(u.FullName)
-                                                                                ? u.Username?.Substring(0, 1).ToUpper()
-                                                                                : u.FullName?.Substring(0, 1).ToUpper())
-                                    </div>
-                                </div>
-
-                                        <div class="flex flex-col overflow-hidden">
-                                            <span class="font-bold text-slate-700 text-sm truncate">@u.FullName</span>
-                                            <span class="text-[11px] text-slate-400 truncate">@u.Email</span>
-                                        </div>
-                                    </div>
-                                </td> *@
 
                                 <td class="px-6 py-4 text-slate-500">
                                     @u.Email
@@ -173,6 +161,13 @@
                                             <i class="fa-solid fa-shield-cat"></i> ADMIN
                                         </span>
                                     }
+                                    else if (u.RoleCode == "MANAGER" || u.RoleName == "Manager")
+                                    {
+                                        /* 🔥 Style cho MANAGER */
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-amber-200 bg-amber-100 text-amber-700 text-xs font-bold shadow-sm">
+                                            <i class="fa-solid fa-briefcase"></i> MANAGER
+                                        </span>
+                                    }
                                     else if (u.RoleCode == "HR" || u.RoleName == "HR")
                                     {
                                         <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-blue-200 bg-blue-100 text-blue-700 text-xs font-bold shadow-sm">
@@ -182,7 +177,7 @@
                                     else
                                     {
                                         <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-slate-200 bg-slate-100 text-slate-600 text-xs font-bold shadow-sm">
-                                            <i class="fa-solid fa-user"></i> EMPLOYEE
+                                            <i class="fa-solid fa-user"></i> EMP
                                         </span>
                                     }
                                 </td>
@@ -297,14 +292,12 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const alert = document.getElementById("alert-error");
-        if (alert) {
-            setTimeout(() => {
-                alert.style.transition = "opacity 0.5s ease";
-                alert.style.opacity = "0";
-                setTimeout(() => alert.remove(), 500);
-            }, 3000);
-        }
+        const alertError = document.getElementById("alert-error");
+        const alertSuccess = document.getElementById("alert-success");
+
+        // Auto hide notification
+        if (alertError) setTimeout(() => alertError.style.display = 'none', 3000);
+        if (alertSuccess) setTimeout(() => alertSuccess.style.display = 'none', 3000);
     });
 
     function confirmLock(e, form) {
