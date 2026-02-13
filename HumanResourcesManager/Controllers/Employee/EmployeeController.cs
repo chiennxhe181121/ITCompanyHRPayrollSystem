@@ -1,5 +1,6 @@
 ﻿using HumanResourcesManager.BLL.DTOs;
 using HumanResourcesManager.BLL.Interfaces;
+using HumanResourcesManager.DAL.Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -10,22 +11,40 @@ using Volo.Abp;
 public class EmployeeController : Controller
 {
     private readonly IEmployeeService _employeeService;
+    private readonly IAttendanceService _attendanceService;
 
-    public EmployeeController(IEmployeeService employeeService)
+    public EmployeeController(
+        IEmployeeService employeeService,
+        IAttendanceService attendanceService)
     {
         _employeeService = employeeService;
+        _attendanceService = attendanceService;
     }
 
+    // Lấy userId từ session
     private int CurrentUserId =>
         int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
     // ===== Attendance =====
     // view attendance
     [HttpGet("attendance")]
-    public IActionResult Index()
+    public IActionResult Index(
+        int page = 1,
+        int pageSize = 3,
+        int? month = null,
+        int? year = null,
+        AttendanceStatus? status = null)
     {
-        var employee = _employeeService.GetOwnProfile(CurrentUserId);
-        return View(employee);
+        var model = _attendanceService.GetEmployeeAttendance(
+            CurrentUserId,
+            page,
+            pageSize,
+            month,
+            year,
+            status
+        );
+
+        return View(model);
     }
 
     // ===== Profile =====

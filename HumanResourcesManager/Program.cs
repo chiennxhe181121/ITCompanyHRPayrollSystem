@@ -1,4 +1,4 @@
-﻿using HumanResourcesManager.Auth;
+using HumanResourcesManager.Auth;
 using HumanResourcesManager.BLL.DTOs;
 using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.BLL.Services;
@@ -79,6 +79,7 @@ namespace HumanResourcesManager
             builder.Services.AddScoped<IEmployeeService, EmployeeService>();
             builder.Services.AddScoped<IPositionRepository, PositionRepository>(); // 09/02/2026
             builder.Services.AddScoped<IADEmployeeRepository, ADEmployeeRepository>(); // 10/02/2026
+            builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
 
             // Dependency Injection: Business Services (BLL)
             builder.Services.AddScoped<IAuthService, AuthService>();
@@ -92,8 +93,7 @@ namespace HumanResourcesManager
             builder.Services.AddScoped<IDepartmentService, DepartmentService>();
             builder.Services.AddScoped<IPositionService, PositionService>(); // 09/02/2026
             builder.Services.AddScoped<IADEmployeeService, ADEmployeeService>(); // 10/02/2026
-
-
+            builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 
             // Session configuration
             builder.Services.AddDistributedMemoryCache();

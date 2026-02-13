@@ -11,7 +11,8 @@ namespace HumanResourcesManager.DAL.Enum
         Normal,
         MissingCheckIn,
         MissingCheckOut,
-        ApprovedLeave,
-        AWOL
+        ApprovedLeave, // nghỉ có phép
+        AWOL, // nghỉ không phép
+        InsufficientWork
     }
 }
