@@ -53,7 +53,7 @@ namespace HumanResourcesManager.BLL.Services
         private string SaveAvatarImage(IFormFile file, int employeeId)
         {
             string webRootPath = _webHostEnvironment.WebRootPath;
-            string folderPath = Path.Combine(webRootPath, "img", "employee", employeeId.ToString(), "avatar");
+            string folderPath = Path.Combine(webRootPath, "img", "employees", employeeId.ToString(), "avatar");
 
             if (!Directory.Exists(folderPath))
             {
@@ -74,7 +74,7 @@ namespace HumanResourcesManager.BLL.Services
                 file.CopyTo(stream);
             }
 
-            return $"/img/employee/{employeeId}/avatar/{fileName}";
+            return $"/img/employees/{employeeId}/avatar/{fileName}";
         }
 
 
