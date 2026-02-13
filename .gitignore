@@ -11,3 +11,4 @@
 # ASP.NET Core config (IMPORTANT)
 appsettings.json
 appsettings.*.json
+/HumanResourcesManager/appsettings.json

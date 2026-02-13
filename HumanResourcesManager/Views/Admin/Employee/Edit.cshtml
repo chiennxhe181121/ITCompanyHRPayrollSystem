@@ -1,0 +1,236 @@
+﻿@model HumanResourcesManager.BLL.DTOs.ADEmployee.ADEmployeeUpdateDTO
+
+@{
+    ViewData["Title"] = "Cập Nhật Hồ Sơ";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    // Lấy lại các params từ Controller (đã nạp vào ViewBag ở GET Edit)
+    int pageIndex = ViewBag.Page ?? 1;
+    string keyword = ViewBag.Keyword;
+    int? deptId = ViewBag.DeptId;
+    int? posId = ViewBag.PosId;
+    int? status = ViewBag.Status;
+}
+
+<div class="min-h-screen bg-slate-50 flex justify-center py-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl w-full animate__animated animate__fadeInUp">
+
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-2xl font-extrabold text-slate-800">Cập Nhật Hồ Sơ</h2>
+                <p class="text-sm text-slate-500">Chỉnh sửa thông tin nhân viên #@Model.EmployeeId</p>
+            </div>
+            <a href="/HumanResourcesManager/admin/employees?page=@pageIndex&keyword=@keyword&deptId=@deptId&posId=@posId&status=@status"
+               class="flex items-center text-sm text-slate-500 hover:text-blue-600 transition-colors group">
+                <i class="fa-solid fa-arrow-left-long mr-2 transition-transform group-hover:-translate-x-1"></i>
+                Quay lại
+            </a>
+        </div>
+
+        <div asp-validation-summary="ModelOnly" class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-r-lg shadow-sm animate__animated animate__headShake" role="alert"></div>
+
+        <form method="post" enctype="multipart/form-data"
+              asp-action="Edit"
+              asp-route-id="@Model.EmployeeId"
+              asp-route-page="@pageIndex"
+              asp-route-keyword="@keyword"
+              asp-route-deptId="@deptId"
+              asp-route-posId="@posId"
+              asp-route-status="@status"
+              class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="EmployeeId" />
+            <input type="hidden" asp-for="HasAccount" />
+            <input type="hidden" asp-for="ImgAvatar" />
+
+            <div class="lg:col-span-2 space-y-6">
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-regular fa-id-card text-blue-500"></i> Thông Tin Cá Nhân
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Họ và tên <span class="text-red-500">*</span></label>
+                            <input asp-for="FullName" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-700" />
+                            <span asp-validation-for="FullName" class="text-xs text-red-500 mt-1 block"></span>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày sinh <span class="text-red-500">*</span></label>
+                            <input asp-for="DateOfBirth" type="date" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none" />
+                            <span asp-validation-for="DateOfBirth" class="text-xs text-red-500 mt-1 block"></span>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Giới tính <span class="text-red-500">*</span></label>
+                            <select asp-for="Gender" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none appearance-none">
+                                <option value="true">Nam</option>
+                                <option value="false">Nữ</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Số điện thoại <span class="text-red-500">*</span></label>
+                            <input asp-for="Phone" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none" />
+                            <span asp-validation-for="Phone" class="text-xs text-red-500 mt-1 block"></span>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Email <span class="text-red-500">*</span></label>
+                            <input asp-for="Email" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none" />
+                            <span asp-validation-for="Email" class="text-xs text-red-500 mt-1 block"></span>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Địa chỉ</label>
+                            <textarea asp-for="Address" rows="2" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-briefcase text-indigo-500"></i> Thông Tin Công Việc
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Phòng ban <span class="text-red-500">*</span></label>
+                            <div class="relative">
+                                <select asp-for="DepartmentId" asp-items="ViewBag.Departments" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none"></select>
+                                <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Chức vụ <span class="text-red-500">*</span></label>
+                            <div class="relative">
+                                <select asp-for="PositionId" asp-items="ViewBag.Positions" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none"></select>
+                                <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                            </div>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày vào làm</label>
+                            <input asp-for="HireDate" type="date" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center">
+                    <div class="w-28 h-28 mx-auto bg-slate-100 rounded-full flex items-center justify-center mb-4 border-4 border-slate-50 shadow-inner overflow-hidden relative group">
+                        @if (!string.IsNullOrEmpty(Model.ImgAvatar))
+                        {
+                            <img id="avatarPreview" src="@Model.ImgAvatar" class="w-full h-full object-cover" />
+                            <i id="avatarIcon" class="fa-regular fa-image text-3xl text-slate-300 hidden"></i>
+                        }
+                        else
+                        {
+                            <img id="avatarPreview" src="#" class="w-full h-full object-cover hidden" />
+                            <i id="avatarIcon" class="fa-regular fa-image text-3xl text-slate-300"></i>
+                        }
+                    </div>
+
+                    <label for="avatarUpload" class="inline-block px-4 py-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold cursor-pointer hover:bg-blue-100 transition-colors">
+                        <i class="fa-solid fa-camera mr-1"></i> Thay đổi ảnh
+                    </label>
+                    <input type="file" id="avatarUpload" name="AvatarFile" class="hidden" accept="image/*" onchange="previewImage(this)" />
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-user-shield text-emerald-500"></i> Tài Khoản
+                    </h3>
+
+                    @if (Model.HasAccount)
+                    {
+                        <div class="bg-blue-50 text-blue-800 p-4 rounded-xl text-sm border border-blue-100">
+                            <div class="flex items-center gap-2 mb-2 font-bold">
+                                <i class="fa-solid fa-circle-check text-lg text-blue-600"></i> Đã cấp tài khoản
+                            </div>
+                            <p class="mb-3 text-xs opacity-80">Nhân viên này đã có quyền truy cập hệ thống.</p>
+                            <a href="/HumanResourcesManager/admin/UserAccounts?keyword=@Model.Email"
+                               class="inline-block w-full text-center px-3 py-2 bg-white border border-blue-200 rounded-lg text-xs font-bold hover:bg-blue-600 hover:text-white transition-colors hover:shadow-md">
+                                Quản lý / Đổi mật khẩu
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-sm font-bold text-slate-700">Cấp tài khoản mới</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" asp-for="IsCreateAccount" id="toggleAccount" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                            </label>
+                        </div>
+
+                        <div id="accountFields" class="space-y-4 hidden transition-all duration-300 border-t border-slate-100 pt-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Mật khẩu mới</label>
+                                <div class="relative">
+                                    <input asp-for="Password" type="password" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:border-emerald-500 focus:ring-2 outline-none" placeholder="Để trống = Mặc định 12345678" />
+                                    <i class="fa-regular fa-eye absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                </div>
+                            </div>
+                            <div class="text-[11px] text-emerald-600 font-medium bg-emerald-50 p-2 rounded border border-emerald-100">
+                                <i class="fa-solid fa-info-circle mr-1"></i> Username: <b>@Model.Email</b>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="flex flex-col gap-3 pt-2">
+                    <button type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-lg shadow-blue-200 hover:shadow-blue-300 hover:-translate-y-0.5 transition-all">
+                        <i class="fa-solid fa-floppy-disk mr-2"></i> Lưu thay đổi
+                    </button>
+                    <a href="/HumanResourcesManager/admin/employees?page=@pageIndex&keyword=@keyword&deptId=@deptId&posId=@posId&status=@status"
+                       class="w-full py-3.5 rounded-xl bg-white border border-slate-200 text-slate-600 font-bold text-center hover:bg-slate-50 transition-all">
+                        Huỷ bỏ
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // 1. Toggle Account Logic
+        document.addEventListener("DOMContentLoaded", function() {
+            const toggle = document.getElementById('toggleAccount');
+            const fields = document.getElementById('accountFields');
+            if(toggle && fields) {
+                function updateVisibility() {
+                    if (toggle.checked) {
+                        fields.classList.remove('hidden');
+                        fields.classList.add('animate__animated', 'animate__fadeIn');
+                    } else {
+                        fields.classList.add('hidden');
+                        fields.classList.remove('animate__animated', 'animate__fadeIn');
+                    }
+                }
+                toggle.addEventListener('change', updateVisibility);
+                updateVisibility();
+            }
+        });
+
+        // 2. Preview Image Logic
+        function previewImage(input) {
+            const preview = document.getElementById('avatarPreview');
+            const icon = document.getElementById('avatarIcon');
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                    if(icon) icon.classList.add('hidden');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}

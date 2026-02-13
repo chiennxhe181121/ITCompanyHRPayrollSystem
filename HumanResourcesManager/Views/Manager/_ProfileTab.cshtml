@@ -1,0 +1,58 @@
+<div id="profileTab" class="tab-content hidden">
+    <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
+        <h2 class="text-lg font-semibold text-slate-800">Hồ Sơ Cá Nhân</h2>
+        <p class="text-sm text-slate-500 mt-0.5">Chỉnh sửa thông tin cá nhân của bạn</p>
+    </div>
+    <div class="p-6">
+        <form id="profileForm" class="w-full space-y-6" onsubmit="return false;">
+            <input type="hidden" id="profileAvatarData" value="">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-slate-100">
+                <div class="flex items-center gap-4">
+                    <div id="profileAvatarPreview" class="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-2xl font-bold text-white ring-2 ring-slate-200 shadow-inner flex-shrink-0">
+                        <img id="profileAvatarImg" class="w-full h-full object-cover hidden" alt="">
+                        <span id="profileAvatarInitial">M</span>
+                    </div>
+                    <div id="profileAvatarActions" class="flex flex-col gap-2 hidden">
+                        <input type="file" id="profileAvatarInput" accept="image/*" class="hidden">
+                        <button type="button" id="profileAvatarBtn" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition-colors">Chọn ảnh</button>
+                        <button type="button" id="profileAvatarRemoveBtn" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-sm font-medium transition-colors">Xóa ảnh</button>
+                    </div>
+                </div>
+                <div class="flex items-center justify-end md:justify-start">
+                    <button type="button" id="profileEditSaveBtn" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-sm transition-colors">
+                        Chỉnh sửa thông tin
+                    </button>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1.5">Họ và tên</label>
+                    <input type="text" id="profileFullName" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 read-only:bg-slate-50 read-only:cursor-default focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1.5">Email</label>
+                    <input type="email" id="profileEmail" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 read-only:bg-slate-50 read-only:cursor-default focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1.5">Số điện thoại</label>
+                    <input type="tel" id="profilePhone" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-800 read-only:bg-slate-50 read-only:cursor-default focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" placeholder="0901234567" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1.5">Mã nhân viên</label>
+                    <input type="text" id="profileEmployeeCode" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1.5">Phòng ban</label>
+                    <input type="text" id="profileDepartment" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1.5">Chức vụ</label>
+                    <input type="text" id="profilePosition" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1.5">Ngày vào làm</label>
+                    <input type="text" id="profileJoinDate" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
