@@ -1,4 +1,4 @@
-﻿using HumanResourcesManager.Auth;
+using HumanResourcesManager.Auth;
 using HumanResourcesManager.BLL.DTOs;
 using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.BLL.Services;
@@ -93,8 +93,6 @@ namespace HumanResourcesManager
             builder.Services.AddScoped<IDepartmentService, DepartmentService>();
             builder.Services.AddScoped<IPositionService, PositionService>(); // 09/02/2026
             builder.Services.AddScoped<IADEmployeeService, ADEmployeeService>(); // 10/02/2026
-
-
             builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 
             // Session configuration

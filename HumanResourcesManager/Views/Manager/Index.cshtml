@@ -1,9 +1,75 @@
 @{
     ViewData["Title"] = "Manager Dashboard";
+    Layout = "~/Views/Manager/_ManagerLayout.cshtml";
 }
 
-<div class="container mt-5">
-    <h1 class="mb-4">Trang quản trị Manager</h1>
-    <p>Chào mừng Hoàng đến với hệ thống quản trị manager🎉</p>
-</div>
+<header class="bg-white/90 backdrop-blur-sm border-b border-slate-200/80 px-6 lg:px-8 py-5">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-semibold text-slate-800">Manager Dashboard</h1>
+            <p class="text-slate-500 text-sm mt-0.5">Quản lý nhóm và duyệt yêu cầu</p>
+        </div>
+        <div class="flex items-center gap-4 rounded-xl bg-slate-50 px-4 py-2.5 border border-slate-200/80">
+            <div class="text-right">
+                <p class="text-xs text-slate-500 uppercase tracking-wide">Hôm nay</p>
+                <p class="text-sm font-medium text-slate-800" id="currentDate"></p>
+            </div>
+            <p class="text-lg font-semibold text-blue-600 tabular-nums" id="currentTime"></p>
+        </div>
+    </div>
+</header>
 
+<div class="p-5 lg:p-8 bg-slate-50/50 min-h-screen">
+    <!-- Stats -->
+    <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <div class="relative bg-white rounded-2xl shadow-sm border border-slate-200/60 p-5 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-500 text-xs font-medium uppercase tracking-wide">Nhân Viên Quản Lý</p>
+                    <p class="text-2xl font-bold text-slate-800 mt-1.5" id="teamSize">0</p>
+                </div>
+                <div class="w-11 h-11 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="relative bg-white rounded-2xl shadow-sm border border-slate-200/60 p-5 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-500 text-xs font-medium uppercase tracking-wide">Yêu Cầu Chờ Duyệt</p>
+                    <p class="text-2xl font-bold text-slate-800 mt-1.5" id="pendingRequests">0</p>
+                </div>
+                <div class="w-11 h-11 bg-amber-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="relative bg-white rounded-2xl shadow-sm border border-slate-200/60 p-5 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-500 text-xs font-medium uppercase tracking-wide">Lịch Tăng Ca</p>
+                    <p class="text-2xl font-bold text-slate-800 mt-1.5" id="scheduleCount">0</p>
+                </div>
+                <div class="w-11 h-11 bg-emerald-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs Content -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
+        @await Html.PartialAsync("_ProfileTab")
+        @await Html.PartialAsync("_TeamTab")
+        @await Html.PartialAsync("_OvertimeTab")
+        @await Html.PartialAsync("_ScheduleTab")
+    </div>
+</div>
