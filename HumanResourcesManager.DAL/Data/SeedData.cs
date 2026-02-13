@@ -15,7 +15,7 @@ namespace HumanResourcesManager.DAL.Data
             if (!context.Roles.Any())
             {
                 context.Roles.AddRange(
-                    new Role { RoleCode = "EMP", RoleName = "Employee", Status = Constants.Active }, 
+                    new Role { RoleCode = "EMP", RoleName = "Employee", Status = Constants.Active },
                     new Role { RoleCode = "HR", RoleName = "HR", Status = Constants.Active },
                     new Role { RoleCode = "ADMIN", RoleName = "Admin", Status = Constants.Active },
                     new Role { RoleCode = "MANAGER", RoleName = "Manager", Status = Constants.Active }
@@ -39,7 +39,7 @@ namespace HumanResourcesManager.DAL.Data
             {
                 context.Positions.AddRange(
                     new Position { PositionName = "HR Executive", BaseSalary = 8000000, Status = Constants.Active, CreatedAt = DateTime.Now },// Hoàng thêm status và createdat 
-                    new Position { PositionName = "Software Engineer", BaseSalary = 15000000 , Status = Constants.Active, CreatedAt = DateTime.Now },
+                    new Position { PositionName = "Software Engineer", BaseSalary = 15000000, Status = Constants.Active, CreatedAt = DateTime.Now },
                     new Position { PositionName = "Accountant", BaseSalary = 12000000, Status = Constants.Active, CreatedAt = DateTime.Now }
                 );
                 context.SaveChanges();
@@ -51,6 +51,7 @@ namespace HumanResourcesManager.DAL.Data
                 var adminRoleId = context.Roles.First(r => r.RoleCode == "ADMIN").RoleId;
                 var hrRoleId = context.Roles.First(r => r.RoleCode == "HR").RoleId;
                 var empRoleId = context.Roles.First(r => r.RoleCode == "EMP").RoleId;
+                var managerRoleId = context.Roles.First(r => r.RoleCode == "MANAGER").RoleId;
 
                 context.UserAccounts.AddRange(
                     new UserAccount
@@ -73,6 +74,13 @@ namespace HumanResourcesManager.DAL.Data
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
                         RoleId = empRoleId,
                         Status = Constants.Active
+                    },
+                    new UserAccount
+                    {
+                        Username = "manager",
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
+                        RoleId = managerRoleId,
+                        Status = Constants.Active
                     }
                 );
                 context.SaveChanges();
@@ -85,12 +93,13 @@ namespace HumanResourcesManager.DAL.Data
                 var adminUser = context.UserAccounts.First(u => u.Username == "admin");
                 var hrUser = context.UserAccounts.First(u => u.Username == "hr");
                 var empUser = context.UserAccounts.First(u => u.Username == "emp");
+                var managerUser = context.UserAccounts.First(u => u.Username == "manager");
 
                 context.Employees.AddRange(
                     new Employee
                     {
                         EmployeeCode = "EMP001",
-                        FullName = "A Hoang dep zai",
+                        FullName = "Hoàng Admin",
                         Email = "a.nguyen@company.com",
                         Phone = "0901234567",
                         DepartmentId = 1,
@@ -104,7 +113,7 @@ namespace HumanResourcesManager.DAL.Data
                     new Employee
                     {
                         EmployeeCode = "EMP002",
-                        FullName = "Tran Thi B",
+                        FullName = "Quang Nhân Sự",
                         Email = "b.tran@company.com",
                         Phone = "0912345678",
                         DepartmentId = 2,
@@ -117,7 +126,7 @@ namespace HumanResourcesManager.DAL.Data
                     new Employee
                     {
                         EmployeeCode = "EMP003",
-                        FullName = "Le Van C",
+                        FullName = "Chiến Nhân Viên",
                         Email = "c.le@company.com",
                         Phone = "0923456789",
                         DepartmentId = 3,
@@ -126,7 +135,21 @@ namespace HumanResourcesManager.DAL.Data
                         ImgAvatar = null,
 
                         UserAccount = empUser
-                    }
+                    },
+                      new Employee
+                  {
+                         EmployeeCode = "EMP004",
+                         FullName = "Giang Quản Lý",
+                         Email = "d.nguyen@company.com",
+                         Phone = "0923456789",
+                         DepartmentId = 3,
+                         PositionId = 3,
+                         Status = Constants.Active,
+                         ImgAvatar = null,
+
+                         UserAccount = managerUser
+                   }
+
                 );
                 context.SaveChanges();
             }
