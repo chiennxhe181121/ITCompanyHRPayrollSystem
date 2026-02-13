@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
 
 namespace HumanResourcesManager.BLL.DTOs.ADEmployee
 {
@@ -23,6 +24,9 @@ namespace HumanResourcesManager.BLL.DTOs.ADEmployee
 
         public string? Address { get; set; }
         public string? ImgAvatar { get; set; }
+
+        //  THÊM TRƯỜNG NÀY ĐỂ HỨNG FILE TỪ VIEW
+        public IFormFile? AvatarFile { get; set; }
 
         [Required]
         public DateTime HireDate { get; set; } = DateTime.Now;

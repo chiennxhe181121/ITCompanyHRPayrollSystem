@@ -3,10 +3,25 @@
 @inject IHttpContextAccessor HttpContextAccessor
 
 @{
+    // 1. Lấy User từ Session
     var user = HttpContextAccessor.HttpContext?.Session.GetObject<UserSessionDTO>("USER_SESSION");
+
     var fullName = user?.FullName ?? "Guest";
     var roleCode = user?.RoleCode ?? "N/A";
+
+    // 2. Xử lý Avatar an toàn
+    var imgAvatar = user?.ImgAvatar;
+
+    // Nếu có ảnh nhưng đường dẫn ko bắt đầu bằng '/' (đường dẫn tương đối), thêm vào cho chắc
+    if (!string.IsNullOrEmpty(imgAvatar) && !imgAvatar.StartsWith("/"))
+    {
+        imgAvatar = "/" + imgAvatar;
+    }
+
+    // Chữ cái đầu tên (Fallback)
     var firstLetter = !string.IsNullOrEmpty(fullName) ? fullName.Substring(0, 1).ToUpper() : "G";
+
+    // Đường dẫn hiện tại để Active menu
     var path = HttpContextAccessor.HttpContext?.Request.Path.Value?.ToLower() ?? "";
 
     string IsActive(string checkPath, bool exact = false)
@@ -29,15 +44,32 @@
 
             <div class="p-5">
                 <div class="flex items-center gap-4 p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                    <div class="relative">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold shadow-md shadow-indigo-200">
-                            @firstLetter
-                        </div>
-                        <span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
+
+                    <div class="relative flex-shrink-0">
+                        @if (!string.IsNullOrEmpty(imgAvatar))
+                        {
+                            <img src="@imgAvatar"
+                                 alt="Avatar"
+                                 class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md shadow-indigo-200"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white items-center justify-center font-bold shadow-md shadow-indigo-200 border-2 border-white hidden">
+                                @firstLetter
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold shadow-md shadow-indigo-200 border-2 border-white">
+                                @firstLetter
+                            </div>
+                        }
+
+                        <span class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></span>
                     </div>
+
                     <div class="overflow-hidden">
-                        <p class="font-bold text-slate-800 text-sm truncate">@fullName</p>
-                        <p class="text-xs text-slate-500 font-medium truncate">@roleCode</p>
+                        <p class="font-bold text-slate-800 text-sm truncate" title="@fullName">@fullName</p>
+                        <p class="text-xs text-slate-500 font-medium truncate mt-0.5">@roleCode</p>
                     </div>
                 </div>
             </div>
@@ -47,8 +79,7 @@
                 <div>
                     <p class="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Tổng quan</p>
                     <div class="space-y-1">
-                        <a href="/HumanResourcesManager/admin"
-                           class="nav-item @(IsActive("/humanresourcesmanager/admin", true))">
+                        <a href="/HumanResourcesManager/admin" class="nav-item @(IsActive("/humanresourcesmanager/admin", true))">
                             <span class="nav-icon"><i class="fa-solid fa-chart-pie"></i></span>
                             <span class="font-medium">Dashboard</span>
                         </a>
@@ -58,26 +89,19 @@
                 <div>
                     <p class="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Quản lý hệ thống</p>
                     <div class="space-y-1">
-                        <a href="/HumanResourcesManager/admin/useraccounts"
-                           class="nav-item @(IsActive("/admin/useraccounts"))">
+                        <a href="/HumanResourcesManager/admin/useraccounts" class="nav-item @(IsActive("/admin/useraccounts"))">
                             <span class="nav-icon"><i class="fa-solid fa-users-gear"></i></span>
                             <span class="font-medium">Tài khoản</span>
                         </a>
-
-                        <a href="/HumanResourcesManager/admin/employees"
-                           class="nav-item @(IsActive("/admin/employees"))">
+                        <a href="/HumanResourcesManager/admin/employees" class="nav-item @(IsActive("/admin/employees"))">
                             <span class="nav-icon"><i class="fa-solid fa-id-card-clip"></i></span>
                             <span class="font-medium">Nhân viên</span>
                         </a>
-
-                        <a href="/HumanResourcesManager/admin/departments"
-                           class="nav-item @(IsActive("/admin/departments"))">
+                        <a href="/HumanResourcesManager/admin/departments" class="nav-item @(IsActive("/admin/departments"))">
                             <span class="nav-icon"><i class="fa-solid fa-building-user"></i></span>
                             <span class="font-medium">Phòng ban</span>
                         </a>
-
-                        <a href="/HumanResourcesManager/admin/positions"
-                           class="nav-item @(IsActive("/admin/positions"))">
+                        <a href="/HumanResourcesManager/admin/positions" class="nav-item @(IsActive("/admin/positions"))">
                             <span class="nav-icon"><i class="fa-solid fa-briefcase"></i></span>
                             <span class="font-medium">Chức vụ</span>
                         </a>
@@ -87,8 +111,7 @@
                 <div>
                     <p class="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Cá nhân</p>
                     <div class="space-y-1">
-                        <a href="/HumanResourcesManager/admin/myprofile"
-                           class="nav-item @(IsActive("/admin/myprofile"))">
+                        <a href="/HumanResourcesManager/admin/myprofile" class="nav-item @(IsActive("/admin/myprofile"))">
                             <span class="nav-icon"><i class="fa-solid fa-user-pen"></i></span>
                             <span class="font-medium">Hồ sơ của tôi</span>
                         </a>
@@ -109,19 +132,17 @@
 </aside>
 
 <style>
-    /* Base style cho Nav Item */
     .nav-item {
         display: flex;
         align-items: center;
         gap: 12px;
         padding: 10px 16px;
         border-radius: 12px;
-        color: #64748b; /* slate-500 */
+        color: #64748b;
         transition: all 0.2s ease-in-out;
-        font-size: 0.875rem; /* 14px */
+        font-size: 0.875rem;
     }
 
-        /* Icon trong Nav Item */
         .nav-item .nav-icon {
             display: flex;
             align-items: center;
@@ -132,21 +153,19 @@
             transition: transform 0.2s;
         }
 
-        /* Hover State */
         .nav-item:hover {
-            background-color: #f1f5f9; /* slate-100 */
-            color: #4f46e5; /* indigo-600 */
+            background-color: #f1f5f9;
+            color: #4f46e5;
         }
 
             .nav-item:hover .nav-icon {
-                transform: translateX(3px); /* Di chuyển icon nhẹ */
+                transform: translateX(3px);
             }
 
-        /* ACTIVE STATE (WOW Effect) */
         .nav-item.active {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); /* Indigo to Purple */
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
             color: white;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); /* Shadow màu indigo */
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
             font-weight: 600;
         }
 
@@ -154,7 +173,6 @@
                 color: rgba(255,255,255,0.9);
             }
 
-    /* Custom Scrollbar cho sidebar gọn */
     .custom-scrollbar::-webkit-scrollbar {
         width: 4px;
     }

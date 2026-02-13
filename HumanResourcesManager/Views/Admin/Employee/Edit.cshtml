@@ -3,6 +3,13 @@
 @{
     ViewData["Title"] = "Cập Nhật Hồ Sơ";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    // Lấy lại các params từ Controller (đã nạp vào ViewBag ở GET Edit)
+    int pageIndex = ViewBag.Page ?? 1;
+    string keyword = ViewBag.Keyword;
+    int? deptId = ViewBag.DeptId;
+    int? posId = ViewBag.PosId;
+    int? status = ViewBag.Status;
 }
 
 <div class="min-h-screen bg-slate-50 flex justify-center py-10 px-4 sm:px-6 lg:px-8">
@@ -13,7 +20,8 @@
                 <h2 class="text-2xl font-extrabold text-slate-800">Cập Nhật Hồ Sơ</h2>
                 <p class="text-sm text-slate-500">Chỉnh sửa thông tin nhân viên #@Model.EmployeeId</p>
             </div>
-            <a href="/HumanResourcesManager/admin/employees" class="flex items-center text-sm text-slate-500 hover:text-blue-600 transition-colors group">
+            <a href="/HumanResourcesManager/admin/employees?page=@pageIndex&keyword=@keyword&deptId=@deptId&posId=@posId&status=@status"
+               class="flex items-center text-sm text-slate-500 hover:text-blue-600 transition-colors group">
                 <i class="fa-solid fa-arrow-left-long mr-2 transition-transform group-hover:-translate-x-1"></i>
                 Quay lại
             </a>
@@ -21,14 +29,23 @@
 
         <div asp-validation-summary="ModelOnly" class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-r-lg shadow-sm animate__animated animate__headShake" role="alert"></div>
 
-        <form method="post" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <form method="post" enctype="multipart/form-data"
+              asp-action="Edit"
+              asp-route-id="@Model.EmployeeId"
+              asp-route-page="@pageIndex"
+              asp-route-keyword="@keyword"
+              asp-route-deptId="@deptId"
+              asp-route-posId="@posId"
+              asp-route-status="@status"
+              class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="EmployeeId" />
             <input type="hidden" asp-for="HasAccount" />
-
             <input type="hidden" asp-for="ImgAvatar" />
 
             <div class="lg:col-span-2 space-y-6">
+
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
                     <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
@@ -100,7 +117,7 @@
             <div class="space-y-6">
 
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center">
-                    <div class="w-28 h-28 mx-auto bg-slate-100 rounded-full flex items-center justify-center mb-4 border-4 border-slate-50 shadow-inner overflow-hidden relative">
+                    <div class="w-28 h-28 mx-auto bg-slate-100 rounded-full flex items-center justify-center mb-4 border-4 border-slate-50 shadow-inner overflow-hidden relative group">
                         @if (!string.IsNullOrEmpty(Model.ImgAvatar))
                         {
                             <img id="avatarPreview" src="@Model.ImgAvatar" class="w-full h-full object-cover" />
@@ -121,6 +138,7 @@
 
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+
                     <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-user-shield text-emerald-500"></i> Tài Khoản
                     </h3>
@@ -167,6 +185,10 @@
                     <button type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-lg shadow-blue-200 hover:shadow-blue-300 hover:-translate-y-0.5 transition-all">
                         <i class="fa-solid fa-floppy-disk mr-2"></i> Lưu thay đổi
                     </button>
+                    <a href="/HumanResourcesManager/admin/employees?page=@pageIndex&keyword=@keyword&deptId=@deptId&posId=@posId&status=@status"
+                       class="w-full py-3.5 rounded-xl bg-white border border-slate-200 text-slate-600 font-bold text-center hover:bg-slate-50 transition-all">
+                        Huỷ bỏ
+                    </a>
                 </div>
             </div>
         </form>

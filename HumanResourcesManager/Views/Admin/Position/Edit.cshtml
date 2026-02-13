@@ -66,10 +66,18 @@
                             <i class="fa-solid fa-coins text-slate-400 group-focus-within:text-emerald-500 transition-colors"></i>
                         </div>
 
-                        <input type="text"
+                        @* <input type="text"
                                id="salaryDisplay"
                                value="@Model.BaseSalary.ToString("N0")"
                                class="block w-full pl-11 pr-16 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all duration-200 font-mono font-bold text-emerald-700"
+                               oninput="formatCurrency(this)" /> *@
+                        <input type="text"
+                               id="salaryDisplay"
+                               value="@(Model.BaseSalary > 0 ? Model.BaseSalary.ToString("N0") : "")"
+                               class="block w-full pl-11 pr-16 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all duration-200 font-mono font-bold text-emerald-700"
+                               placeholder="0"
+                               autocomplete="off"
+                               maxlength="20"
                                oninput="formatCurrency(this)" />
 
                         <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
@@ -213,8 +221,38 @@
             }
         });
 
+        // function formatCurrency(input) {
+        //     let value = input.value.replace(/[^0-9]/g, '');
+        //     document.getElementById('salaryHidden').value = value;
+
+        //     if (!value) {
+        //         input.value = '';
+        //         document.getElementById('salaryText').innerText = '';
+        //         return;
+        //     }
+
+        //     input.value = new Intl.NumberFormat('en-US').format(value);
+
+        //     const number = parseInt(value, 10);
+        //     if (!isNaN(number)) {
+        //         let text = DOCSO.doc(number);
+        //         text = text.charAt(0).toUpperCase() + text.slice(1);
+        //         document.getElementById('salaryText').innerText = 'Bằng chữ: ' + text + ' đồng';
+        //     }
+        // }
+
+        // Hàm xử lý chính
         function formatCurrency(input) {
+            // 1. Chỉ giữ lại số
             let value = input.value.replace(/[^0-9]/g, '');
+
+            // 🔥 VALIDATION JS: Chặn nếu quá 15 chữ số (999 Nghìn Tỷ)
+            // Để tránh mảng DOCSO.tien bị hết index (gây lỗi undefined)
+            if (value.length > 15) {
+                value = value.substring(0, 15);
+            }
+
+            // Gán giá trị thực vào hidden input
             document.getElementById('salaryHidden').value = value;
 
             if (!value) {
@@ -223,13 +261,24 @@
                 return;
             }
 
+            // 2. Format dấu phẩy hiển thị lại (VD: 1,000,000)
             input.value = new Intl.NumberFormat('en-US').format(value);
 
+            // 3. Đọc số thành chữ
             const number = parseInt(value, 10);
             if (!isNaN(number)) {
-                let text = DOCSO.doc(number);
-                text = text.charAt(0).toUpperCase() + text.slice(1);
-                document.getElementById('salaryText').innerText = 'Bằng chữ: ' + text + ' đồng';
+                // Kiểm tra an toàn trước khi đọc
+                if (value.length > 15) {
+                     document.getElementById('salaryText').innerText = 'Số tiền quá lớn để đọc!';
+                } else {
+                    let text = DOCSO.doc(number);
+                    if(text) {
+                        text = text.charAt(0).toUpperCase() + text.slice(1);
+                        document.getElementById('salaryText').innerText = 'Bằng chữ: ' + text + ' đồng';
+                    } else {
+                         document.getElementById('salaryText').innerText = '';
+                    }
+                }
             }
         }
     </script>

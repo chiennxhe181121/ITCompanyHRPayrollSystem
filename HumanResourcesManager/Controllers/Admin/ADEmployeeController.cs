@@ -48,7 +48,7 @@ namespace HumanResourcesManager.Controllers.Admin
             if (status.HasValue)
                 query = query.Where(e => e.Status == status.Value);
 
-            // 3. Pagination Logic
+            // . Pagination Logic
             int pageSize = 10;
             int totalItems = query.Count();
             int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
@@ -58,7 +58,6 @@ namespace HumanResourcesManager.Controllers.Admin
 
             var pagedData = query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-            // 4. ViewBags cho UI
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = totalPages;
             ViewBag.Keyword = keyword;
@@ -111,12 +110,24 @@ namespace HumanResourcesManager.Controllers.Admin
             }
         }
 
- 
+        // --- GET: Trang Edit ---
         [HttpGet("edit/{id}")]
-        public IActionResult Edit(int id)
+        public IActionResult Edit(
+            int id,
+            int page = 1,
+            string? keyword = null,
+            int? deptId = null,
+            int? posId = null,
+            int? status = null)
         {
             var dto = _service.GetById(id);
             if (dto == null) return NotFound();
+
+            ViewBag.Page = page;
+            ViewBag.Keyword = keyword;
+            ViewBag.DeptId = deptId;
+            ViewBag.PosId = posId;
+            ViewBag.Status = status;
 
             LoadViewBags();
             return View("~/Views/Admin/Employee/Edit.cshtml", dto);

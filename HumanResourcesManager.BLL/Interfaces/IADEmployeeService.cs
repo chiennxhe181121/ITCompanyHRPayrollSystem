@@ -1,5 +1,6 @@
 ﻿using HumanResourcesManager.BLL.DTOs.ADEmployee;
 using HumanResourcesManager.DAL.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace HumanResourcesManager.BLL.Interfaces
 {
@@ -16,5 +17,6 @@ namespace HumanResourcesManager.BLL.Interfaces
         //void SetStatus(int id, int status); 
  
         void SetStatus(int id, int status, int? currentUserId);
+
     }
 }

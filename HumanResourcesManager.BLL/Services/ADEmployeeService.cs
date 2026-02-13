@@ -1,9 +1,12 @@
-﻿using HumanResourcesManager.BLL.DTOs.ADEmployee;
+﻿using BCrypt.Net;
+using HumanResourcesManager.BLL.DTOs.ADEmployee;
 using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.DAL.Interfaces;
 using HumanResourcesManager.DAL.Models;
 using HumanResourcesManager.DAL.Shared;
-using BCrypt.Net;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http; 
+
 
 // HoangDH 
 namespace HumanResourcesManager.BLL.Services
@@ -11,12 +14,14 @@ namespace HumanResourcesManager.BLL.Services
     public class ADEmployeeService : IADEmployeeService
     {
         private readonly IADEmployeeRepository _empRepo;
-        private readonly IUserAccountRepository _userRepo; 
+        private readonly IUserAccountRepository _userRepo;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ADEmployeeService(IADEmployeeRepository empRepo, IUserAccountRepository userRepo)
+        public ADEmployeeService(IADEmployeeRepository empRepo, IUserAccountRepository userRepo, IWebHostEnvironment webHostEnvironment)
         {
             _empRepo = empRepo;
             _userRepo = userRepo;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         public List<Employee> GetAllEmployees()
@@ -43,6 +48,157 @@ namespace HumanResourcesManager.BLL.Services
 
             return $"{prefix}{nextSequence.ToString("D4")}";
         }
+
+
+        private string SaveAvatarImage(IFormFile file, int employeeId)
+        {
+            string webRootPath = _webHostEnvironment.WebRootPath;
+            string folderPath = Path.Combine(webRootPath, "img", "employee", employeeId.ToString(), "avatar");
+
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+
+
+            string fileExtension = Path.GetExtension(file.FileName);
+            string fileName = $"avatar{fileExtension}";
+            string fullPath = Path.Combine(folderPath, fileName);
+
+
+            var files = Directory.GetFiles(folderPath);
+            foreach (var f in files) File.Delete(f);
+
+            using (var stream = new FileStream(fullPath, FileMode.Create))
+            {
+                file.CopyTo(stream);
+            }
+
+            return $"/img/employee/{employeeId}/avatar/{fileName}";
+        }
+
+
+        public bool CreateEmployee(ADEmployeeCreateDTO dto, out string message)
+        {
+            message = "";
+            if (_empRepo.ExistsEmail(dto.Email)) { message = "DUPLICATE_EMAIL"; return false; }
+            if (_empRepo.ExistsPhone(dto.Phone)) { message = "DUPLICATE_PHONE"; return false; }
+
+            //  1: Tạo đối tượng (Ảnh tạm thời null)
+            var emp = new Employee
+            {
+                EmployeeCode = GenerateEmployeeCode(),
+                FullName = dto.FullName,
+                Gender = dto.Gender,
+                DateOfBirth = dto.DateOfBirth,
+                Email = dto.Email,
+                Phone = dto.Phone,
+                Address = dto.Address,
+                HireDate = dto.HireDate,
+                DepartmentId = dto.DepartmentId,
+                PositionId = dto.PositionId,
+                Status = Constants.Active,
+                ImgAvatar = null
+            };
+
+            // Logic UserAccount
+            if (dto.IsCreateAccount)
+            {
+                int roleId = _empRepo.GetRoleIdByCode("EMP");
+                if (roleId == 0) { message = "SYSTEM_ERROR: Role 'EMP' not found"; return false; }
+
+                string pass = !string.IsNullOrEmpty(dto.Password) ? dto.Password : "12345678";
+                emp.UserAccount = new UserAccount
+                {
+                    Username = dto.Email,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(pass),
+                    RoleId = roleId,
+                    Status = Constants.Active
+                };
+            }
+
+            try
+            {
+                // 2: Lưu DB lần 1 để lấy ID
+                _empRepo.Add(emp);
+                _empRepo.Save(); // --> Sinh ra emp.EmployeeId (Ví dụ: 10)
+
+                // 3: Nếu có ảnh -> Lưu ảnh theo ID -> Update DB lần 2
+                if (dto.AvatarFile != null)
+                {
+                    string avatarPath = SaveAvatarImage(dto.AvatarFile, emp.EmployeeId);
+
+                    emp.ImgAvatar = avatarPath;
+                    _empRepo.Update(emp);
+                    _empRepo.Save(); // Chốt đơn đường dẫn ảnh
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                message = "SYSTEM_ERROR: " + ex.Message;
+                return false;
+            }
+        }
+
+        // --- 3. UPDATE (Sửa + Ảnh) ---
+        public bool UpdateEmployee(ADEmployeeUpdateDTO dto, out string message)
+        {
+            message = "";
+            if (_empRepo.ExistsEmail(dto.Email, dto.EmployeeId)) { message = "DUPLICATE_EMAIL"; return false; }
+            if (_empRepo.ExistsPhone(dto.Phone, dto.EmployeeId)) { message = "DUPLICATE_PHONE"; return false; }
+
+            var emp = _empRepo.GetById(dto.EmployeeId);
+            if (emp == null) { message = "Not found"; return false; }
+
+            // Update thông tin
+            emp.FullName = dto.FullName;
+            emp.Gender = dto.Gender;
+            emp.DateOfBirth = dto.DateOfBirth;
+            emp.Email = dto.Email;
+            emp.Phone = dto.Phone;
+            emp.Address = dto.Address;
+            emp.HireDate = dto.HireDate;
+            emp.DepartmentId = dto.DepartmentId;
+            emp.PositionId = dto.PositionId;
+
+            try
+            {
+                // Nếu có chọn ảnh mới -> Ghi đè ảnh cũ -> Update đường dẫn
+                if (dto.AvatarFile != null)
+                {
+                    string newPath = SaveAvatarImage(dto.AvatarFile, emp.EmployeeId);
+                    emp.ImgAvatar = newPath;
+                }
+                // Nếu dto.AvatarFile == null thì giữ nguyên emp.ImgAvatar cũ trong DB
+
+                // Logic tạo thêm Account lúc sửa (nếu chưa có)
+                if (emp.UserAccount == null && dto.IsCreateAccount)
+                {
+                    int roleId = _empRepo.GetRoleIdByCode("EMP");
+                    string pass = !string.IsNullOrEmpty(dto.Password) ? dto.Password : "12345678";
+                    emp.UserAccount = new UserAccount
+                    {
+                        Username = dto.Email,
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword(pass),
+                        RoleId = roleId,
+                        Status = Constants.Active,
+                        Employee = emp
+                    };
+                }
+
+                _empRepo.Update(emp);
+                _empRepo.Save();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                message = "SYSTEM_ERROR: " + ex.Message;
+                return false;
+            }
+        }
+
 
 
         public List<DepartmentSelectDTO> GetDepartments()
@@ -90,124 +246,6 @@ namespace HumanResourcesManager.BLL.Services
             };
         }
 
-        public bool UpdateEmployee(ADEmployeeUpdateDTO dto, out string message)
-        {
-            message = "";
-
-            if (_empRepo.ExistsEmail(dto.Email, dto.EmployeeId))
-            {
-                message = "DUPLICATE_EMAIL";
-                return false;
-            }
-            if (_empRepo.ExistsPhone(dto.Phone, dto.EmployeeId))
-            {
-                message = "DUPLICATE_PHONE";
-                return false;
-            }
-
-            var emp = _empRepo.GetById(dto.EmployeeId);
-            if (emp == null) { message = "Nhân viên không tồn tại"; return false; }
-
-            emp.FullName = dto.FullName;
-            emp.Gender = dto.Gender;
-            emp.DateOfBirth = dto.DateOfBirth;
-            emp.Email = dto.Email;
-            emp.Phone = dto.Phone;
-            emp.Address = dto.Address;
-            emp.HireDate = dto.HireDate;
-            emp.DepartmentId = dto.DepartmentId;
-            emp.PositionId = dto.PositionId;
-
-            if (!string.IsNullOrEmpty(dto.ImgAvatar))
-            {
-                emp.ImgAvatar = dto.ImgAvatar;
-            }
-
-            if (emp.UserAccount == null && dto.IsCreateAccount)
-            {
-                string finalPassword = !string.IsNullOrEmpty(dto.Password) ? dto.Password : "12345678";
-
-                var newAccount = new UserAccount
-                {
-                    Username = dto.Email, 
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(finalPassword),
-                    RoleId = 2, 
-                    Status = Constants.Active,
-                    Employee = emp
-                };
-                emp.UserAccount = newAccount;
-            }
-
-            try
-            {
-                _empRepo.Update(emp);
-                _empRepo.Save();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                message = "Lỗi hệ thống: " + ex.Message;
-                return false;
-            }
-        }
-
-
-        public bool CreateEmployee(ADEmployeeCreateDTO dto, out string message)
-        {
-            message = "";
-            if (_empRepo.ExistsEmail(dto.Email)) { message = "DUPLICATE_EMAIL"; return false; }
-            if (_empRepo.ExistsPhone(dto.Phone)) { message = "DUPLICATE_PHONE"; return false; }
-
-            var emp = new Employee
-            {
-                EmployeeCode = GenerateEmployeeCode(),
-                FullName = dto.FullName,
-                Gender = dto.Gender,
-                DateOfBirth = dto.DateOfBirth,
-                Email = dto.Email,
-                Phone = dto.Phone,
-                Address = dto.Address,
-                ImgAvatar = dto.ImgAvatar,
-                HireDate = dto.HireDate,
-                DepartmentId = dto.DepartmentId,
-                PositionId = dto.PositionId,
-                Status = Constants.Active
-            };
-
-            if (dto.IsCreateAccount)
-            {
-                int roleId = _empRepo.GetRoleIdByCode("EMP");
-
-                if (roleId == 0)
-                {
-                    message = "SYSTEM_ERROR: Role 'EMP' chưa được định nghĩa trong Database Role.";
-                    return false;
-                }
-
-                string finalUsername = !string.IsNullOrEmpty(dto.Username) ? dto.Username : dto.Email;
-                string finalPassword = !string.IsNullOrEmpty(dto.Password) ? dto.Password : "12345678";
-
-                emp.UserAccount = new UserAccount
-                {
-                    Username = finalUsername,
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(finalPassword),
-                    RoleId = roleId, 
-                    Status = Constants.Active
-                };
-            }
-
-            try
-            {
-                _empRepo.Add(emp);
-                _empRepo.Save();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                message = "SYSTEM_ERROR: " + ex.Message;
-                return false;
-            }
-        }
 
 
         //  Logic chặn Inactive bản thân
