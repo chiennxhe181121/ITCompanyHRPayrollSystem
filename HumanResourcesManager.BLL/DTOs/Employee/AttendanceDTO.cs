@@ -1,6 +1,6 @@
 ﻿using HumanResourcesManager.DAL.Enum;
 
-namespace HumanResourcesManager.BLL.DTOs
+namespace HumanResourcesManager.BLL.DTOs.Employee
 {
     public class AttendanceRowDTO
     {

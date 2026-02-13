@@ -24,9 +24,6 @@
 <body class="bg-slate-50 min-h-screen" data-page="@route">
 
 	@await Html.PartialAsync("_Loading")
-	<script>
-		window.currentEmployee = @Html.Raw(Json.Serialize(Model));
-	</script>
 
 	<div class="flex h-screen overflow-hidden">
 		@await Html.PartialAsync("_EmployeeSidebar")
@@ -34,7 +31,10 @@
 	</div>
 
 	<div id="modalContainer"></div>
+
 	<script src="~/js/loading.js"></script>
 	<script src="~/js/employee.js"></script>
+
+	@RenderSection("Scripts", required: false)
 </body>
 </html>

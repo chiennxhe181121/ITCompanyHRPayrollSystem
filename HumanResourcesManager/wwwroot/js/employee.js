@@ -70,12 +70,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const page = document.body.dataset.page;
 
     switch (page) {
-        case "attendance":
-            //loadAttendanceUI();
-            break;
-        case "profile":
-            loadProfileUI();
-            break;
         case "overtime":
             loadOvertimeUI();
             break;
@@ -87,15 +81,9 @@ document.addEventListener('DOMContentLoaded', function () {
             break;
     }
 
-    // dùng để fallback khi hủy chỉnh sửa profile
-    const dobInput = document.getElementById('profileDob');
-    if (dobInput) {
-        dobInput.dataset.originalValue = dobInput.value;
-    }
-
     loadStatsUI();
     loadStatsVisibility();
-    initializePage();
+    //initializePage();
     updateStatsDisplay();
     updateStatButtonIcons();
     updateCurrentDate();
@@ -225,86 +213,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// ===== SIDEBAR =====
-// cần sửa
-function initializePage() {
-    if (!window.currentEmployee) return;
-
-    const e = window.currentEmployee;
-
-    // Sidebar name
-    const userNameEl = document.getElementById('userName');
-    if (userNameEl) userNameEl.textContent = e.fullName;
-
-    // Sidebar position
-    const position = document.getElementById('userPosition');
-    if (position) position.textContent = e.positionName;
-
-    if (e.imgAvatar) {
-        updateSidebarAvatar(e.imgAvatar);
-    } else {
-        const initial = e.fullName
-            ? e.fullName.charAt(0).toUpperCase()
-            : "?";
-
-        updateSidebarAvatar(null, initial);
-    }
-}
-
-function updateSidebarAvatar(avatarDataUrl, initialLetter) {
-    const img = document.getElementById('sidebarAvatarImg');
-    const span = document.getElementById('userInitial');
-    if (!img || !span) return;
-    if (avatarDataUrl) {
-        img.src = avatarDataUrl;
-        img.classList.remove('hidden');
-        span.classList.add('hidden');
-    } else {
-        img.classList.add('hidden');
-        img.src = '';
-        span.textContent = initialLetter || 'E';
-        span.classList.remove('hidden');
-    }
-}
-
 // ===== PROFILE =====
-function loadProfileUI() {
-    if (!window.currentEmployee) return;
-
-    const e = window.currentEmployee;
-
-    const fullNameInput = document.getElementById('profileFullName');
-    const imgEl = document.getElementById('profileAvatarImg');
-    const initialEl = document.getElementById('profileAvatarInitial');
-    const removeBtn = document.getElementById('profileAvatarRemoveBtn');
-
-    // Full name
-    if (fullNameInput && !fullNameInput.value)
-        fullNameInput.value = e.fullName ?? '';
-
-    // Avatar render theo DB
-    //if (e.imgAvatar) {
-    //    imgEl.src = e.imgAvatar + '?v=' + Date.now(); // cache bust
-    //    imgEl.classList.remove('hidden');
-    //    initialEl.classList.add('hidden');
-    //    if (removeBtn) removeBtn.classList.remove('hidden');
-    //} else {
-    //    imgEl.src = '';
-    //    imgEl.classList.add('hidden');
-    //    initialEl.classList.remove('hidden');
-    //    initialEl.textContent = (e.fullName ?? 'E').charAt(0).toUpperCase();
-    //    if (removeBtn) removeBtn.classList.add('hidden');
-    //}
-
-    loadProfileAvatarFromDB()
-
-    setProfileEditMode(false);
-}
-
 function loadProfileAvatarFromDB() {
-    if (!window.currentEmployee) return;
 
-    const avatarPath = window.currentEmployee.imgAvatar;
+    const root = document.getElementById("profileRoot");
+    if (!root) return;
+
+    const avatarPath = root.dataset.avatar;
 
     const imgEl = document.getElementById('profileAvatarImg');
     const initialEl = document.getElementById('profileAvatarInitial');
@@ -319,8 +234,10 @@ function loadProfileAvatarFromDB() {
         imgEl.src = '';
         imgEl.classList.add('hidden');
         initialEl?.classList.remove('hidden');
-        initialEl.textContent =
-            window.currentEmployee.fullName?.charAt(0).toUpperCase() ?? 'E';
+
+        const fullName = root.dataset.fullname ?? 'E';
+        initialEl.textContent = fullName.charAt(0).toUpperCase();
+
         removeBtn?.classList.add('hidden');
     }
 }
@@ -438,37 +355,10 @@ function setProfileEditMode(editing) {
         if (avatarActions) avatarActions.classList.add('hidden');
     }
 }
+
 function cancelProfileEdit() {
-    if (!window.currentEmployee) return;
-
-    const e = window.currentEmployee;
-
-    // reset form fields
-    document.getElementById('profileFullName').value = e.fullName ?? '';
-    document.getElementById('profileEmail').value = e.email ?? '';
-    document.getElementById('profilePhone').value = e.phone ?? '';
-    document.getElementById('profileGender').value = e.gender ?? '';
-    const dobInput = document.getElementById('profileDob');
-    if (dobInput) {
-        dobInput.value = dobInput.dataset.originalValue || '';
-    }
-    document.getElementById('profileAddress').value = e.address ?? '';
-
-    // reset avatar về DB
+    document.getElementById('profileForm').reset();
     loadProfileAvatarFromDB();
-
-    // clear file input + remove flag
-    const fileInput = document.getElementById('profileAvatarInput');
-    if (fileInput) fileInput.value = '';
-
-    const removeFlag = document.getElementById('removeAvatarFlag');
-    if (removeFlag) removeFlag.value = 'false';
-
-    // clear validate errors
-    document.querySelectorAll('.field-error').forEach(e => e.remove());
-    document.querySelectorAll('.border-red-500').forEach(e => e.classList.remove('border-red-500'));
-
-    // exit edit mode
     setProfileEditMode(false);
 }
 
@@ -614,6 +504,49 @@ let checkInStream = null;
 let checkOutStream = null;
 let checkInPhotoData = null;
 let checkOutPhotoData = null;
+
+// ===== SIDEBAR =====
+// cần sửa
+//function initializePage() {
+//    if (typeof window.currentEmployee === "undefined" || !window.currentEmployee)
+//        return;
+
+//    const e = window.currentEmployee;
+
+//    // Sidebar name
+//    const userNameEl = document.getElementById('userName');
+//    if (userNameEl) userNameEl.textContent = e.fullName;
+
+//    // Sidebar position
+//    const position = document.getElementById('userPosition');
+//    if (position) position.textContent = e.positionName;
+
+//    if (e.imgAvatar) {
+//        updateSidebarAvatar(e.imgAvatar);
+//    } else {
+//        const initial = e.fullName
+//            ? e.fullName.charAt(0).toUpperCase()
+//            : "?";
+
+//        updateSidebarAvatar(null, initial);
+//    }
+//}
+
+//function updateSidebarAvatar(avatarDataUrl, initialLetter) {
+//    const img = document.getElementById('sidebarAvatarImg');
+//    const span = document.getElementById('userInitial');
+//    if (!img || !span) return;
+//    if (avatarDataUrl) {
+//        img.src = avatarDataUrl;
+//        img.classList.remove('hidden');
+//        span.classList.add('hidden');
+//    } else {
+//        img.classList.add('hidden');
+//        img.src = '';
+//        span.textContent = initialLetter || 'E';
+//        span.classList.remove('hidden');
+//    }
+//}
 
 // ===== CAMERA (chỉ giao diện) =====
 async function startCamera(type) {

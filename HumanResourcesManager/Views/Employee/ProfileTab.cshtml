@@ -1,4 +1,5 @@
-﻿@model HumanResourcesManager.BLL.DTOs.EmployeeOwnerProfileDTO
+﻿@using HumanResourcesManager.BLL.DTOs.Employee
+@model EmployeeOwnerProfileDTO
 
 @{
 	Layout = "~/Views/Employee/_EmployeeLayout.cshtml";
@@ -35,10 +36,29 @@
 
 							<!-- LEFT: AVATAR -->
 							<div class="flex items-center gap-4">
+								@{
+									var avatarPath = Model.ImgAvatar;
+									var hasAvatar = !string.IsNullOrEmpty(avatarPath);
+									var initial = string.IsNullOrEmpty(Model.FullName)
+									? "U"
+									: Model.FullName.Substring(0, 1).ToUpper();
+								}
+
 								<div id="profileAvatarPreview"
 									 class="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-2xl font-bold text-white ring-2 ring-slate-200 shadow-inner flex-shrink-0">
-									<img id="profileAvatarImg" class="w-full h-full object-cover hidden" alt="">
-									<span id="profileAvatarInitial">E</span>
+
+									@if (hasAvatar)
+									{
+										<img id="profileAvatarImg"
+											 src="@avatarPath"
+											 class="w-full h-full object-cover"
+											 alt="Avatar">
+									}
+									else
+									{
+										<span id="profileAvatarInitial">@initial</span>
+									}
+
 								</div>
 
 								<div id="profileAvatarActions" class="flex flex-col gap-2 hidden">
@@ -85,6 +105,28 @@
 							</div>
 
 							<div></div>
+						</div>
+						<div class="text-red-600 text-sm">
+							@if (!ViewData.ModelState.IsValid)
+							{
+								<div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm">
+									<div class="flex items-start gap-3">
+										<div class="text-red-500 text-lg">
+											<i class="bi bi-exclamation-triangle-fill"></i>
+										</div>
+
+										<div class="text-sm text-red-700">
+											<p class="font-medium mb-1">Có lỗi xảy ra:</p>
+											<ul class="list-disc list-inside space-y-1">
+												@foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+												{
+													<li>@error.ErrorMessage</li>
+												}
+											</ul>
+										</div>
+									</div>
+								</div>
+							}
 						</div>
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
 							<!-- HỌ TÊN -->
@@ -187,11 +229,33 @@
 							</div>
 						</div>
 					</form>
-					<div class="text-red-600 text-sm">
-						@Html.ValidationSummary()
-					</div>
 				</div>
 			</div>
 		</div>
 	</div>
 </main>
+
+@section Scripts {
+	@if (Model != null)
+	{
+		<script>
+			window.currentEmployee = @Html.Raw(Json.Serialize(Model));
+		</script>
+	}
+
+	<!-- Thông báo cập nhật profile thành công -->
+	@if (TempData["Success"] != null)
+	{
+		<script>
+			Swal.fire({
+				toast: true,
+				position: 'top-end',
+				icon: 'success',
+				title: @Html.Raw(Json.Serialize(TempData["Success"])),
+				showConfirmButton: false,
+				timer: 2500,
+				timerProgressBar: true
+			});
+		</script>
+	}
+}
