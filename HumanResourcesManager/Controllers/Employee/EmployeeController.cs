@@ -1,9 +1,12 @@
-﻿using HumanResourcesManager.BLL.DTOs;
+﻿using HumanResourcesManager.BLL.DTOs.Employee;
 using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.DAL.Enum;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Text.Json;
 using Volo.Abp;
 
 [Authorize(Policy = "EMP")]
@@ -12,13 +15,16 @@ public class EmployeeController : Controller
 {
     private readonly IEmployeeService _employeeService;
     private readonly IAttendanceService _attendanceService;
+    private readonly IUserAccountService _userAccountService;
 
     public EmployeeController(
         IEmployeeService employeeService,
-        IAttendanceService attendanceService)
+        IAttendanceService attendanceService,
+        IUserAccountService userAccountService)
     {
         _employeeService = employeeService;
         _attendanceService = attendanceService;
+        _userAccountService = userAccountService;
     }
 
     // Lấy userId từ session
@@ -53,10 +59,12 @@ public class EmployeeController : Controller
     public IActionResult Profile()
     {
         var employee = _employeeService.GetOwnProfile(CurrentUserId);
+
+        ViewData["EmployeeJson"] = JsonSerializer.Serialize(employee);
+
         return View("~/Views/Employee/ProfileTab.cshtml", employee);
     }
 
-    // update profile
     [HttpPost("update-profile")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateProfile(
@@ -64,15 +72,28 @@ public class EmployeeController : Controller
         IFormFile? avatarFile
     )
     {
-        // ===== ANNOTATION VALIDATION =====
         ModelState.Remove(nameof(EmployeeOwnerProfileDTO.EmployeeCode));
         ModelState.Remove(nameof(EmployeeOwnerProfileDTO.DepartmentName));
         ModelState.Remove(nameof(EmployeeOwnerProfileDTO.PositionName));
         ModelState.Remove(nameof(EmployeeOwnerProfileDTO.HireDate));
+
         if (!ModelState.IsValid)
         {
-            return View("~/Views/Employee/ProfileTab.cshtml", model);
-            // hoặc đúng path view mày đang dùng
+            var errors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .ToList();
+
+            var fullProfile = _employeeService.GetOwnProfile(CurrentUserId);
+
+            ModelState.Clear();
+
+            foreach (var error in errors)
+            {
+                ModelState.AddModelError(string.Empty, error);
+            }
+
+            return View("ProfileTab", fullProfile);
         }
 
         try
@@ -88,14 +109,52 @@ public class EmployeeController : Controller
         }
         catch (BusinessException ex)
         {
-            ModelState.AddModelError(
-                string.Empty,
-                ex.Details ?? ex.Message
-            );
-            return View("ProfileTab", model);
+            var errorMessage = ex.Details ?? ex.Message;
+
+            var fullProfile = _employeeService.GetOwnProfile(CurrentUserId);
+
+            ModelState.Clear(); // clear trước
+
+            ModelState.AddModelError(string.Empty, errorMessage); // add lại lỗi
+
+            return View("ProfileTab", fullProfile);
         }
     }
 
+    // change password
+    [HttpGet("profile/change-password")]
+    public IActionResult ChangePassword()
+    {
+        return View("~/Views/Employee/ChangePassword.cshtml");
+    }
+
+    [HttpPost("profile/change-password")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ChangePassword(ChangePasswordDTO dto)
+    {
+        if (!ModelState.IsValid)
+            return View(dto);
+
+        var result = _userAccountService.ChangePassword(CurrentUserId, dto);
+
+        if (!result.IsSuccess)
+        {
+            ModelState.AddModelError("", result.Message);
+            return View(dto);
+        }
+
+        HttpContext.Session.Clear();
+
+        await HttpContext.SignOutAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme
+        );
+
+        TempData["Success"] = "Đổi mật khẩu thành công. Vui lòng đăng nhập lại.";
+
+        return RedirectToAction("Login", "Auth");
+    }
+
+    // ===== Leaves =====
     [HttpGet("leaves")]
     public IActionResult Leaves()
     {

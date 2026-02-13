@@ -70,12 +70,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const page = document.body.dataset.page;
 
     switch (page) {
-        case "attendance":
-            //loadAttendanceUI();
-            break;
-        case "profile":
-            loadProfileUI();
-            break;
         case "overtime":
             loadOvertimeUI();
             break;
@@ -87,15 +81,9 @@ document.addEventListener('DOMContentLoaded', function () {
             break;
     }
 
-    // dùng để fallback khi hủy chỉnh sửa profile
-    const dobInput = document.getElementById('profileDob');
-    if (dobInput) {
-        dobInput.dataset.originalValue = dobInput.value;
-    }
-
     loadStatsUI();
     loadStatsVisibility();
-    initializePage();
+    //initializePage();
     updateStatsDisplay();
     updateStatButtonIcons();
     updateCurrentDate();
@@ -225,86 +213,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// ===== SIDEBAR =====
-// cần sửa
-function initializePage() {
-    if (!window.currentEmployee) return;
-
-    const e = window.currentEmployee;
-
-    // Sidebar name
-    const userNameEl = document.getElementById('userName');
-    if (userNameEl) userNameEl.textContent = e.fullName;
-
-    // Sidebar position
-    const position = document.getElementById('userPosition');
-    if (position) position.textContent = e.positionName;
-
-    if (e.imgAvatar) {
-        updateSidebarAvatar(e.imgAvatar);
-    } else {
-        const initial = e.fullName
-            ? e.fullName.charAt(0).toUpperCase()
-            : "?";
-
-        updateSidebarAvatar(null, initial);
-    }
-}
-
-function updateSidebarAvatar(avatarDataUrl, initialLetter) {
-    const img = document.getElementById('sidebarAvatarImg');
-    const span = document.getElementById('userInitial');
-    if (!img || !span) return;
-    if (avatarDataUrl) {
-        img.src = avatarDataUrl;
-        img.classList.remove('hidden');
-        span.classList.add('hidden');
-    } else {
-        img.classList.add('hidden');
-        img.src = '';
-        span.textContent = initialLetter || 'E';
-        span.classList.remove('hidden');
-    }
-}
-
 // ===== PROFILE =====
-function loadProfileUI() {
-    if (!window.currentEmployee) return;
-
-    const e = window.currentEmployee;
-
-    const fullNameInput = document.getElementById('profileFullName');
-    const imgEl = document.getElementById('profileAvatarImg');
-    const initialEl = document.getElementById('profileAvatarInitial');
-    const removeBtn = document.getElementById('profileAvatarRemoveBtn');
-
-    // Full name
-    if (fullNameInput && !fullNameInput.value)
-        fullNameInput.value = e.fullName ?? '';
-
-    // Avatar render theo DB
-    //if (e.imgAvatar) {
-    //    imgEl.src = e.imgAvatar + '?v=' + Date.now(); // cache bust
-    //    imgEl.classList.remove('hidden');
-    //    initialEl.classList.add('hidden');
-    //    if (removeBtn) removeBtn.classList.remove('hidden');
-    //} else {
-    //    imgEl.src = '';
-    //    imgEl.classList.add('hidden');
-    //    initialEl.classList.remove('hidden');
-    //    initialEl.textContent = (e.fullName ?? 'E').charAt(0).toUpperCase();
-    //    if (removeBtn) removeBtn.classList.add('hidden');
-    //}
-
-    loadProfileAvatarFromDB()
-
-    setProfileEditMode(false);
-}
-
 function loadProfileAvatarFromDB() {
-    if (!window.currentEmployee) return;
 
-    const avatarPath = window.currentEmployee.imgAvatar;
+    const root = document.getElementById("profileRoot");
+    if (!root) return;
+
+    const avatarPath = root.dataset.avatar;
 
     const imgEl = document.getElementById('profileAvatarImg');
     const initialEl = document.getElementById('profileAvatarInitial');
@@ -319,15 +234,20 @@ function loadProfileAvatarFromDB() {
         imgEl.src = '';
         imgEl.classList.add('hidden');
         initialEl?.classList.remove('hidden');
-        initialEl.textContent =
-            window.currentEmployee.fullName?.charAt(0).toUpperCase() ?? 'E';
+
+        const fullName = root.dataset.fullname ?? 'E';
+        initialEl.textContent = fullName.charAt(0).toUpperCase();
+
         removeBtn?.classList.add('hidden');
     }
 }
 
 function setProfileEditMode(editing) {
     profileEditMode = editing;
+
     const btn = document.getElementById('profileEditSaveBtn');
+    const changePasswordBtn = document.getElementById('profileChangePasswordBtn');
+
     const fullName = document.getElementById('profileFullName');
     const email = document.getElementById('profileEmail');
     const phone = document.getElementById('profilePhone');
@@ -335,97 +255,110 @@ function setProfileEditMode(editing) {
     const dob = document.getElementById('profileDob');
     const address = document.getElementById('profileAddress');
     const avatarActions = document.getElementById('profileAvatarActions');
+
     if (!btn) return;
+
     if (editing) {
+
         document.getElementById('profileCancelBtn')?.classList.remove('hidden');
         btn.textContent = 'Lưu thay đổi';
-        if (fullName) { fullName.removeAttribute('readonly'); fullName.classList.remove('bg-slate-50'); fullName.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
-        if (email) { email.removeAttribute('readonly'); email.classList.remove('bg-slate-50'); email.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
-        if (phone) { phone.removeAttribute('readonly'); phone.classList.remove('bg-slate-50'); phone.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
+
+        // 🔥 Ẩn đổi mật khẩu khi đang edit
+        if (changePasswordBtn) {
+            changePasswordBtn.classList.add('hidden');
+        }
+
+        if (fullName) {
+            fullName.removeAttribute('readonly');
+            fullName.classList.remove('bg-slate-50');
+            fullName.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
+        }
+
+        if (email) {
+            email.removeAttribute('readonly');
+            email.classList.remove('bg-slate-50');
+            email.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
+        }
+
+        if (phone) {
+            phone.removeAttribute('readonly');
+            phone.classList.remove('bg-slate-50');
+            phone.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
+        }
+
         if (gender) {
             gender.removeAttribute('disabled');
             gender.classList.remove('bg-slate-50');
-            gender.classList.add(
-                'border-slate-300',
-                'focus:ring-2',
-                'focus:ring-blue-500/20',
-                'focus:border-blue-500', 'text-slate-800'
-            );
+            gender.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
         }
+
         if (dob) {
             dob.removeAttribute('readonly');
             dob.classList.remove('bg-slate-50');
-            dob.classList.add(
-                'border-slate-300',
-                'focus:ring-2',
-                'focus:ring-blue-500/20',
-                'focus:border-blue-500', 'text-slate-800'
-            );
+            dob.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
         }
+
         if (address) {
             address.removeAttribute('readonly');
             address.classList.remove('bg-slate-50');
-            address.classList.add(
-                'border-slate-300',
-                'focus:ring-2',
-                'focus:ring-blue-500/20',
-                'focus:border-blue-500', 'text-slate-800'
-            );
+            address.classList.add('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
         }
+
         if (avatarActions) avatarActions.classList.remove('hidden');
+
     } else {
+
         document.getElementById('profileCancelBtn')?.classList.add('hidden');
         btn.textContent = 'Chỉnh sửa thông tin';
-        if (fullName) { fullName.setAttribute('readonly', 'readonly'); fullName.classList.add('bg-slate-50'); fullName.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
-        if (email) { email.setAttribute('readonly', 'readonly'); email.classList.add('bg-slate-50'); email.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
-        if (phone) { phone.setAttribute('readonly', 'readonly'); phone.classList.add('bg-slate-50'); phone.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
+
+        // 🔥 Hiển thị lại đổi mật khẩu
+        if (changePasswordBtn) {
+            changePasswordBtn.classList.remove('hidden');
+        }
+
+        if (fullName) {
+            fullName.setAttribute('readonly', 'readonly');
+            fullName.classList.add('bg-slate-50');
+            fullName.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
+        }
+
+        if (email) {
+            email.setAttribute('readonly', 'readonly');
+            email.classList.add('bg-slate-50');
+            email.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
+        }
+
+        if (phone) {
+            phone.setAttribute('readonly', 'readonly');
+            phone.classList.add('bg-slate-50');
+            phone.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
+        }
+
         if (gender) {
             gender.setAttribute('disabled', 'disabled');
             gender.classList.add('bg-slate-50');
-            gender.classList.remove(
-                'border-slate-300',
-                'focus:ring-2',
-                'focus:ring-blue-500/20',
-                'focus:border-blue-500', 'text-slate-800'
-            );
+            gender.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
         }
-        if (dob) { dob.setAttribute('readonly', 'readonly'); dob.classList.add('bg-slate-50'); dob.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
-        if (address) { address.setAttribute('readonly', 'readonly'); address.classList.add('bg-slate-50'); address.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800'); }
+
+        if (dob) {
+            dob.setAttribute('readonly', 'readonly');
+            dob.classList.add('bg-slate-50');
+            dob.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
+        }
+
+        if (address) {
+            address.setAttribute('readonly', 'readonly');
+            address.classList.add('bg-slate-50');
+            address.classList.remove('border-slate-300', 'focus:ring-2', 'focus:ring-blue-500/20', 'focus:border-blue-500', 'text-slate-800');
+        }
+
         if (avatarActions) avatarActions.classList.add('hidden');
     }
 }
 
 function cancelProfileEdit() {
-    if (!window.currentEmployee) return;
-
-    const e = window.currentEmployee;
-
-    // reset form fields
-    document.getElementById('profileFullName').value = e.fullName ?? '';
-    document.getElementById('profileEmail').value = e.email ?? '';
-    document.getElementById('profilePhone').value = e.phone ?? '';
-    document.getElementById('profileGender').value = e.gender ?? '';
-    const dobInput = document.getElementById('profileDob');
-    if (dobInput) {
-        dobInput.value = dobInput.dataset.originalValue || '';
-    }
-    document.getElementById('profileAddress').value = e.address ?? '';
-
-    // reset avatar về DB
+    document.getElementById('profileForm').reset();
     loadProfileAvatarFromDB();
-
-    // clear file input + remove flag
-    const fileInput = document.getElementById('profileAvatarInput');
-    if (fileInput) fileInput.value = '';
-
-    const removeFlag = document.getElementById('removeAvatarFlag');
-    if (removeFlag) removeFlag.value = 'false';
-
-    // clear validate errors
-    document.querySelectorAll('.field-error').forEach(e => e.remove());
-    document.querySelectorAll('.border-red-500').forEach(e => e.classList.remove('border-red-500'));
-
-    // exit edit mode
     setProfileEditMode(false);
 }
 
@@ -571,6 +504,49 @@ let checkInStream = null;
 let checkOutStream = null;
 let checkInPhotoData = null;
 let checkOutPhotoData = null;
+
+// ===== SIDEBAR =====
+// cần sửa
+//function initializePage() {
+//    if (typeof window.currentEmployee === "undefined" || !window.currentEmployee)
+//        return;
+
+//    const e = window.currentEmployee;
+
+//    // Sidebar name
+//    const userNameEl = document.getElementById('userName');
+//    if (userNameEl) userNameEl.textContent = e.fullName;
+
+//    // Sidebar position
+//    const position = document.getElementById('userPosition');
+//    if (position) position.textContent = e.positionName;
+
+//    if (e.imgAvatar) {
+//        updateSidebarAvatar(e.imgAvatar);
+//    } else {
+//        const initial = e.fullName
+//            ? e.fullName.charAt(0).toUpperCase()
+//            : "?";
+
+//        updateSidebarAvatar(null, initial);
+//    }
+//}
+
+//function updateSidebarAvatar(avatarDataUrl, initialLetter) {
+//    const img = document.getElementById('sidebarAvatarImg');
+//    const span = document.getElementById('userInitial');
+//    if (!img || !span) return;
+//    if (avatarDataUrl) {
+//        img.src = avatarDataUrl;
+//        img.classList.remove('hidden');
+//        span.classList.add('hidden');
+//    } else {
+//        img.classList.add('hidden');
+//        img.src = '';
+//        span.textContent = initialLetter || 'E';
+//        span.classList.remove('hidden');
+//    }
+//}
 
 // ===== CAMERA (chỉ giao diện) =====
 async function startCamera(type) {

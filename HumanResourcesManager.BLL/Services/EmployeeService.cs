@@ -1,4 +1,5 @@
 ﻿using HumanResourcesManager.BLL.DTOs;
+using HumanResourcesManager.BLL.DTOs.Employee;
 using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.DAL.Interfaces;
 using HumanResourcesManager.DAL.Models;
@@ -140,7 +141,7 @@ namespace HumanResourcesManager.BLL.Services
             if (_repo.ExistsByEmail(dto.Email, userId))
                 throw new BusinessException("EmailAlreadyExists")
                 {
-                    Details = "Email đã tồn tại, vui lòng sử dụng email khác"
+                    Details = "Email (" + dto.Email + ") đã tồn tại, vui lòng sử dụng email khác"
                 };
 
             // ===== DATE OF BIRTH =====

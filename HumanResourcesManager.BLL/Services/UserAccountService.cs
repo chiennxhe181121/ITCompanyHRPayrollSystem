@@ -1,5 +1,6 @@
 ﻿using HumanResourcesManager.BLL.DTOs;
 using HumanResourcesManager.BLL.DTOs.Common;
+using HumanResourcesManager.BLL.DTOs.Employee;
 using HumanResourcesManager.BLL.DTOs.UserAccount;
 using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.DAL.Interfaces;
@@ -242,6 +243,23 @@ namespace HumanResourcesManager.BLL.Services
             };
         }
 
+        public ServiceResult ChangePassword(int userId, ChangePasswordDTO dto)
+        {
+            var user = _repo.GetById(userId);
+            if (user == null)
+                return ServiceResult.Fail("Không tìm thấy người dùng.");
 
+            if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
+                return ServiceResult.Fail("Mật khẩu hiện tại không đúng.");
+
+            if (BCrypt.Net.BCrypt.Verify(dto.NewPassword, user.PasswordHash))
+                return ServiceResult.Fail("Mật khẩu mới không được trùng với mật khẩu hiện tại.");
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+
+            _repo.Save();
+
+            return ServiceResult.Success("Đổi mật khẩu thành công.");
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿using HumanResourcesManager.BLL.DTOs;
+﻿using HumanResourcesManager.BLL.DTOs.Employee;
 using HumanResourcesManager.DAL.Enum;
 
 namespace HumanResourcesManager.BLL.Interfaces

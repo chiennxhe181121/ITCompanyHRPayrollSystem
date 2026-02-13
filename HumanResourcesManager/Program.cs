@@ -147,10 +147,11 @@ namespace HumanResourcesManager
             app.UseAuthentication();
             app.UseAuthorization();
 
-            // Default route mapping
+            // Default route
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+                pattern: "{controller=Home}/{action=Index}/{id?}"
+            );
 
             app.Run();
         }

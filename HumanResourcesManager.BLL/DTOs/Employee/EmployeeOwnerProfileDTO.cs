@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HumanResourcesManager.BLL.DTOs
+namespace HumanResourcesManager.BLL.DTOs.Employee
 {
     public class EmployeeOwnerProfileDTO
     {
