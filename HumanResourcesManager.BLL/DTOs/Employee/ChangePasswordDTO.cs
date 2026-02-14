@@ -24,16 +24,4 @@ namespace HumanResourcesManager.BLL.DTOs.Employee
         [Compare("NewPassword", ErrorMessage = "Mật khẩu xác nhận không khớp.")]
         public string ConfirmPassword { get; set; } = null!;
     }
-
-    public class ServiceResult
-    {
-        public bool IsSuccess { get; set; }
-        public string Message { get; set; } = string.Empty;
-
-        public static ServiceResult Success(string message)
-            => new() { IsSuccess = true, Message = message };
-
-        public static ServiceResult Fail(string message)
-            => new() { IsSuccess = false, Message = message };
-    }
 }

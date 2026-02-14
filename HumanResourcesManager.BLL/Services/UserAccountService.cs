@@ -247,13 +247,13 @@ namespace HumanResourcesManager.BLL.Services
         {
             var user = _repo.GetById(userId);
             if (user == null)
-                return ServiceResult.Fail("Không tìm thấy người dùng.");
+                return ServiceResult.Failure("Không tìm thấy người dùng.");
 
             if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
-                return ServiceResult.Fail("Mật khẩu hiện tại không đúng.");
+                return ServiceResult.Failure("Mật khẩu hiện tại không đúng.");
 
             if (BCrypt.Net.BCrypt.Verify(dto.NewPassword, user.PasswordHash))
-                return ServiceResult.Fail("Mật khẩu mới không được trùng với mật khẩu hiện tại.");
+                return ServiceResult.Failure("Mật khẩu mới không được trùng với mật khẩu hiện tại.");
 
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
 

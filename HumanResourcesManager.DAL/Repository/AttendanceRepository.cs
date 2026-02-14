@@ -53,5 +53,15 @@ namespace HumanResourcesManager.DAL.Repository
                          && a.Status != AttendanceStatus.ApprovedLeave
                          && a.Status != AttendanceStatus.AWOL);
         }
+        public Attendance? GetByEmployeeAndWorkDate(int employeeId, DateTime workDate)
+        {
+            var start = workDate.Date;
+            var end = start.AddDays(1);
+
+            return _context.Attendances
+                .FirstOrDefault(x => x.EmployeeId == employeeId
+                                  && x.WorkDate >= start
+                                  && x.WorkDate < end);
+        }
     }
 }

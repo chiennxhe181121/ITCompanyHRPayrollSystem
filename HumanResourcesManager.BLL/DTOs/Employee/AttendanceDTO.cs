@@ -1,7 +1,22 @@
 ﻿using HumanResourcesManager.DAL.Enum;
+using Microsoft.AspNetCore.Http;
 
 namespace HumanResourcesManager.BLL.DTOs.Employee
 {
+    public class CheckInDTO
+    {
+        public DateTime WorkDate { get; set; }
+        public TimeSpan? CheckInTime { get; set; }
+        public IFormFile? CheckInImage { get; set; }
+    }
+
+    public class CheckOutDTO
+    {
+        public DateTime WorkDate { get; set; }
+        public TimeSpan? CheckOutTime { get; set; }
+        public IFormFile? CheckOutImage { get; set; }
+    }
+
     public class AttendanceRowDTO
     {
         public DateTime WorkDate { get; set; }
