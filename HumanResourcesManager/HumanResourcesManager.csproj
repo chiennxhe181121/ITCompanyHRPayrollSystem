@@ -25,9 +25,4 @@
     <ProjectReference Include="..\HumanResourcesManager.DAL\HumanResourcesManager.DAL.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\img\employees\" />
-    <Folder Include="wwwroot\img\employees\3\attendance\" />
-  </ItemGroup>
-
 </Project>
