@@ -18,10 +18,33 @@ namespace HumanResourcesManager.BLL.Services
     public class UserAccountService : IUserAccountService
     {
         private readonly IUserAccountRepository _repo;
+        private readonly IADEmployeeRepository _empRepo;
 
-        public UserAccountService(IUserAccountRepository repo)
+        public UserAccountService(IUserAccountRepository repo, IADEmployeeRepository empRepo)
         {
             _repo = repo;
+            _empRepo = empRepo;
+        }
+
+        // Tạo Mã Nhân Viên: VD: EMP260001
+        private string GenerateEmployeeCode()
+        {
+            string yearPrefix = DateTime.Now.ToString("yy");
+            string prefix = $"EMP{yearPrefix}";
+
+            string? lastCode = _empRepo.GetLastEmployeeCode(prefix);
+            int nextSequence = 1;
+
+            if (!string.IsNullOrEmpty(lastCode))
+            {
+                string numberPart = lastCode.Substring(prefix.Length);
+                if (int.TryParse(numberPart, out int currentSequence))
+                {
+                    nextSequence = currentSequence + 1;
+                }
+            }
+
+            return $"{prefix}{nextSequence.ToString("D4")}";
         }
 
         public List<UserAccountDTO> GetAllAccounts()
@@ -84,7 +107,8 @@ namespace HumanResourcesManager.BLL.Services
             {
                 user.Employee = new Employee
                 {
-                    EmployeeCode = "EMP" + DateTime.Now.ToString("yyMMddHHmmss"),
+                    //EmployeeCode = "EMP" + DateTime.Now.ToString("yyMMddHHmmss"),
+                    EmployeeCode = GenerateEmployeeCode(),
                     FullName = dto.FullName,
                     Email = dto.Email,
                     Phone = "0000000000",

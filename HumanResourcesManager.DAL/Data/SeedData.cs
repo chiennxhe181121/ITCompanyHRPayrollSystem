@@ -158,8 +158,8 @@ namespace HumanResourcesManager.DAL.Data
             if (!context.Allowances.Any())
             {
                 context.Allowances.AddRange(
-                    new Allowance { AllowanceName = "Lunch Allowance", Amount = 500000 },
-                    new Allowance { AllowanceName = "Transport Allowance", Amount = 300000 }
+                    new Allowance { AllowanceName = "Phụ cấp Ăn Trưa", Amount = 500000 , Status = Constants.Active },
+                    new Allowance { AllowanceName = "Phụ cấp Đi Lại", Amount = 300000 , Status = Constants.Active }
                 );
                 context.SaveChanges();
             }
