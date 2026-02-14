@@ -34,9 +34,43 @@ public class EmployeeController : Controller
     // ===== Attendance =====
     // view attendance
     [HttpGet("attendance")]
-    public IActionResult Index(
+    public IActionResult Index()
+    {
+        return View();
+    }
+
+    // check-in
+    [HttpPost("attendance/check-in")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CheckIn(CheckInDTO dto)
+    {
+        Console.WriteLine(DateTime.Now);
+        Console.WriteLine(DateTime.UtcNow);
+
+        var result = await _attendanceService.CheckIn(CurrentUserId, dto);
+
+        TempData[result.IsSuccess ? "Success" : "Error"] = result.Message;
+
+        return RedirectToAction("Index");
+    }
+
+    // check-out
+    [HttpPost("attendance/check-out")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CheckOut(CheckOutDTO dto)
+    {
+        var result = await _attendanceService.CheckOut(CurrentUserId, dto);
+
+        TempData[result.IsSuccess ? "Success" : "Error"] = result.Message;
+
+        return RedirectToAction("Index");
+    }
+
+    // view attendance history
+    [HttpGet("attendance/history")]
+    public IActionResult History(
         int page = 1,
-        int pageSize = 3,
+        int pageSize = 5,
         int? month = null,
         int? year = null,
         AttendanceStatus? status = null)
@@ -50,7 +84,7 @@ public class EmployeeController : Controller
             status
         );
 
-        return View(model);
+        return View("~/Views/Employee/AttendanceHistory.cshtml", model);
     }
 
     // ===== Profile =====

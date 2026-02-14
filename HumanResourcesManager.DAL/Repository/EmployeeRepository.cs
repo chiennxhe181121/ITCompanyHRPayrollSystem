@@ -51,6 +51,14 @@ namespace HumanResourcesManager.DAL.Repositories
                 e.Status != -1
             );
         }
+        public bool ExistsByPhone(string phone, int excludeUserId)
+        {
+            return _context.Employees.Any(e =>
+                e.Phone == phone &&
+                e.UserId != excludeUserId &&
+                e.Status != -1
+            );
+        }
 
         public void Add(Employee employee)
         {

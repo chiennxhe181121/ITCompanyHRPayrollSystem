@@ -166,7 +166,7 @@
                             </label>
                         </div>
 
-                        <div id="accountFields" class="space-y-4 hidden transition-all duration-300 border-t border-slate-100 pt-4">
+                        @* <div id="accountFields" class="space-y-4 hidden transition-all duration-300 border-t border-slate-100 pt-4">
                             <div>
                                 <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Mật khẩu mới</label>
                                 <div class="relative">
@@ -176,6 +176,33 @@
                             </div>
                             <div class="text-[11px] text-emerald-600 font-medium bg-emerald-50 p-2 rounded border border-emerald-100">
                                 <i class="fa-solid fa-info-circle mr-1"></i> Username: <b>@Model.Email</b>
+                            </div>
+                        </div> *@
+                        <div id="accountFields" class="space-y-4 hidden transition-all duration-300 border-t border-slate-100 pt-4">
+
+                            <div class="p-3 bg-blue-50 rounded-xl border border-blue-100">
+                                <label class="block text-xs font-bold text-blue-600 uppercase mb-1">
+                                    <i class="fa-solid fa-robot mr-1"></i> Username tự động
+                                </label>
+                                <p class="text-xs text-slate-600">
+                                    Hệ thống sẽ tự động tạo Username theo quy tắc: <br>
+                                    <b>Tên + Họ Đệm (viết tắt) + Mã NV</b>
+                                </p>
+                                <p class="text-[10px] text-slate-400 mt-1 italic">
+                                    Ví dụ: Đào Huy Hoàng (EMP01) -> <b>hoangdhEMP01</b>
+                                </p>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Mật khẩu</label>
+                                <div class="relative">
+                                    <input asp-for="Password" type="password" class="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="Mặc định: 12345678" />
+                                    <i class="fa-regular fa-eye absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 cursor-pointer hover:text-slate-600"></i>
+                                </div>
+                            </div>
+
+                            <div class="text-xs text-emerald-600 font-medium bg-emerald-50 p-2 rounded">
+                                <i class="fa-solid fa-check-circle mr-1"></i> Role mặc định: <span class="font-bold">EMP</span>
                             </div>
                         </div>
                     }

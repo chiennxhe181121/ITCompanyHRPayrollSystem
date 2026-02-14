@@ -55,5 +55,20 @@
         // ==================================================
         public const int Success = 200;
         public const int Failed = 500;
+
+        // ==================================================
+        // 8 Dùng cho chấm công
+        // ==================================================
+        public const int STANDARD_WORK_MINUTES = 8 * 60;   // 8h
+        public const int BREAK_MINUTES = 60;               // 1h nghỉ trưa
+
+        public static readonly TimeSpan WorkStart = new(8, 0, 0);
+        public static readonly TimeSpan WorkEnd = new(17, 0, 0);
+
+        public static readonly TimeSpan CheckInFrom = new(7, 30, 0);
+        public static readonly TimeSpan CheckInTo = new(9, 0, 0);
+
+        public static readonly TimeSpan CheckOutFrom = new(16, 30, 0);
+        public static readonly TimeSpan CheckOutTo = new(20, 0, 0);
     }
 }
