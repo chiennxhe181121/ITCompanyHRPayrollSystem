@@ -170,6 +170,10 @@ document.addEventListener('DOMContentLoaded', function () {
             const imgEl = document.getElementById('profileAvatarImg');
             const initialEl = document.getElementById('profileAvatarInitial');
             const removeBtn = document.getElementById('profileAvatarRemoveBtn');
+            const removeFlag = document.getElementById('removeAvatarFlag');
+
+            // 🔥 QUAN TRỌNG: nếu chọn ảnh mới thì KHÔNG xóa nữa
+            if (removeFlag) removeFlag.value = 'false';
 
             const previewUrl = URL.createObjectURL(file);
 
@@ -234,6 +238,10 @@ function loadProfileAvatarFromDB() {
     const imgEl = document.getElementById('profileAvatarImg');
     const initialEl = document.getElementById('profileAvatarInitial');
     const removeBtn = document.getElementById('profileAvatarRemoveBtn');
+    const removeFlag = document.getElementById('removeAvatarFlag');
+
+    // 🔥 luôn reset flag khi load lại từ DB
+    if (removeFlag) removeFlag.value = 'false';
 
     if (avatarPath) {
         imgEl.src = avatarPath + '?v=' + Date.now();
@@ -480,11 +488,6 @@ function validateProfileForm() {
     return isValid;
 }
 
-let checkInStream = null;
-let checkOutStream = null;
-let checkInPhotoData = null;
-let checkOutPhotoData = null;
-
 // ===== SIDEBAR =====
 // cần sửa
 //function initializePage() {
@@ -529,6 +532,11 @@ let checkOutPhotoData = null;
 //}
 
 // ===== ATTENDANCE =====
+let checkInStream = null;
+let checkOutStream = null;
+let checkInPhotoData = null;
+let checkOutPhotoData = null;
+
 async function startCamera(type) {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });

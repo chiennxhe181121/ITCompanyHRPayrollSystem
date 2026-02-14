@@ -181,12 +181,13 @@
 
 										<!-- Check In Image -->
 										<td class="py-3 px-4 text-center">
-											@if (!string.IsNullOrEmpty(item.CheckInImagePath))
+											@if (!string.IsNullOrWhiteSpace(item.CheckInImagePath))
 											{
-												<a href="@Url.Content(item.CheckInImagePath)" target="_blank"
-												   class="inline-flex items-center justify-center text-indigo-600 hover:text-indigo-800 transition">
+												<button type="button"
+														onclick="openCheckInModal('@Url.Content(item.CheckInImagePath)')"
+														class="inline-flex items-center justify-center text-indigo-600 hover:text-indigo-800 transition">
 													👁
-												</a>
+												</button>
 											}
 											else
 											{
@@ -201,12 +202,13 @@
 
 										<!-- Check Out Image -->
 										<td class="py-3 px-4 text-center">
-											@if (!string.IsNullOrEmpty(item.CheckOutImagePath))
+											@if (!string.IsNullOrWhiteSpace(item.CheckOutImagePath))
 											{
-												<a href="@Url.Content(item.CheckOutImagePath)" target="_blank"
-												   class="inline-flex items-center justify-center text-indigo-600 hover:text-indigo-800 transition">
+												<button type="button"
+														onclick="openCheckOutModal('@Url.Content(item.CheckOutImagePath)')"
+														class="inline-flex items-center justify-center text-indigo-600 hover:text-indigo-800 transition">
 													👁
-												</a>
+												</button>
 											}
 											else
 											{
@@ -368,6 +370,112 @@
 	</div>
 </main>
 
+<!-- Check In Image Modal -->
+<div id="checkInImageModal"
+	 class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-50">
+
+	<div class="relative bg-white rounded-3xl shadow-2xl max-w-4xl w-full mx-6 overflow-hidden">
+
+		<!-- Header -->
+		<div class="flex items-center justify-between px-6 py-4 border-b bg-gradient-to-r from-emerald-50 to-slate-100">
+			<div>
+				<h2 class="text-xl font-semibold text-slate-800 tracking-tight">
+					Ảnh Check-in
+				</h2>
+				<p class="text-sm text-slate-500 mt-1">
+					Ảnh xác nhận thời điểm bắt đầu làm việc
+				</p>
+			</div>
+
+			<button onclick="closeCheckInModal()"
+					class="w-9 h-9 flex items-center justify-center rounded-full
+                           bg-white shadow-md text-gray-400
+                           hover:text-white hover:bg-red-500 transition">
+				✕
+			</button>
+		</div>
+
+		<!-- Body -->
+		<div class="p-8 flex items-center justify-center min-h-[300px]">
+
+			<!-- Image Wrapper Vuông -->
+			<div class="w-full max-w-[500px] aspect-square overflow-hidden rounded-2xl bg-slate-100 shadow-sm">
+				<img id="checkInPreviewImage"
+					 class="w-full h-full object-cover hidden transition duration-300" />
+			</div>
+
+			<!-- Fallback UI -->
+			<div id="checkInNoImage"
+				 class="hidden flex flex-col items-center justify-center py-16 absolute">
+
+				<div class="w-24 h-24 flex items-center justify-center
+                    rounded-full bg-slate-100 text-slate-400 text-4xl mb-6 shadow-inner">
+					🖼
+				</div>
+
+				<h3 class="text-lg font-semibold text-gray-700">
+					Không có ảnh Check-in
+				</h3>
+			</div>
+
+		</div>
+
+	</div>
+</div>
+
+<!-- Check Out Image Modal -->
+<div id="checkOutImageModal"
+	 class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-50">
+
+	<div class="relative bg-white rounded-3xl shadow-2xl max-w-4xl w-full mx-6 overflow-hidden">
+
+		<!-- Header -->
+		<div class="flex items-center justify-between px-6 py-4 border-b bg-gradient-to-r from-indigo-50 to-slate-100">
+			<div>
+				<h2 class="text-xl font-semibold text-slate-800 tracking-tight">
+					Ảnh Check-out
+				</h2>
+				<p class="text-sm text-slate-500 mt-1">
+					Ảnh xác nhận thời điểm kết thúc làm việc
+				</p>
+			</div>
+
+			<button onclick="closeCheckOutModal()"
+					class="w-9 h-9 flex items-center justify-center rounded-full
+                           bg-white shadow-md text-gray-400
+                           hover:text-white hover:bg-red-500 transition">
+				✕
+			</button>
+		</div>
+
+		<!-- Body -->
+		<div class="p-8 flex items-center justify-center min-h-[300px]">
+
+			<!-- Image Wrapper Vuông -->
+			<div class="w-full max-w-[500px] aspect-square overflow-hidden rounded-2xl bg-slate-100 shadow-sm">
+				<img id="checkOutPreviewImage"
+					 class="w-full h-full object-cover hidden transition duration-300" />
+			</div>
+
+			<!-- Fallback UI -->
+			<div id="checkOutNoImage"
+				 class="hidden flex flex-col items-center justify-center py-16 absolute">
+
+				<div class="w-24 h-24 flex items-center justify-center
+                    rounded-full bg-slate-100 text-slate-400 text-4xl mb-6 shadow-inner">
+					🖼
+				</div>
+
+				<h3 class="text-lg font-semibold text-gray-700">
+					Không có ảnh Check-out
+				</h3>
+			</div>
+
+		</div>
+
+	</div>
+</div>
+
 <!-- Validate Filter -->
 <script>
 	const monthSelect = document.querySelector("select[name='month']");
@@ -413,4 +521,69 @@
 	yearSelect.addEventListener("change", function () {
 		validateFutureDate();
 	});
+</script>
+
+<!-- Modal Attendance Event -->
+<script>
+	function openCheckInModal(imageUrl) {
+		const modal = document.getElementById("checkInImageModal");
+		const img = document.getElementById("checkInPreviewImage");
+		const fallback = document.getElementById("checkInNoImage");
+
+		modal.classList.remove("hidden");
+		modal.classList.add("flex");
+
+		img.classList.add("hidden");
+		fallback.classList.add("hidden");
+
+		img.src = imageUrl;
+
+		img.onload = () => {
+			img.classList.remove("hidden");
+		};
+
+		img.onerror = () => {
+			fallback.classList.remove("hidden");
+		};
+	}
+
+	function closeCheckInModal() {
+		const modal = document.getElementById("checkInImageModal");
+		const img = document.getElementById("checkInPreviewImage");
+
+		modal.classList.add("hidden");
+		modal.classList.remove("flex");
+		img.src = "";
+	}
+
+	function openCheckOutModal(imageUrl) {
+		const modal = document.getElementById("checkOutImageModal");
+		const img = document.getElementById("checkOutPreviewImage");
+		const fallback = document.getElementById("checkOutNoImage");
+
+		modal.classList.remove("hidden");
+		modal.classList.add("flex");
+
+		img.classList.add("hidden");
+		fallback.classList.add("hidden");
+
+		img.src = imageUrl;
+
+		img.onload = () => {
+			img.classList.remove("hidden");
+		};
+
+		img.onerror = () => {
+			fallback.classList.remove("hidden");
+		};
+	}
+
+	function closeCheckOutModal() {
+		const modal = document.getElementById("checkOutImageModal");
+		const img = document.getElementById("checkOutPreviewImage");
+
+		modal.classList.add("hidden");
+		modal.classList.remove("flex");
+		img.src = "";
+	}
 </script>

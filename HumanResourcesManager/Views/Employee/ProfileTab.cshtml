@@ -47,17 +47,15 @@
 								<div id="profileAvatarPreview"
 									 class="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-2xl font-bold text-white ring-2 ring-slate-200 shadow-inner flex-shrink-0">
 
-									@if (hasAvatar)
-									{
-										<img id="profileAvatarImg"
-											 src="@avatarPath"
-											 class="w-full h-full object-cover"
-											 alt="Avatar">
-									}
-									else
-									{
-										<span id="profileAvatarInitial">@initial</span>
-									}
+									<img id="profileAvatarImg"
+										 src="@(hasAvatar ? $"{avatarPath}?v={DateTime.Now.Ticks}" : "")"
+										 class="w-full h-full object-cover @(hasAvatar ? "" : "hidden")"
+										 alt="Avatar" />
+
+									<span id="profileAvatarInitial"
+										  class="@(hasAvatar ? "hidden" : "")">
+										@initial
+									</span>
 
 								</div>
 
