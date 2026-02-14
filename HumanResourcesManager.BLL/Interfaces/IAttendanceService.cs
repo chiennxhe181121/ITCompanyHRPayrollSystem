@@ -1,5 +1,7 @@
-﻿using HumanResourcesManager.BLL.DTOs.Employee;
+﻿using HumanResourcesManager.BLL.DTOs.Common;
+using HumanResourcesManager.BLL.DTOs.Employee;
 using HumanResourcesManager.DAL.Enum;
+using Microsoft.AspNetCore.Http;
 
 namespace HumanResourcesManager.BLL.Interfaces
 {
@@ -12,5 +14,7 @@ namespace HumanResourcesManager.BLL.Interfaces
             int? month,
             int? year,
             AttendanceStatus? status);
+        Task<ServiceResult> CheckIn(int userId, CheckInDTO dto);
+        Task<ServiceResult> CheckOut(int userId, CheckOutDTO dto);
     }
 }

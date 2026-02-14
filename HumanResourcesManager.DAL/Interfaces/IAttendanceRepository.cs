@@ -15,5 +15,6 @@ namespace HumanResourcesManager.DAL.Interfaces
         void Save();
         IQueryable<Attendance> GetQueryableByEmployeeId(int employeeId);
         int CountWorkingDays(int employeeId);
+        Attendance? GetByEmployeeAndWorkDate(int employeeId, DateTime workDate);
     }
 }
