@@ -1,7 +1,10 @@
-﻿using HumanResourcesManager.BLL.DTOs.Employee;
+﻿using HumanResourcesManager.BLL.DTOs.Common;
+using HumanResourcesManager.BLL.DTOs.Employee;
 using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.DAL.Enum;
 using HumanResourcesManager.DAL.Interfaces;
+using HumanResourcesManager.DAL.Models;
+using HumanResourcesManager.DAL.Shared;
 
 namespace HumanResourcesManager.BLL.Services
 {
@@ -114,5 +117,172 @@ namespace HumanResourcesManager.BLL.Services
                 _ => "Không xác định"
             };
         }
+
+        public async Task<ServiceResult> CheckIn(int userId, CheckInDTO dto)
+        {
+            // Ràng buộc thời gian chấm công
+            if (dto.CheckInTime < Constants.CheckInFrom || dto.CheckInTime > Constants.CheckInTo)
+            {
+                return ServiceResult.Failure("Không nằm trong khung giờ check-in.");
+            }
+
+            var employee = _employeeRepository.GetByUserId(userId);
+
+            if (employee == null)
+                return ServiceResult.Failure("Không tìm thấy nhân viên.");
+
+            var today = GetVietnamNow().Date;
+
+            var existingAttendance = _attendanceRepository
+                .GetByEmployeeAndWorkDate(employee.EmployeeId, today);
+
+            if (existingAttendance != null)
+                return ServiceResult.Failure("Bạn đã chấm công ngày này rồi.");
+
+            string? imagePath = null;
+
+            if (dto.CheckInImage != null && dto.CheckInImage.Length > 0)
+            {
+                var folderPath = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot",
+                    "img",
+                    "employees",
+                    employee.EmployeeId.ToString(),
+                    "attendance"
+                );
+
+                Directory.CreateDirectory(folderPath);
+
+                var fileName = $"check-in-{today:yyyyMMdd}.jpg";
+                var filePath = Path.Combine(folderPath, fileName);
+
+                using var stream = new FileStream(filePath, FileMode.Create);
+                await dto.CheckInImage.CopyToAsync(stream);
+
+                imagePath = $"/img/employees/{employee.EmployeeId}/attendance/{fileName}";
+            }
+
+            var newAttendance = new Attendance
+            {
+                EmployeeId = employee.EmployeeId,
+                WorkDate = today,
+                CheckIn = dto.CheckInTime,
+                CheckInImagePath = imagePath,
+                Status = AttendanceStatus.MissingCheckOut,
+                MissingMinutes = 0
+            };
+
+            _attendanceRepository.Add(newAttendance);
+            _attendanceRepository.Save();
+
+            return ServiceResult.Success("Chấm công thành công!");
+        }
+
+        public async Task<ServiceResult> CheckOut(int userId, CheckOutDTO dto)
+        {
+            // Ràng buộc thời gian chấm công
+            if (dto.CheckOutTime < Constants.CheckOutFrom || dto.CheckOutTime > Constants.CheckOutTo)
+            {
+                return ServiceResult.Failure("Không nằm trong khung giờ check-out.");
+            }
+
+            var employee = _employeeRepository.GetByUserId(userId);
+            if (employee == null)
+                return ServiceResult.Failure("Không tìm thấy nhân viên.");
+
+            var today = GetVietnamNow().Date;
+
+            var attendance = _attendanceRepository
+                .GetByEmployeeAndWorkDate(employee.EmployeeId, today);
+
+            if (attendance == null)
+                return ServiceResult.Failure("Bạn chưa Check-in hôm nay.");
+
+            if (attendance.CheckIn == null)
+                return ServiceResult.Failure("Thiếu Check-in.");
+
+            if (attendance.CheckOut != null)
+                return ServiceResult.Failure("Bạn đã Check-out rồi.");
+
+            // ===== LƯU ẢNH CHECKOUT =====
+            string? imagePath = null;
+
+            if (dto.CheckOutImage != null && dto.CheckOutImage.Length > 0)
+            {
+                var folderPath = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot",
+                    "img",
+                    "employees",
+                    employee.EmployeeId.ToString(),
+                    "attendance"
+                );
+
+                Directory.CreateDirectory(folderPath);
+
+                var fileName = $"check-in-{today:yyyyMMdd}.jpg";
+                var filePath = Path.Combine(folderPath, fileName);
+
+                using var stream = new FileStream(filePath, FileMode.Create);
+                await dto.CheckOutImage.CopyToAsync(stream);
+
+                imagePath = $"/img/employees/{employee.EmployeeId}/attendance/{fileName}";
+            }
+
+            // ===== TÍNH THỜI GIAN LÀM VIỆC =====
+            // ===== VALIDATE =====
+            if (!attendance.CheckIn.HasValue)
+                return ServiceResult.Failure("Chưa check-in.");
+
+            if (!dto.CheckOutTime.HasValue)
+                return ServiceResult.Failure("Chưa nhập check-out time.");
+
+            // ===== TÍNH THỜI GIAN LÀM VIỆC =====
+            var totalMinutes =
+                (int)(dto.CheckOutTime.Value - attendance.CheckIn.Value).TotalMinutes;
+
+            if (totalMinutes < 0)
+                return ServiceResult.Failure("Check-out phải sau check-in.");
+
+            // Trừ thời gian nghỉ
+            var actualWorkMinutes = totalMinutes - Constants.BREAK_MINUTES;
+
+            if (actualWorkMinutes < 0)
+                actualWorkMinutes = 0;
+
+            // Tính thiếu giờ
+            var missingMinutes = Constants.STANDARD_WORK_MINUTES - actualWorkMinutes;
+
+            if (missingMinutes < 0)
+                missingMinutes = 0;
+
+            // ===== SET STATUS =====
+            AttendanceStatus status;
+
+            if (missingMinutes > 0)
+                status = AttendanceStatus.InsufficientWork;
+            else
+                status = AttendanceStatus.Normal;
+
+            // ===== UPDATE =====
+            attendance.CheckOut = dto.CheckOutTime;
+            attendance.CheckOutImagePath = imagePath;
+            attendance.MissingMinutes = missingMinutes;
+            attendance.Status = status;
+
+            _attendanceRepository.Update(attendance);
+            _attendanceRepository.Save();
+
+            return ServiceResult.Success("Check-out thành công.");
+        }
+        private DateTime GetVietnamNow()
+        {
+            return TimeZoneInfo.ConvertTimeFromUtc(
+                DateTime.UtcNow,
+                TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time")
+            );
+        }
+
     }
 }
