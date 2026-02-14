@@ -36,7 +36,9 @@ public class EmployeeController : Controller
     [HttpGet("attendance")]
     public IActionResult Index()
     {
-        return View();
+        var model = _attendanceService.GetTodayAttendance(CurrentUserId);
+
+        return View(model);
     }
 
     // check-in

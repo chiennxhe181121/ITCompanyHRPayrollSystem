@@ -94,6 +94,7 @@ namespace HumanResourcesManager
             builder.Services.AddScoped<IPositionService, PositionService>(); // 09/02/2026
             builder.Services.AddScoped<IADEmployeeService, ADEmployeeService>(); // 10/02/2026
             builder.Services.AddScoped<IAttendanceService, AttendanceService>();
+            builder.Services.AddHostedService<AttendanceFinalizeJob>(); // cronjob cho ket luan attendance 20:10 moi ngay
 
             // Session configuration
             builder.Services.AddDistributedMemoryCache();

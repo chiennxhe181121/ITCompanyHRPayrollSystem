@@ -1,4 +1,5 @@
 ﻿﻿@using HumanResourcesManager.BLL.DTOs.Employee
+@using HumanResourcesManager.DAL.Enum
 @using HumanResourcesManager.Helpers
 @model EmployeeAttendanceViewDTO
 
@@ -217,37 +218,32 @@
 										</td>
 
 										<!-- Missing Minutes -->
-										<td class="py-3 px-4 text-center">
-											@if (item.MissingMinutes > 0)
-											{
-												<span class="px-2 py-1 rounded-md text-xs bg-orange-100 text-orange-700 font-medium">
-													@item.MissingMinutes
-												</span>
-											}
-											else
-											{
-												<span class="text-slate-400">0</span>
-											}
-								</td>
+								<td class="py-3 px-4 text-center">
+									<span class="inline-block w-24 text-center px-2 py-1 rounded-md text-xs font-medium
+        @(item.MissingMinutes == 0
+						   ? "bg-green-100 text-green-700"
+						   : "bg-orange-100 text-orange-700")">
+											  										@item.MissingMinutes
+											  									</span>
+											  								</td>
+
 
 								<!-- Status -->
 								<td class="py-3 px-4 text-center">
-									<span class="px-3 py-1 text-xs font-medium rounded-full
-                @(item.Status switch
+									<span class="inline-block w-40 text-center px-3 py-1 text-xs font-medium rounded-full
+        @(item.Status switch
 			   {
-				   "Đủ công" => "bg-green-100 text-green-700",
-				   "Thiếu công" => "bg-orange-100 text-orange-700",
-				   "Đang làm việc" => "bg-indigo-100 text-indigo-700",
-				   "Nghỉ có phép" => "bg-blue-100 text-blue-700",
-				   "Thiếu Check-in" => "bg-yellow-100 text-yellow-700",
-				   "Thiếu Check-out" => "bg-yellow-100 text-yellow-700",
-				   "Nghỉ không phép" => "bg-red-100 text-red-700",
+				   AttendanceStatus.Pending => "bg-gray-100 text-gray-700",
+				   AttendanceStatus.CompletedWork => "bg-green-100 text-green-700",
+				   AttendanceStatus.InsufficientWork => "bg-orange-100 text-orange-700",
+				   AttendanceStatus.MissingCheckOut => "bg-yellow-100 text-yellow-700",
+				   AttendanceStatus.ApprovedLeave => "bg-blue-100 text-blue-700",
+				   AttendanceStatus.Absent => "bg-red-100 text-red-700",
 				   _ => "bg-gray-100 text-gray-600"
 			   })">
-										@item.Status
+										@item.Status.ToDisplayName()
 									</span>
 								</td>
-
 							</tr>
 														}
 							}

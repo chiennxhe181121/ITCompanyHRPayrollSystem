@@ -4,9 +4,9 @@ const itemsPerPage = 10;
 let profileEditMode = false;
 const STAT_IDS = ['monthAttendance', 'leavesRemaining', 'overtimeHours', 'currentSalary'];
 let statsVisibility = { monthAttendance: true, leavesRemaining: true, overtimeHours: true, currentSalary: true };
+
 const CHECKIN_FROM = "07:30:00";
 const CHECKIN_TO = "09:00:00";
-
 const CHECKOUT_FROM = "16:30:00";
 const CHECKOUT_TO = "20:00:00";
 
@@ -690,13 +690,45 @@ function getTimeDiff(targetTime) {
 }
 
 function updateCheckInUI() {
-
     const btn = document.getElementById("startCheckInCameraBtn");
-
     const badge = document.getElementById("checkInBadge");
     const countdownEl = document.getElementById("checkInCountdown");
     const progressWrapper = document.getElementById("checkInProgressWrapper");
     const progressBar = document.getElementById("checkInProgress");
+
+    if (!btn || !badge) return;
+
+    if (window.attendanceState?.isLeave) {
+
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+
+        badge.textContent = "📅 Nghỉ có phép";
+        badge.className =
+            "inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700";
+
+        countdownEl?.classList.add("hidden");
+        progressWrapper?.classList.add("hidden");
+
+        return;
+    }
+
+    if (window.attendanceState?.hasCheckIn) {
+
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+
+        badge.textContent =
+            "✅ Đã check-in lúc " + window.attendanceState.checkInTime;
+
+        badge.className =
+            "inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700";
+
+        countdownEl?.classList.add("hidden");
+        progressWrapper?.classList.add("hidden");
+
+        return;
+    }
 
     const now = new Date();
     const current = now.toTimeString().slice(0, 8);
@@ -721,11 +753,24 @@ function updateCheckInUI() {
         btn.disabled = true;
         btn.classList.add("opacity-50", "cursor-not-allowed");
 
-        badge.textContent = "⛔ Đã đóng";
-        badge.className = "inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700";
-
         countdownEl.classList.add("hidden");
         progressWrapper.classList.add("hidden");
+
+        if (window.attendanceState?.hasCheckIn) {
+
+            badge.textContent =
+                "✅ Đã check-in lúc " + window.attendanceState.checkInTime;
+
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700";
+        }
+        else {
+
+            badge.textContent = "❌ Đã đóng - Chưa check-in";
+
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700";
+        }
     }
     else {
 
@@ -757,13 +802,45 @@ function updateCheckInUI() {
 }
 
 function updateCheckOutUI() {
-
     const btn = document.getElementById("startCheckOutCameraBtn");
-
     const badge = document.getElementById("checkOutBadge");
     const countdownEl = document.getElementById("checkOutCountdown");
     const progressWrapper = document.getElementById("checkOutProgressWrapper");
     const progressBar = document.getElementById("checkOutProgress");
+
+    if (!btn || !badge) return;
+
+    if (window.attendanceState?.isLeave) {
+
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+
+        badge.textContent = "📅 Nghỉ có phép";
+        badge.className =
+            "inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700";
+
+        countdownEl?.classList.add("hidden");
+        progressWrapper?.classList.add("hidden");
+
+        return;
+    }
+
+    if (window.attendanceState?.hasCheckOut) {
+
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+
+        badge.textContent =
+            "✅ Đã check-out lúc " + window.attendanceState.checkOutTime;
+
+        badge.className =
+            "inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700";
+
+        countdownEl?.classList.add("hidden");
+        progressWrapper?.classList.add("hidden");
+
+        return;
+    }
 
     const now = new Date();
     const current = now.toTimeString().slice(0, 8);
@@ -788,11 +865,31 @@ function updateCheckOutUI() {
         btn.disabled = true;
         btn.classList.add("opacity-50", "cursor-not-allowed");
 
-        badge.textContent = "⛔ Đã đóng";
-        badge.className = "inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700";
-
         countdownEl.classList.add("hidden");
         progressWrapper.classList.add("hidden");
+
+        if (window.attendanceState?.hasCheckOut) {
+
+            badge.textContent =
+                "✅ Đã check-out lúc " + window.attendanceState.checkOutTime;
+
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700";
+        }
+        else if (window.attendanceState?.hasCheckIn) {
+
+            badge.textContent = "⚠ Đã đóng - Chưa check-out";
+
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700";
+        }
+        else {
+
+            badge.textContent = "❌ Đã đóng - Chưa check-in";
+
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700";
+        }
     }
     else {
 

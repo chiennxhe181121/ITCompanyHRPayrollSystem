@@ -36,26 +36,42 @@
 
 							<!-- LEFT: AVATAR -->
 							<div class="flex items-center gap-4">
-								@{
-									var avatarPath = Model.ImgAvatar;
-									var hasAvatar = !string.IsNullOrEmpty(avatarPath);
-									var initial = string.IsNullOrEmpty(Model.FullName)
-									? "U"
-									: Model.FullName.Substring(0, 1).ToUpper();
-								}
+								<div class="flex flex-col items-center gap-4 p-6
+            bg-white rounded-2xl shadow-sm border border-slate-100">
 
-								<div id="profileAvatarPreview"
-									 class="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-2xl font-bold text-white ring-2 ring-slate-200 shadow-inner flex-shrink-0">
+									<!-- LABEL -->
+									<div class="text-xs uppercase tracking-wider text-slate-800 font-medium">
+										Ảnh đại diện
+									</div>
 
-									<img id="profileAvatarImg"
-										 src="@(hasAvatar ? $"{avatarPath}?v={DateTime.Now.Ticks}" : "")"
-										 class="w-full h-full object-cover @(hasAvatar ? "" : "hidden")"
-										 alt="Avatar" />
+									@{
+										var avatarPath = Model.ImgAvatar;
+										var hasAvatar = !string.IsNullOrEmpty(avatarPath);
+										var initial = string.IsNullOrEmpty(Model.FullName)
+										? "U"
+										: Model.FullName.Substring(0, 1).ToUpper();
+									}
 
-									<span id="profileAvatarInitial"
-										  class="@(hasAvatar ? "hidden" : "")">
-										@initial
-									</span>
+									<!-- AVATAR -->
+									<div id="profileAvatarPreview"
+										 class="relative w-32 h-32 rounded-full overflow-hidden
+                bg-gradient-to-br from-indigo-500 via-blue-500 to-cyan-400
+                flex items-center justify-center
+                text-4xl font-semibold text-white
+                ring-4 ring-white shadow-xl
+                transition-all duration-300
+                hover:scale-105 hover:ring-indigo-200">
+
+										<img id="profileAvatarImg"
+											 src="@(hasAvatar ? $"{avatarPath}?v={DateTime.Now.Ticks}" : "")"
+											 class="w-full h-full object-cover @(hasAvatar ? "" : "hidden")"
+											 alt="Avatar" />
+
+										<span id="profileAvatarInitial"
+											  class="@(hasAvatar ? "hidden" : "")">
+											@initial
+										</span>
+									</div>
 
 								</div>
 

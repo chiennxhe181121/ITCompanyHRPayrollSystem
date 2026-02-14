@@ -137,18 +137,18 @@ namespace HumanResourcesManager.DAL.Data
                         UserAccount = empUser
                     },
                       new Employee
-                  {
-                         EmployeeCode = "EMP004",
-                         FullName = "Giang Quản Lý",
-                         Email = "d.nguyen@company.com",
-                         Phone = "0923456789",
-                         DepartmentId = 3,
-                         PositionId = 3,
-                         Status = Constants.Active,
-                         ImgAvatar = null,
+                      {
+                          EmployeeCode = "EMP004",
+                          FullName = "Giang Quản Lý",
+                          Email = "d.nguyen@company.com",
+                          Phone = "0923456789",
+                          DepartmentId = 3,
+                          PositionId = 3,
+                          Status = Constants.Active,
+                          ImgAvatar = null,
 
-                         UserAccount = managerUser
-                   }
+                          UserAccount = managerUser
+                      }
 
                 );
                 context.SaveChanges();
@@ -206,65 +206,120 @@ namespace HumanResourcesManager.DAL.Data
             {
                 var employeeId = 3; // EMP003
 
-                var baseDate = DateTime.Today.AddDays(-19);
+                var today = DateTime.Today;
 
-                var attendances = new List<Attendance>();
+                var attendances = new List<Attendance>
+    {
+        // 1. Làm đủ giờ
+        new Attendance
+        {
+            EmployeeId = employeeId,
+            WorkDate = today.AddDays(-9),
+            CheckIn = new TimeSpan(8, 0, 0),
+            CheckOut = new TimeSpan(17, 0, 0),
+            MissingMinutes = 0,
+            Status = AttendanceStatus.CompletedWork
+        },
 
-                for (int i = 0; i < 20; i++)
-                {
-                    var workDate = baseDate.AddDays(i);
+        // 2. Đi trễ nhẹ nhưng vẫn đủ giờ
+        new Attendance
+        {
+            EmployeeId = employeeId,
+            WorkDate = today.AddDays(-8),
+            CheckIn = new TimeSpan(8, 10, 0),
+            CheckOut = new TimeSpan(17, 10, 0),
+            MissingMinutes = 10,
+            Status = AttendanceStatus.CompletedWork
+        },
 
-                    AttendanceStatus status;
-                    TimeSpan? checkIn = new TimeSpan(8, 0, 0);
-                    TimeSpan? checkOut = new TimeSpan(17, 0, 0);
-                    int missingMinutes = 0;
+        // 3. Thiếu 1 tiếng
+        new Attendance
+        {
+            EmployeeId = employeeId,
+            WorkDate = today.AddDays(-7),
+            CheckIn = new TimeSpan(8, 0, 0),
+            CheckOut = new TimeSpan(16, 0, 0),
+            MissingMinutes = 60,
+            Status = AttendanceStatus.InsufficientWork
+        },
 
-                    // Random tình huống demo
-                    if (i % 7 == 0)
-                    {
-                        status = AttendanceStatus.AWOL;
-                        checkIn = null;
-                        checkOut = null;
-                    }
-                    else if (i % 5 == 0)
-                    {
-                        status = AttendanceStatus.ApprovedLeave;
-                        checkIn = null;
-                        checkOut = null;
-                    }
-                    else if (i % 6 == 0)
-                    {
-                        status = AttendanceStatus.InsufficientWork;
-                        missingMinutes = 60; // thiếu 1 tiếng
-                    }
-                    else if (i % 4 == 0)
-                    {
-                        status = AttendanceStatus.MissingCheckIn;
-                        checkIn = null;
-                    }
-                    else if (i % 3 == 0)
-                    {
-                        status = AttendanceStatus.MissingCheckOut;
-                        checkOut = null;
-                    }
-                    else
-                    {
-                        status = AttendanceStatus.Normal;
-                        missingMinutes = i * 2; // giả lập đi trễ nhẹ
-                    }
+        // 4. Quên check-out
+        new Attendance
+        {
+            EmployeeId = employeeId,
+            WorkDate = today.AddDays(-6),
+            CheckIn = new TimeSpan(8, 5, 0),
+            CheckOut = null,
+            MissingMinutes = 0,
+            Status = AttendanceStatus.MissingCheckOut
+        },
 
-                    attendances.Add(new Attendance
-                    {
-                        EmployeeId = employeeId,
-                        WorkDate = workDate,
-                        CheckIn = checkIn,
-                        CheckOut = checkOut,
-                        MissingMinutes = missingMinutes,
-                        CheckInImagePath = null,
-                        CheckOutImagePath = null,
-                        Status = status
-                    });
-                }
+        // 5. Nghỉ có phép
+        new Attendance
+        {
+            EmployeeId = employeeId,
+            WorkDate = today.AddDays(-5),
+            CheckIn = null,
+            CheckOut = null,
+            MissingMinutes = 0,
+            Status = AttendanceStatus.ApprovedLeave
+        },
+
+        // 6. Vắng mặt
+        new Attendance
+        {
+            EmployeeId = employeeId,
+            WorkDate = today.AddDays(-4),
+            CheckIn = null,
+            CheckOut = null,
+            MissingMinutes = 0,
+            Status = AttendanceStatus.Absent
+        },
+
+        // 7. Làm đủ giờ
+        new Attendance
+        {
+            EmployeeId = employeeId,
+            WorkDate = today.AddDays(-3),
+            CheckIn = new TimeSpan(8, 0, 0),
+            CheckOut = new TimeSpan(17, 0, 0),
+            MissingMinutes = 0,
+            Status = AttendanceStatus.CompletedWork
+        },
+
+        // 8. Thiếu 30 phút
+        new Attendance
+        {
+            EmployeeId = employeeId,
+            WorkDate = today.AddDays(-2),
+            CheckIn = new TimeSpan(8, 0, 0),
+            CheckOut = new TimeSpan(16, 30, 0),
+            MissingMinutes = 30,
+            Status = AttendanceStatus.InsufficientWork
+        },
+
+        // 9. Quên check-out
+        new Attendance
+        {
+            EmployeeId = employeeId,
+            WorkDate = today.AddDays(-1),
+            CheckIn = new TimeSpan(8, 15, 0),
+            CheckOut = null,
+            MissingMinutes = 0,
+            Status = AttendanceStatus.MissingCheckOut
+        },
+
+        // 10. Làm đủ giờ hôm nay
+        new Attendance
+        {
+            EmployeeId = employeeId,
+            WorkDate = today,
+            CheckIn = new TimeSpan(8, 0, 0),
+            CheckOut = new TimeSpan(17, 0, 0),
+            MissingMinutes = 0,
+            Status = AttendanceStatus.CompletedWork
+        }
+    };
 
                 context.Attendances.AddRange(attendances);
                 context.SaveChanges();
