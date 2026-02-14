@@ -221,7 +221,7 @@ namespace HumanResourcesManager.BLL.Services
 
                 Directory.CreateDirectory(folderPath);
 
-                var fileName = $"check-in-{today:yyyyMMdd}.jpg";
+                var fileName = $"check-out-{today:yyyyMMdd}.jpg";
                 var filePath = Path.Combine(folderPath, fileName);
 
                 using var stream = new FileStream(filePath, FileMode.Create);
@@ -276,6 +276,7 @@ namespace HumanResourcesManager.BLL.Services
 
             return ServiceResult.Success("Check-out thành công.");
         }
+
         private DateTime GetVietnamNow()
         {
             return TimeZoneInfo.ConvertTimeFromUtc(
