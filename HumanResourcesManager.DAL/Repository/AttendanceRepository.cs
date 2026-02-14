@@ -51,7 +51,7 @@ namespace HumanResourcesManager.DAL.Repository
             return _context.Attendances
                 .Count(a => a.EmployeeId == employeeId
                          && a.Status != AttendanceStatus.ApprovedLeave
-                         && a.Status != AttendanceStatus.AWOL);
+                         && a.Status != AttendanceStatus.Absent);
         }
         public Attendance? GetByEmployeeAndWorkDate(int employeeId, DateTime workDate)
         {
@@ -62,6 +62,18 @@ namespace HumanResourcesManager.DAL.Repository
                 .FirstOrDefault(x => x.EmployeeId == employeeId
                                   && x.WorkDate >= start
                                   && x.WorkDate < end);
+        }
+
+        public List<Attendance> GetPendingByDate(DateTime workDate)
+        {
+            var start = workDate.Date;
+            var end = start.AddDays(1);
+
+            return _context.Attendances
+                .Where(a => a.WorkDate >= start
+                         && a.WorkDate < end
+                         && a.Status == AttendanceStatus.Pending)
+                .ToList();
         }
     }
 }

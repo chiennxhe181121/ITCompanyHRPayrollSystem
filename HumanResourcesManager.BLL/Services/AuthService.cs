@@ -15,16 +15,40 @@ namespace HumanResourcesManager.BLL.Services
     {
         private readonly HumanManagerContext _context;
         private readonly IUserAccountRepository _userAccountRepository;
-
+        private readonly IADEmployeeRepository _empRepo;
 
         public AuthService(
             HumanManagerContext context,
-            IUserAccountRepository userAccountRepository
+            IUserAccountRepository userAccountRepository,
+            IADEmployeeRepository empRepo
              )
         {
             _context = context;
             _userAccountRepository = userAccountRepository;
+            _empRepo = empRepo;
         }
+
+        // Tạo Mã Nhân Viên: VD: EMP260001
+        private string GenerateEmployeeCode()
+        {
+            string yearPrefix = DateTime.Now.ToString("yy");
+            string prefix = $"EMP{yearPrefix}";
+
+            string? lastCode = _empRepo.GetLastEmployeeCode(prefix);
+            int nextSequence = 1;
+
+            if (!string.IsNullOrEmpty(lastCode))
+            {
+                string numberPart = lastCode.Substring(prefix.Length);
+                if (int.TryParse(numberPart, out int currentSequence))
+                {
+                    nextSequence = currentSequence + 1;
+                }
+            }
+
+            return $"{prefix}{nextSequence.ToString("D4")}";
+        }
+
 
         public void Register(RegisterDTO dto)
         {
@@ -46,7 +70,8 @@ namespace HumanResourcesManager.BLL.Services
 
             var employee = new Employee
             {
-                EmployeeCode = "EMP" + DateTime.Now.ToString("yyMMddHHmmss"),
+                //EmployeeCode = "EMP" + DateTime.Now.ToString("yyMMddHHmmss"),
+                EmployeeCode = GenerateEmployeeCode(),
                 FullName = dto.FullName,
                 Email = dto.Email,
                 Gender = dto.Gender,
@@ -57,7 +82,6 @@ namespace HumanResourcesManager.BLL.Services
                 DepartmentId = 1,
                 PositionId = 1,
 
-                // ⭐ LINK 1–1
                 UserAccount = user
             };
 
@@ -66,52 +90,13 @@ namespace HumanResourcesManager.BLL.Services
         }
 
 
-
-        //    public UserSessionDTO? Login(LoginDTO dto)
-        //    {
-        //        //var user = _context.UserAccounts
-        //        //    .Include(u => u.Employee)
-        //        //    .Include(u => u.Role)
-        //        //    .FirstOrDefault(u =>
-        //        //        u.Status == Constants.Active &&
-        //        //        (
-        //        //            u.Username == dto.LoginKey ||
-        //        //            u.Employee.Email == dto.LoginKey
-        //        //        )
-        //        //    );
-        //        var user = _context.UserAccounts
-        //            .Include(u => u.Employee)
-        //            .Include(u => u.Role)
-        //            .FirstOrDefault(u =>
-        //                  u.Status == Constants.Active &&
-        //                 (
-        //                     u.Username == dto.LoginKey ||
-        //                 (u.Employee != null && u.Employee.Email == dto.LoginKey)
-        //    )
-        //);
-
-        //        if (user == null)
-        //            return null;
-
-        //        if (user.PasswordHash == null)
-        //            return null; // Google account không login bằng password
-
-        //        if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
-        //            return null;
-
-        //        return new UserSessionDTO
-        //        {
-        //            UserId = user.UserId,
-
-        //            Username = user.Username,
-        //            FullName = user.Employee.FullName,
-        //            RoleCode = user.Role.RoleCode,
-        //            RoleName = user.Role.RoleName
-        //        };
-        //    }
-
         public UserSessionDTO? Login(LoginDTO dto)
         {
+            if (string.IsNullOrWhiteSpace(dto.LoginKey) || string.IsNullOrWhiteSpace(dto.Password))
+            {
+                return null;
+            }
+
             var user = _context.UserAccounts
                 .Include(u => u.Employee)
                 .Include(u => u.Role)
@@ -138,70 +123,15 @@ namespace HumanResourcesManager.BLL.Services
             {
                 UserId = user.UserId,
                 Username = user.Username,
-
-                // 🔥 FIX QUAN TRỌNG
                 FullName = user.Employee != null
                     ? user.Employee.FullName
-                    : user.Username, // fallback cho admin / hr
+                    : user.Username, 
 
                 RoleCode = user.Role.RoleCode,
                 RoleName = user.Role.RoleName,
-                // 🔥 Lấy Avatar từ Employee (nếu có)
                 ImgAvatar = user.Employee?.ImgAvatar
             };
         }
-
-        //public UserSessionDTO? Login(LoginDTO dto)
-        //{
-        //    var user = _context.UserAccounts
-        //        .Include(u => u.Employee)
-        //        .Include(u => u.Role)
-        //        .FirstOrDefault(u =>
-        //            u.Status == Constants.Active &&
-        //            (
-        //                u.Username == dto.LoginKey ||
-        //                (u.Employee != null && u.Employee.Email == dto.LoginKey)
-        //            )
-        //        );
-
-        //    if (user == null)
-        //        return null;
-
-        //    if (string.IsNullOrEmpty(user.PasswordHash))
-        //        return null;
-
-        //    if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
-        //        return null;
-
-        //    return new UserSessionDTO
-        //    {
-        //        UserId = user.UserId,
-        //        Username = user.Username,
-        //        FullName = user.Employee != null
-        //            ? user.Employee.FullName
-        //            : user.Username,
-        //        RoleCode = user.Role.RoleCode,
-        //        RoleName = user.Role.RoleName
-        //    };
-        //}
-
-
-
-        //public void ResetPassword(string email, string newPass, string confirmPass)
-        //{
-        //    if (newPass != confirmPass)
-        //        throw new Exception("Password confirmation does not match");
-
-        //    var user = _context.UserAccounts
-        //        .Include(u => u.Employee)
-        //        .FirstOrDefault(u => u.Employee.Email == email);
-
-        //    if (user == null)
-        //        throw new Exception("Email not found");
-
-        //    user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPass);
-        //    _context.SaveChanges();
-        //}
 
         public void ResetPassword(string email, string newPass, string confirmPass)
         {
@@ -222,60 +152,13 @@ namespace HumanResourcesManager.BLL.Services
         }
 
 
-
-        // ===== LOGIN GOOGLE =====
-        //public UserSessionDTO LoginWithGoogle(string email, string fullName)
-        //{
-        //    var account = _userAccountRepository.GetByEmployeeEmail(email);
-
-        //    if (account == null)
-        //    {
-        //        var employee = new Employee
-        //        {
-        //            EmployeeCode = "EMP" + DateTime.Now.ToString("yyMMddHHmmss"),
-        //            FullName = fullName,
-        //            Email = email,
-        //            Gender = true,
-
-        //            Phone = "0000000000",
-
-        //            DateOfBirth = new DateTime(2003, 1, 1),
-
-        //            HireDate = DateTime.Now,
-        //            Status = Constants.Active,
-        //            DepartmentId = 1,
-        //            PositionId = 1
-        //        };
-
-        //        _context.Employees.Add(employee);
-        //        _context.SaveChanges();
-
-        //        account = _userAccountRepository.AddGoogleAccount(employee);
-        //    }
-
-        //    if (account.Role == null)
-        //        throw new Exception("User role not found");
-
-        //    return new UserSessionDTO
-        //    {
-        //        UserId = account.UserId,
-
-        //        Username = account.Username,
-        //        FullName = account.Employee.FullName,
-        //        RoleCode = account.Role.RoleCode,
-        //        RoleName = account.Role.RoleName
-        //    };
-        //}
-
         public UserSessionDTO LoginWithGoogle(string email, string fullName)
         {
-            // 1️ Tìm user theo Username (EMAIL)
             var account = _context.UserAccounts
                 .Include(u => u.Employee)
                 .Include(u => u.Role)
                 .FirstOrDefault(u => u.Username == email);
 
-            // 2️ Nếu chưa tồn tại → tạo mới
             if (account == null)
             {
                 var empRoleId = _context.Roles
@@ -299,12 +182,12 @@ namespace HumanResourcesManager.BLL.Services
 
                 var user = new UserAccount
                 {
-                    Username = email,                 // 🔑 UNIQUE
-                    //PasswordHash = null,              // Google login → không cần password
+                    Username = email,                
+                    //PasswordHash = null,             
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword("12345678"),
                     RoleId = empRoleId,
                     Status = Constants.Active,
-                    Employee = employee               // 🔗 1–1
+                    Employee = employee              
 
                 };
 
@@ -317,7 +200,6 @@ namespace HumanResourcesManager.BLL.Services
                     .First(u => u.UserId == user.UserId);
             }
 
-            // 3️ Trả session
             return new UserSessionDTO
             {
                 UserId = account.UserId,
@@ -325,7 +207,7 @@ namespace HumanResourcesManager.BLL.Services
                 FullName = account.Employee!.FullName,
                 RoleCode = account.Role!.RoleCode,
                 RoleName = account.Role.RoleName,
-                ImgAvatar = account.Employee?.ImgAvatar //  Thêm 
+                ImgAvatar = account.Employee?.ImgAvatar  
             };
         }
 

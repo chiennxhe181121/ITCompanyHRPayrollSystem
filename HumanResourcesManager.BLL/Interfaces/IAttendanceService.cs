@@ -16,5 +16,7 @@ namespace HumanResourcesManager.BLL.Interfaces
             AttendanceStatus? status);
         Task<ServiceResult> CheckIn(int userId, CheckInDTO dto);
         Task<ServiceResult> CheckOut(int userId, CheckOutDTO dto);
+        TodayAttendanceViewDTO GetTodayAttendance(int currentUserId);
+        void FinalizeDailyAttendance();
     }
 }

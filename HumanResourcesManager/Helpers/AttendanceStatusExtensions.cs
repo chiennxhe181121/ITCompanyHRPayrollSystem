@@ -8,12 +8,12 @@ namespace HumanResourcesManager.Helpers
         {
             return status switch
             {
-                AttendanceStatus.Normal => "Đủ công",
+                AttendanceStatus.Pending => "Chờ kết luận",
+                AttendanceStatus.CompletedWork => "Đủ công",
                 AttendanceStatus.InsufficientWork => "Thiếu công",
-                AttendanceStatus.MissingCheckIn => "Thiếu Check-in",
-                AttendanceStatus.MissingCheckOut => "Thiếu Check-out",
-                AttendanceStatus.ApprovedLeave => "Nghỉ có phép",
-                AttendanceStatus.AWOL => "Nghỉ không phép",
+                AttendanceStatus.MissingCheckOut => "Quên check-out",
+                AttendanceStatus.ApprovedLeave => "Nghỉ phép",
+                AttendanceStatus.Absent => "Vắng",
                 _ => "Không xác định"
             };
         }

@@ -80,6 +80,7 @@ namespace HumanResourcesManager
             builder.Services.AddScoped<IPositionRepository, PositionRepository>(); // 09/02/2026
             builder.Services.AddScoped<IADEmployeeRepository, ADEmployeeRepository>(); // 10/02/2026
             builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
+            builder.Services.AddScoped<IAllowanceRepository, AllowanceRepository>(); // 14/02/2026
 
             // Dependency Injection: Business Services (BLL)
             builder.Services.AddScoped<IAuthService, AuthService>();
@@ -94,6 +95,8 @@ namespace HumanResourcesManager
             builder.Services.AddScoped<IPositionService, PositionService>(); // 09/02/2026
             builder.Services.AddScoped<IADEmployeeService, ADEmployeeService>(); // 10/02/2026
             builder.Services.AddScoped<IAttendanceService, AttendanceService>();
+            builder.Services.AddScoped<IAllowanceService, AllowanceService>(); // 14/02/2026
+            builder.Services.AddHostedService<AttendanceFinalizeJob>(); // cronjob cho ket luan attendance 20:10 moi ngay
 
             // Session configuration
             builder.Services.AddDistributedMemoryCache();

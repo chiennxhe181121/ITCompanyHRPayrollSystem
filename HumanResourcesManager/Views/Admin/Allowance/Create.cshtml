@@ -1,0 +1,152 @@
+﻿@model HumanResourcesManager.BLL.DTOs.Allowance.AllowanceDTO
+
+@{
+    ViewData["Title"] = "Thêm Phụ Cấp";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="min-h-screen bg-slate-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+        <div class="absolute top-10 right-10 w-72 h-72 rounded-full bg-amber-200/40 mix-blend-multiply filter blur-3xl animate-blob"></div>
+        <div class="absolute bottom-10 left-10 w-72 h-72 rounded-full bg-orange-200/40 mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
+    </div>
+
+    <div class="relative z-10 sm:mx-auto sm:w-full sm:max-w-lg animate__animated animate__fadeInUp">
+        <a href="/HumanResourcesManager/admin/allowances" class="inline-flex items-center text-sm text-slate-500 hover:text-amber-600 mb-6 transition-colors group">
+            <i class="fa-solid fa-arrow-left-long mr-2 transition-transform group-hover:-translate-x-1"></i> Quay lại danh sách
+        </a>
+
+        <div class="bg-white shadow-2xl rounded-3xl overflow-hidden border border-slate-100">
+            <div class="bg-gradient-to-r from-amber-500 to-orange-600 px-8 py-8 text-white relative">
+                <div class="relative z-10">
+                    <h2 class="text-2xl font-extrabold tracking-tight">Thêm Khoản Phụ Cấp</h2>
+                    <p class="mt-1 text-amber-100 text-xs opacity-90">Thiết lập tên và định mức trợ cấp.</p>
+                </div>
+                <i class="fa-solid fa-wallet absolute right-6 top-1/2 -translate-y-1/2 text-6xl opacity-10 rotate-12"></i>
+            </div>
+
+            <form method="post" class="p-8 space-y-5">
+                @Html.AntiForgeryToken()
+
+                <div class="space-y-1">
+                    <label asp-for="AllowanceName" class="block text-xs font-bold text-slate-500 uppercase ml-1">Tên phụ cấp <span class="text-red-500">*</span></label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-tag text-slate-400 group-focus-within:text-amber-500 transition-colors"></i>
+                        </div>
+                        <input asp-for="AllowanceName" class="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-amber-500 outline-none transition-all font-medium" placeholder="VD: Phụ cấp Xăng xe" />
+                    </div>
+                    <span asp-validation-for="AllowanceName" class="text-xs text-red-500 font-medium ml-1"></span>
+                </div>
+
+                <div class="space-y-1">
+                    <label asp-for="Amount" class="block text-xs font-bold text-slate-500 uppercase ml-1">Số tiền (VNĐ) <span class="text-red-500">*</span></label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-money-bill text-slate-400 group-focus-within:text-amber-500 transition-colors"></i>
+                        </div>
+                        <input type="text" id="amountDisplay"
+                               class="block w-full pl-11 pr-14 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-amber-500 outline-none transition-all font-mono font-bold text-slate-700"
+                               placeholder="0" oninput="formatCurrency(this)" maxlength="19" autocomplete="off" />
+                        <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                            <span class="text-slate-400 font-bold text-xs">VNĐ</span>
+                        </div>
+                        <input asp-for="Amount" type="hidden" id="amountHidden" />
+                    </div>
+                    <p id="amountText" class="text-[11px] text-amber-600 font-medium ml-1 italic mt-1 min-h-[1rem]"></p>
+                    <span asp-validation-for="Amount" class="text-xs text-red-500 font-medium ml-1"></span>
+                </div>
+
+                <div class="flex items-center gap-3 pt-4 border-t border-slate-100 mt-2">
+                    <a href="/HumanResourcesManager/admin/allowances" class="flex-1 py-3 text-center rounded-xl border border-slate-200 text-slate-500 text-sm font-bold hover:bg-slate-50 transition-all">Huỷ bỏ</a>
+                    <button type="submit" class="flex-[2] py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-amber-200 hover:shadow-amber-300 transition-all transform hover:-translate-y-0.5">
+                        <i class="fa-solid fa-circle-check mr-1"></i> Xác nhận tạo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const DOCSO = {
+            chuSo: ["không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"],
+            tien: ["", "nghìn", "triệu", "tỷ", "nghìn tỷ"],
+            doc3so: function(so) {
+                let tram = Math.floor(so / 100);
+                let chuc = Math.floor((so % 100) / 10);
+                let donVi = so % 10;
+                let kq = "";
+                if (tram == 0 && chuc == 0 && donVi == 0) return "";
+                if (tram != 0) { kq += this.chuSo[tram] + " trăm "; if (chuc == 0 && donVi != 0) kq += "linh "; }
+                if (chuc != 0 && chuc != 1) { kq += this.chuSo[chuc] + " mươi "; if (chuc == 0 && donVi != 0) kq += "linh "; }
+                if (chuc == 1) kq += "mười ";
+                switch (donVi) {
+                    case 1: if (chuc > 1) kq += "mốt "; else kq += this.chuSo[donVi]; break;
+                    case 5: if (chuc == 0) kq += this.chuSo[donVi]; else kq += "lăm "; break;
+                    default: if (donVi != 0) kq += this.chuSo[donVi]; break;
+                }
+                return kq;
+            },
+            doc: function(so) {
+                if (so === 0) return "Không đồng";
+                let lan = 0, i = 0, soTemp = so, kq = "", viTri = [];
+                if (so < 0) return "Số âm";
+                while (so > 0) { viTri[lan] = so % 1000; so = Math.floor(so / 1000); lan++; }
+                for (i = lan - 1; i >= 0; i--) { if (viTri[i] != 0) kq += this.doc3so(viTri[i]) + " " + this.tien[i] + " "; }
+                return kq.replace(/\s+/g, ' ').trim();
+            }
+        };
+
+        function formatCurrency(input) {
+            let value = input.value.replace(/[^0-9]/g, '');
+            // Giới hạn max length để tránh lỗi JS
+            if (value.length > 15) value = value.substring(0, 15);
+
+            document.getElementById('amountHidden').value = value;
+
+            if (!value) {
+                input.value = '';
+                document.getElementById('amountText').innerText = '';
+                return;
+            }
+
+            input.value = new Intl.NumberFormat('en-US').format(value);
+            const num = parseInt(value, 10);
+            if (!isNaN(num)) {
+                let text = DOCSO.doc(num);
+                text = text.charAt(0).toUpperCase() + text.slice(1);
+                document.getElementById('amountText').innerText = 'Bằng chữ: ' + text + ' đồng';
+            }
+        }
+    </script>
+    <style>
+        @@keyframes blob {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(30px, -50px) scale(1.1);
+            }
+
+            66% {
+                transform: translate(-20px, 20px) scale(0.9);
+            }
+
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+        }
+
+        .animate-blob {
+            animation: blob 7s infinite;
+        }
+
+        .animation-delay-2000 {
+            animation-delay: 2s;
+        }
+    </style>
+}
