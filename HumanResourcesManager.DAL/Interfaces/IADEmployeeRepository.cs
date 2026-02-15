@@ -30,5 +30,8 @@ namespace HumanResourcesManager.DAL.Interfaces
         bool ExistsPhone(string phone, int excludeId);
 
         int GetRoleIdByCode(string roleCode);
+
+        // profile
+        Employee? GetByUserId(int userId);
     }
 }

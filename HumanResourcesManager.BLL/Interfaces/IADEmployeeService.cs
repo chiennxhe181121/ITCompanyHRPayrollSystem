@@ -18,5 +18,13 @@ namespace HumanResourcesManager.BLL.Interfaces
  
         void SetStatus(int id, int status, int? currentUserId);
 
+        // Profile
+        AdminProfileDTO? GetProfileByUserId(int userId);
+        bool UpdateProfile(AdminProfileDTO dto, out string message);
+
+
+
+
+
     }
 }
