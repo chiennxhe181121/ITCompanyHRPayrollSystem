@@ -158,8 +158,8 @@ namespace HumanResourcesManager.DAL.Data
             if (!context.Allowances.Any())
             {
                 context.Allowances.AddRange(
-                    new Allowance { AllowanceName = "Phụ cấp Ăn Trưa", Amount = 500000 , Status = Constants.Active },
-                    new Allowance { AllowanceName = "Phụ cấp Đi Lại", Amount = 300000 , Status = Constants.Active }
+                    new Allowance { AllowanceName = "Phụ cấp Ăn Trưa", Amount = 500000, Status = Constants.Active },
+                    new Allowance { AllowanceName = "Phụ cấp Đi Lại", Amount = 300000, Status = Constants.Active }
                 );
                 context.SaveChanges();
             }
@@ -318,12 +318,95 @@ namespace HumanResourcesManager.DAL.Data
             CheckOut = new TimeSpan(17, 0, 0),
             MissingMinutes = 0,
             Status = AttendanceStatus.CompletedWork
+        } ,
+
+        // 11. Ngày nghỉ lễ
+        new Attendance
+        {
+            EmployeeId = employeeId,
+            WorkDate = new DateTime(DateTime.Today.Year - 1, 12, 25),
+            CheckIn = null,
+            CheckOut = null,
+            MissingMinutes = 0,
+            Status = AttendanceStatus.Holiday
         }
-    };
+        };
 
                 context.Attendances.AddRange(attendances);
                 context.SaveChanges();
             }
+
+            // ===================== LEAVE TYPE =====================
+            if (!context.LeaveTypes.Any())
+            {
+                var leaveTypes = new List<LeaveType>
+    {
+        new LeaveType
+        {
+            LeaveName = "Annual Leave",
+            IsPaid = true
+        },
+        new LeaveType
+        {
+            LeaveName = "Unpaid Leave",
+            IsPaid = false
+        },
+        new LeaveType
+        {
+            LeaveName = "Maternity Leave",
+            IsPaid = true
+        }
+    };
+
+                context.LeaveTypes.AddRange(leaveTypes);
+                context.SaveChanges();
+            }
+
+            // ===================== ANNUAL LEAVE BALANCE =====================
+            if (!context.AnnualLeaveBalance.Any())
+            {
+                var currentYear = DateTime.Today.Year;
+
+                var balances = new List<AnnualLeaveBalance>
+    {
+        // EMP001
+        new AnnualLeaveBalance
+        {
+            EmployeeId = 1,
+            Year = currentYear,
+            EntitledDays = 12,
+            UsedDays = 2,
+            RemainingDays = 10,
+            CreatedDate = new DateTime(currentYear, 1, 1)
+        },
+
+        // EMP002
+        new AnnualLeaveBalance
+        {
+            EmployeeId = 2,
+            Year = currentYear,
+            EntitledDays = 12,
+            UsedDays = 3,
+            RemainingDays = 9,
+            CreatedDate = new DateTime(currentYear, 1, 1)
+        },
+
+        // EMP003
+        new AnnualLeaveBalance
+        {
+            EmployeeId = 3,
+            Year = currentYear,
+            EntitledDays = 12,
+            UsedDays = 3,
+            RemainingDays = 9,
+            CreatedDate = new DateTime(currentYear, 1, 1)
+        }
+    };
+
+                context.AnnualLeaveBalance.AddRange(balances);
+                context.SaveChanges();
+            }
+
         }
     }
 }

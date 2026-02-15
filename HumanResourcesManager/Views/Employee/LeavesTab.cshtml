@@ -17,12 +17,47 @@
 			<!-- Leaves Tab -->
 			<div id="leavesTab" class="tab-content">
 				<div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
-					<div class="flex flex-wrap items-center justify-between gap-3">
-						<h2 class="text-lg font-semibold text-slate-800">Nghỉ Phép</h2>
-						<button id="addLeaveBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2.5 rounded-xl shadow-sm transition-colors text-sm">
-							+ Đăng Ký Nghỉ Phép
-						</button>
-					</div>
+                    <div class="flex flex-wrap items-start justify-between gap-4">
+
+                        <!-- Title + Subtitle -->
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-800 tracking-tight">
+                                Nghỉ Phép
+                            </h2>
+                            <p class="text-sm text-slate-500 mt-1">
+                                Quản lý đơn nghỉ phép và theo dõi trạng thái phê duyệt của bạn
+                            </p>
+                        </div>
+
+                        <!-- Button -->
+						<a asp-controller="Employee"
+						   asp-action="CreateLeave"
+						   class="group inline-flex items-center gap-2
+          bg-gradient-to-r from-emerald-500 to-teal-500
+          hover:from-emerald-600 hover:to-teal-600
+          text-white px-5 py-2.5 rounded-xl text-sm font-semibold
+          shadow-md hover:shadow-lg
+          transition-all duration-200">
+
+                            <!-- Icon calendar + plus (đẹp & đúng ngữ nghĩa hơn) -->
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                 class="w-5 h-5 transition-transform duration-200 group-hover:scale-110"
+                                 fill="none"
+                                 viewBox="0 0 24 24"
+                                 stroke="currentColor"
+                                 stroke-width="2">
+                                <path stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      d="M8 7V3m8 4V3m-9 8h6m-6 4h3m6-10H6a2 2 0 00-2 2v11a2 2 0 002 2h12a2 2 0 002-2V9a2 2 0 00-2-2z" />
+                                <path stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      d="M12 14v4m2-2h-4" />
+                            </svg>
+
+                            Đăng Ký Nghỉ Phép
+                        </a>
+
+                    </div>
 				</div>
 				<div class="p-6">
 					<div class="overflow-x-auto rounded-xl border border-slate-200/80">
@@ -46,3 +81,20 @@
 		</div>
 	</div>
 </main>
+
+@section Scripts {
+	@if (TempData["Success"] != null)
+	{
+		<script>
+			Swal.fire({
+				toast: true,
+				position: 'top-end',
+				icon: 'success',
+				title: @Html.Raw(Json.Serialize(TempData["Success"])),
+				showConfirmButton: false,
+				timer: 2500,
+				timerProgressBar: true
+			});
+		</script>
+	}
+}

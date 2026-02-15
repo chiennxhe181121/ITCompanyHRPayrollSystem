@@ -5,6 +5,7 @@ using HumanResourcesManager.DAL.Enum;
 using HumanResourcesManager.DAL.Interfaces;
 using HumanResourcesManager.DAL.Models;
 using HumanResourcesManager.DAL.Shared;
+using Microsoft.EntityFrameworkCore;
 
 namespace HumanResourcesManager.BLL.Services
 {
@@ -149,6 +150,11 @@ namespace HumanResourcesManager.BLL.Services
                 if (existingAttendance.Status == AttendanceStatus.ApprovedLeave)
                     return ServiceResult.Failure("Ngày này bạn nghỉ có phép.");
 
+                if (existingAttendance.Status == AttendanceStatus.Holiday)
+                {
+                    return ServiceResult.Failure("Hôm nay là ngày nghỉ lễ.");
+                }
+
                 if (existingAttendance.Status == AttendanceStatus.Pending
                     && !existingAttendance.CheckIn.HasValue)
                 {
@@ -221,6 +227,12 @@ namespace HumanResourcesManager.BLL.Services
     && attendance.Status == AttendanceStatus.ApprovedLeave)
             {
                 return ServiceResult.Failure("Ngày này bạn nghỉ có phép.");
+            }
+
+            if (attendance != null
+    && attendance.Status == AttendanceStatus.Holiday)
+            {
+                return ServiceResult.Failure("Hôm nay là ngày nghỉ lễ.");
             }
 
             if (attendance == null)
@@ -343,6 +355,46 @@ namespace HumanResourcesManager.BLL.Services
                 }
 
                 _attendanceRepository.Update(attendance);
+            }
+
+            _attendanceRepository.Save();
+        }
+
+        public void GenerateHolidayAttendance()
+        {
+            var today = DateTime.Today;
+
+            bool isFixedHoliday = Constants.FixedHolidays
+                .Any(h => h.Day == today.Day && h.Month == today.Month);
+
+            bool isTetHoliday = LunarHelper
+                .GetTetHolidayDates(today.Year)
+                .Contains(today);
+
+            if (!isFixedHoliday && !isTetHoliday)
+                return;
+
+            var employees = _employeeRepository
+                .GetAll()
+                .Where(e => e.Status == Constants.Active);
+
+            foreach (var emp in employees)
+            {
+                var existing = _attendanceRepository
+                    .GetByEmployeeAndWorkDate(emp.EmployeeId, today);
+
+                if (existing != null)
+                    continue;
+
+                var attendance = new Attendance
+                {
+                    EmployeeId = emp.EmployeeId,
+                    WorkDate = today,
+                    Status = AttendanceStatus.Holiday,
+                    MissingMinutes = 0
+                };
+
+                _attendanceRepository.Add(attendance);
             }
 
             _attendanceRepository.Save();

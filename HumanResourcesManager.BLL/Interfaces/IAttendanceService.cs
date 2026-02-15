@@ -18,5 +18,6 @@ namespace HumanResourcesManager.BLL.Interfaces
         Task<ServiceResult> CheckOut(int userId, CheckOutDTO dto);
         TodayAttendanceViewDTO GetTodayAttendance(int currentUserId);
         void FinalizeDailyAttendance();
+        void GenerateHolidayAttendance();
     }
 }

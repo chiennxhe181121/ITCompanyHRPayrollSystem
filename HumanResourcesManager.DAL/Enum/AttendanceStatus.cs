@@ -7,6 +7,7 @@
         InsufficientWork = 2, // Present
         MissingCheckOut = 3,
         ApprovedLeave = 4,
-        Absent = 5
+        Absent = 5,
+        Holiday = 6
     }
 }

@@ -1,6 +1,8 @@
 ﻿using HumanResourcesManager.BLL.DTOs.Employee;
 using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.DAL.Enum;
+using HumanResourcesManager.DAL.Interfaces;
+using HumanResourcesManager.DAL.Shared;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -16,15 +18,22 @@ public class EmployeeController : Controller
     private readonly IEmployeeService _employeeService;
     private readonly IAttendanceService _attendanceService;
     private readonly IUserAccountService _userAccountService;
+    private readonly ILeaveRequestService _leaveRequestService;
+    private readonly ILeaveTypeRepository _leaveTypeRepository;
 
     public EmployeeController(
         IEmployeeService employeeService,
         IAttendanceService attendanceService,
-        IUserAccountService userAccountService)
+        IUserAccountService userAccountService,
+        ILeaveRequestService leaveRequestService,
+        ILeaveTypeRepository leaveTypeRepository
+        )
     {
         _employeeService = employeeService;
         _attendanceService = attendanceService;
         _userAccountService = userAccountService;
+        _leaveRequestService = leaveRequestService;
+        _leaveTypeRepository = leaveTypeRepository;
     }
 
     // Lấy userId từ session
@@ -191,12 +200,57 @@ public class EmployeeController : Controller
     }
 
     // ===== Leaves =====
+    // view leaves
     [HttpGet("leaves")]
     public IActionResult Leaves()
     {
         var employee = _employeeService.GetOwnProfile(CurrentUserId);
         return View("~/Views/Employee/LeavesTab.cshtml", employee);
     }
+
+    // GET: hiển thị form
+    [HttpGet("leaves/request")]
+    public IActionResult CreateLeave()
+    {
+        LoadLeaveTypes();
+
+        return View("~/Views/Employee/CreateLeave.cshtml");
+    }
+
+    private void LoadLeaveTypes()
+    {
+        ViewBag.LeaveTypes = _leaveTypeRepository.GetAll();
+    }
+
+    // POST: submit form
+    [HttpPost("leaves/request")]
+    [ValidateAntiForgeryToken]
+    public IActionResult CreateLeave(CreateLeaveRequestDTO dto, bool agreeRule)
+    {
+        if (!agreeRule)
+        {
+            ModelState.AddModelError("", "Bạn phải đồng ý với quy định nghỉ phép.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            LoadLeaveTypes();
+            return View(dto);
+        }
+
+        var result = _leaveRequestService.CreateLeaveRequest(CurrentUserId, dto);
+
+        if (!result.IsSuccess)
+        {
+            ModelState.AddModelError(string.Empty, result.Message);
+            LoadLeaveTypes();
+            return View(dto);
+        }
+
+        TempData["Success"] = result.Message;
+        return RedirectToAction("Leaves");
+    }
+
 
     [HttpGet("overtime")]
     public IActionResult Overtime()

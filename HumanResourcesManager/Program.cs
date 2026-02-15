@@ -6,6 +6,7 @@ using HumanResourcesManager.DAL.Data;
 using HumanResourcesManager.DAL.Interfaces;
 using HumanResourcesManager.DAL.Repositories;
 using HumanResourcesManager.DAL.Repository;
+using HumanResourcesManager.DAL.Shared;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
@@ -81,6 +82,8 @@ namespace HumanResourcesManager
             builder.Services.AddScoped<IADEmployeeRepository, ADEmployeeRepository>(); // 10/02/2026
             builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
             builder.Services.AddScoped<IAllowanceRepository, AllowanceRepository>(); // 14/02/2026
+            builder.Services.AddScoped<IAnnualLeaveBalanceRepositry, AnnualLeaveBalanceRepository>();
+            builder.Services.AddScoped<ILeaveTypeRepository, LeaveTypeRepository>();
 
             // Dependency Injection: Business Services (BLL)
             builder.Services.AddScoped<IAuthService, AuthService>();
@@ -96,7 +99,10 @@ namespace HumanResourcesManager
             builder.Services.AddScoped<IADEmployeeService, ADEmployeeService>(); // 10/02/2026
             builder.Services.AddScoped<IAttendanceService, AttendanceService>();
             builder.Services.AddScoped<IAllowanceService, AllowanceService>(); // 14/02/2026
+            builder.Services.AddScoped<ILeaveRequestService, LeaveRequestService>();
+
             builder.Services.AddHostedService<AttendanceFinalizeJob>(); // cronjob cho ket luan attendance 20:10 moi ngay
+            builder.Services.AddHostedService<HolidayGenerateJob>(); // cronjob cho attendance holiday
 
             // Session configuration
             builder.Services.AddDistributedMemoryCache();

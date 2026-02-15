@@ -23,11 +23,26 @@
         // ==================================================
         // 3️⃣ Attendance
         // ==================================================
-        public const int CheckedIn = 20;    // Đã check-in
-        public const int CheckedOut = 21;   // Đã check-out
-        public const int Absent = 22;       // Vắng mặt
-        public const int Late = 23;         // Đi trễ
-        public const int EarlyLeave = 24;   // Về sớm
+        public const int STANDARD_WORK_MINUTES = 8 * 60;   // 8h
+        public const int BREAK_MINUTES = 60;               // 1h nghỉ trưa
+
+        public static readonly TimeSpan WorkStart = new(8, 0, 0);
+        public static readonly TimeSpan WorkEnd = new(17, 0, 0);
+
+        public static readonly TimeSpan CheckInFrom = new(7, 30, 0);
+        public static readonly TimeSpan CheckInTo = new(9, 0, 0);
+
+        public static readonly TimeSpan CheckOutFrom = new(16, 30, 0);
+        public static readonly TimeSpan CheckOutTo = new(20, 0, 0);
+
+        public static readonly List<(int Day, int Month)> FixedHolidays =
+            new()
+            {
+                (1, 1),   // 01/01 - Tết Dương lịch
+                (30, 4),  // 30/04
+                (1, 5),   // 01/05
+                (2, 9)    // 02/09
+            };
 
         // ==================================================
         // 4️⃣ Contract
@@ -55,20 +70,5 @@
         // ==================================================
         public const int Success = 200;
         public const int Failed = 500;
-
-        // ==================================================
-        // 8 Dùng cho chấm công
-        // ==================================================
-        public const int STANDARD_WORK_MINUTES = 8 * 60;   // 8h
-        public const int BREAK_MINUTES = 60;               // 1h nghỉ trưa
-
-        public static readonly TimeSpan WorkStart = new(8, 0, 0);
-        public static readonly TimeSpan WorkEnd = new(17, 0, 0);
-
-        public static readonly TimeSpan CheckInFrom = new(7, 30, 0);
-        public static readonly TimeSpan CheckInTo = new(9, 0, 0);
-
-        public static readonly TimeSpan CheckOutFrom = new(16, 30, 0);
-        public static readonly TimeSpan CheckOutTo = new(20, 0, 0);
     }
 }
