@@ -167,10 +167,6 @@ namespace HumanResourcesManager.DAL.Data
                 entity.HasOne(lr => lr.Employee)
                       .WithMany(e => e.LeaveRequests)
                       .HasForeignKey(lr => lr.EmployeeId);
-
-                entity.HasOne(lr => lr.LeaveType)
-                      .WithMany(lt => lt.LeaveRequests)
-                      .HasForeignKey(lr => lr.LeaveTypeId);
             });
 
             // ===================== AnnualLeaveBalance =====================

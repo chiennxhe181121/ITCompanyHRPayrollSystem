@@ -237,7 +237,8 @@
 		window.attendanceState = {
 			hasCheckIn: @(Model.CheckInTime != null ? "true" : "false"),
 			hasCheckOut: @(Model.CheckOutTime != null ? "true" : "false"),
-			isLeave: @(Model.IsLeave ? "true" : "false"),
+			isLeave: @(Model.IsApprovedLeave ? "true" : "false"),
+			isHoliday: @(Model.IsHoliday ? "true" : "false"),
 			checkInTime: '@(Model.CheckInTime?.ToString(@"hh\:mm\:ss"))',
 			checkOutTime: '@(Model.CheckOutTime?.ToString(@"hh\:mm\:ss"))'
 		};

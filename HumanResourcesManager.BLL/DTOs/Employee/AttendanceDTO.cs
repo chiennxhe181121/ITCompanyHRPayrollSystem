@@ -59,15 +59,20 @@ namespace HumanResourcesManager.BLL.DTOs.Employee
 
         // ================= DISPLAY =================
 
-        public bool IsLeave =>
+        public bool IsApprovedLeave =>
             Status == AttendanceStatus.ApprovedLeave;
+
+        public bool IsHoliday =>
+            Status == AttendanceStatus.Holiday;
 
         public bool CanCheckIn =>
             Status == AttendanceStatus.Pending
+            && !IsHoliday
             && !CheckInTime.HasValue;
 
         public bool CanCheckOut =>
             Status == AttendanceStatus.Pending
+            && !IsHoliday
             && CheckInTime.HasValue
             && !CheckOutTime.HasValue;
     }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HumanResourcesManager.DAL.Enum;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,8 +18,13 @@ namespace HumanResourcesManager.DAL.Models
 
         public DateTime FromDate { get; set; }
         public DateTime ToDate { get; set; }
-        public long Status { get; set; } 
-        
-    }
 
+        public long Status { get; set; }
+
+        //public string? Reason { get; set; }
+        //public DateTime CreatedDate { get; set; }
+        //public DateTime? ApprovedDate { get; set; }
+        //public int? ApprovedBy { get; set; }
+        //public RequestStatus Status { get; set; }
+    }
 }

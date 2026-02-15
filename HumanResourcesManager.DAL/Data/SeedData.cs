@@ -158,8 +158,8 @@ namespace HumanResourcesManager.DAL.Data
             if (!context.Allowances.Any())
             {
                 context.Allowances.AddRange(
-                    new Allowance { AllowanceName = "Phụ cấp Ăn Trưa", Amount = 500000 , Status = Constants.Active },
-                    new Allowance { AllowanceName = "Phụ cấp Đi Lại", Amount = 300000 , Status = Constants.Active }
+                    new Allowance { AllowanceName = "Phụ cấp Ăn Trưa", Amount = 500000, Status = Constants.Active },
+                    new Allowance { AllowanceName = "Phụ cấp Đi Lại", Amount = 300000, Status = Constants.Active }
                 );
                 context.SaveChanges();
             }
@@ -318,8 +318,19 @@ namespace HumanResourcesManager.DAL.Data
             CheckOut = new TimeSpan(17, 0, 0),
             MissingMinutes = 0,
             Status = AttendanceStatus.CompletedWork
+        } ,
+
+        // 11. Ngày nghỉ lễ
+        new Attendance
+        {
+            EmployeeId = employeeId,
+            WorkDate = new DateTime(DateTime.Today.Year - 1, 12, 25),
+            CheckIn = null,
+            CheckOut = null,
+            MissingMinutes = 0,
+            Status = AttendanceStatus.Holiday
         }
-    };
+        };
 
                 context.Attendances.AddRange(attendances);
                 context.SaveChanges();

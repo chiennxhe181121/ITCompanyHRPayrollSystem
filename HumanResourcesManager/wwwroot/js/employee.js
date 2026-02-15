@@ -698,14 +698,20 @@ function updateCheckInUI() {
 
     if (!btn || !badge) return;
 
-    if (window.attendanceState?.isLeave) {
+    if (window.attendanceState?.isLeave || window.attendanceState?.isHoliday) {
 
         btn.disabled = true;
         btn.classList.add("opacity-50", "cursor-not-allowed");
 
-        badge.textContent = "📅 Nghỉ có phép";
-        badge.className =
-            "inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700";
+        if (window.attendanceState?.isHoliday) {
+            badge.textContent = "🎉 Nghỉ lễ";
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-700";
+        } else {
+            badge.textContent = "📅 Nghỉ có phép";
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700";
+        }
 
         countdownEl?.classList.add("hidden");
         progressWrapper?.classList.add("hidden");
@@ -810,14 +816,20 @@ function updateCheckOutUI() {
 
     if (!btn || !badge) return;
 
-    if (window.attendanceState?.isLeave) {
+    if (window.attendanceState?.isLeave || window.attendanceState?.isHoliday) {
 
         btn.disabled = true;
         btn.classList.add("opacity-50", "cursor-not-allowed");
 
-        badge.textContent = "📅 Nghỉ có phép";
-        badge.className =
-            "inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700";
+        if (window.attendanceState?.isHoliday) {
+            badge.textContent = "🎉 Nghỉ lễ";
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-700";
+        } else {
+            badge.textContent = "📅 Nghỉ có phép";
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700";
+        }
 
         countdownEl?.classList.add("hidden");
         progressWrapper?.classList.add("hidden");
