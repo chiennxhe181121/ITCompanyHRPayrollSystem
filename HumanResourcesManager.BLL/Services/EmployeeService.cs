@@ -144,6 +144,13 @@ namespace HumanResourcesManager.BLL.Services
                     Details = "Email (" + dto.Email + ") đã tồn tại, vui lòng sử dụng email khác"
                 };
 
+            // ===== PHONE UNIQUE =====
+            if (_repo.ExistsByPhone(dto.Phone, userId))
+                throw new BusinessException("PhoneAlreadyExists")
+                {
+                    Details = "Số điện thoại (" + dto.Phone + ") đã tồn tại, vui lòng sử dụng số khác"
+                };
+
             // ===== DATE OF BIRTH =====
             var today = DateTime.Today;
 
@@ -171,32 +178,6 @@ namespace HumanResourcesManager.BLL.Services
                 {
                     Details = "Ngày sinh không hợp lệ"
                 };
-
-            //// ===== AVATAR VALIDATION =====
-            //if (avatarFile != null)
-            //{
-            //    // size <= 2MB
-            //    if (avatarFile.Length > 2 * 1024 * 1024)
-            //        throw new BusinessException("AvatarTooLarge")
-            //        {
-            //            Details = "Dung lượng ảnh đại diện không được vượt quá 2MB"
-            //        };
-
-            //    // type
-            //    var allowedTypes = new[] { "image/jpeg", "image/png" };
-            //    if (!allowedTypes.Contains(avatarFile.ContentType))
-            //        throw new BusinessException("AvatarInvalidType")
-            //        {
-            //            Details = "Chỉ chấp nhận ảnh định dạng JPG hoặc PNG"
-            //        };
-            //}
-
-            //// ===== REMOVE AVATAR CONSISTENCY =====
-            //if (dto.RemoveAvatar && avatarFile != null)
-            //    throw new BusinessException("AvatarConflict")
-            //    {
-            //        Details = "Không thể vừa tải ảnh mới vừa xoá ảnh đại diện"
-            //    };
         }
 
         public async Task<Employee?> UpdateOwnProfile(

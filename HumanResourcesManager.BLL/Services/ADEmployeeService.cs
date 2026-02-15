@@ -19,7 +19,9 @@ namespace HumanResourcesManager.BLL.Services
         private readonly IUserAccountRepository _userRepo;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ADEmployeeService(IADEmployeeRepository empRepo, IUserAccountRepository userRepo, IWebHostEnvironment webHostEnvironment)
+        public ADEmployeeService(IADEmployeeRepository empRepo, 
+            IUserAccountRepository userRepo,
+            IWebHostEnvironment webHostEnvironment)
         {
             _empRepo = empRepo;
             _userRepo = userRepo;

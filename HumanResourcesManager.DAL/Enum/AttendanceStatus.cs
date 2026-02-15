@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace HumanResourcesManager.DAL.Enum
+﻿namespace HumanResourcesManager.DAL.Enum
 {
     public enum AttendanceStatus
     {
-        Normal,
-        MissingCheckIn,
-        MissingCheckOut,
-        ApprovedLeave, // nghỉ có phép
-        AWOL, // nghỉ không phép
-        InsufficientWork
+        Pending = 0,
+        CompletedWork = 1, // Present
+        InsufficientWork = 2, // Present
+        MissingCheckOut = 3,
+        ApprovedLeave = 4,
+        Absent = 5
     }
 }

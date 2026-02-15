@@ -5,6 +5,11 @@ let profileEditMode = false;
 const STAT_IDS = ['monthAttendance', 'leavesRemaining', 'overtimeHours', 'currentSalary'];
 let statsVisibility = { monthAttendance: true, leavesRemaining: true, overtimeHours: true, currentSalary: true };
 
+const CHECKIN_FROM = "07:30:00";
+const CHECKIN_TO = "09:00:00";
+const CHECKOUT_FROM = "16:30:00";
+const CHECKOUT_TO = "20:00:00";
+
 // ===== STATS =====
 function loadStatsVisibility() {
     try {
@@ -83,12 +88,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     loadStatsUI();
     loadStatsVisibility();
-    //initializePage();
     updateStatsDisplay();
     updateStatButtonIcons();
     updateCurrentDate();
     updateClock();
     setInterval(updateClock, 1000);
+
+    // Ràng buộc thời gian chấm công
+    setInterval(() => {
+        updateCheckInUI();
+        updateCheckOutUI();
+    }, 1000);
 
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
@@ -160,6 +170,10 @@ document.addEventListener('DOMContentLoaded', function () {
             const imgEl = document.getElementById('profileAvatarImg');
             const initialEl = document.getElementById('profileAvatarInitial');
             const removeBtn = document.getElementById('profileAvatarRemoveBtn');
+            const removeFlag = document.getElementById('removeAvatarFlag');
+
+            // 🔥 QUAN TRỌNG: nếu chọn ảnh mới thì KHÔNG xóa nữa
+            if (removeFlag) removeFlag.value = 'false';
 
             const previewUrl = URL.createObjectURL(file);
 
@@ -224,6 +238,10 @@ function loadProfileAvatarFromDB() {
     const imgEl = document.getElementById('profileAvatarImg');
     const initialEl = document.getElementById('profileAvatarInitial');
     const removeBtn = document.getElementById('profileAvatarRemoveBtn');
+    const removeFlag = document.getElementById('removeAvatarFlag');
+
+    // 🔥 luôn reset flag khi load lại từ DB
+    if (removeFlag) removeFlag.value = 'false';
 
     if (avatarPath) {
         imgEl.src = avatarPath + '?v=' + Date.now();
@@ -467,43 +485,8 @@ function validateProfileForm() {
         }
     }
 
-    //// ===== AVATAR =====
-    //const avatarInput = document.getElementById('profileAvatar');
-    //const removeAvatar = document.getElementById('removeAvatar');
-
-    //if (avatarInput && avatarInput.files.length > 0) {
-    //    const file = avatarInput.files[0];
-
-    //    // size <= 2MB
-    //    if (file.size > 2 * 1024 * 1024) {
-    //        showError(avatarInput, 'Avatar phải nhỏ hơn hoặc bằng 2MB');
-    //        isValid = false;
-    //    }
-
-    //    // type
-    //    const allowedTypes = ['image/jpeg', 'image/png'];
-    //    if (!allowedTypes.includes(file.type)) {
-    //        showError(avatarInput, 'Avatar chỉ chấp nhận JPG hoặc PNG');
-    //        isValid = false;
-    //    }
-
-    //    // upload + remove
-    //    if (removeAvatar && removeAvatar.checked) {
-    //        showError(
-    //            avatarInput,
-    //            'Không thể vừa upload vừa xóa avatar'
-    //        );
-    //        isValid = false;
-    //    }
-    //}
-
     return isValid;
 }
-
-let checkInStream = null;
-let checkOutStream = null;
-let checkInPhotoData = null;
-let checkOutPhotoData = null;
 
 // ===== SIDEBAR =====
 // cần sửa
@@ -548,7 +531,12 @@ let checkOutPhotoData = null;
 //    }
 //}
 
-// ===== CAMERA (chỉ giao diện) =====
+// ===== ATTENDANCE =====
+let checkInStream = null;
+let checkOutStream = null;
+let checkInPhotoData = null;
+let checkOutPhotoData = null;
+
 async function startCamera(type) {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
@@ -613,15 +601,36 @@ function submitCheckInClick() {
         alert('Vui lòng chụp ảnh trước khi check-in!');
         return;
     }
+
     const now = new Date();
-    const currentTime = now.toTimeString().slice(0, 8);
-    document.getElementById('checkInPhotoPreview')?.classList.add('hidden');
-    document.getElementById('submitCheckInBtn')?.classList.add('hidden');
-    document.getElementById('startCheckInCameraBtn')?.classList.remove('hidden');
-    checkInPhotoData = null;
-    const statusEl = document.getElementById('checkInStatus');
-    if (statusEl) statusEl.textContent = 'Đã check-in lúc ' + currentTime + ' (giao diện demo)';
-    alert('✓ Check-in (giao diện). Chức năng sẽ kết nối API khi backend sẵn sàng.');
+
+    document.getElementById("checkInWorkDate").value =
+        now.toISOString().split("T")[0];
+
+    document.getElementById("checkInTime").value =
+        now.toTimeString().slice(0, 8);
+
+    // convert base64 -> blob
+    const byteString = atob(checkInPhotoData.split(',')[1]);
+    const mimeString = checkInPhotoData.split(',')[0].split(':')[1].split(';')[0];
+
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+
+    for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+
+    const blob = new Blob([ab], { type: mimeString });
+    const file = new File([blob], "check-in.jpg", { type: mimeString });
+
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+
+    document.getElementById("checkInFileInput").files =
+        dataTransfer.files;
+
+    document.getElementById("checkInForm").submit();
 }
 
 function submitCheckOutClick() {
@@ -629,25 +638,289 @@ function submitCheckOutClick() {
         alert('Vui lòng chụp ảnh trước khi check-out!');
         return;
     }
+
     const now = new Date();
-    const currentTime = now.toTimeString().slice(0, 8);
-    document.getElementById('checkOutPhotoPreview')?.classList.add('hidden');
-    document.getElementById('submitCheckOutBtn')?.classList.add('hidden');
-    document.getElementById('startCheckOutCameraBtn')?.classList.remove('hidden');
-    checkOutPhotoData = null;
-    const statusEl = document.getElementById('checkOutStatus');
-    if (statusEl) statusEl.textContent = 'Đã check-out lúc ' + currentTime + ' (giao diện demo)';
-    alert('✓ Check-out (giao diện). Chức năng sẽ kết nối API khi backend sẵn sàng.');
+
+    document.getElementById("checkOutWorkDate").value =
+        now.toISOString().split("T")[0];
+
+    document.getElementById("checkOutTime").value =
+        now.toTimeString().slice(0, 8);
+
+    // convert base64 -> blob
+    const byteString = atob(checkOutPhotoData.split(',')[1]);
+    const mimeString = checkOutPhotoData.split(',')[0].split(':')[1].split(';')[0];
+
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+
+    for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+
+    const blob = new Blob([ab], { type: mimeString });
+    const file = new File([blob], "check-out.jpg", { type: mimeString });
+
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+
+    document.getElementById("checkOutFileInput").files =
+        dataTransfer.files;
+
+    document.getElementById("checkOutForm").submit();
+}
+
+function getTimeDiff(targetTime) {
+    const now = new Date();
+
+    const [h, m, s] = targetTime.split(":").map(Number);
+
+    const target = new Date();
+    target.setHours(h, m, s, 0);
+
+    const diff = target - now;
+
+    if (diff <= 0) return null;
+
+    const hours = String(Math.floor(diff / 3600000)).padStart(2, '0');
+    const minutes = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+    const seconds = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+
+    return `${hours}:${minutes}:${seconds}`;
+}
+
+function updateCheckInUI() {
+    const btn = document.getElementById("startCheckInCameraBtn");
+    const badge = document.getElementById("checkInBadge");
+    const countdownEl = document.getElementById("checkInCountdown");
+    const progressWrapper = document.getElementById("checkInProgressWrapper");
+    const progressBar = document.getElementById("checkInProgress");
+
+    if (!btn || !badge) return;
+
+    if (window.attendanceState?.isLeave) {
+
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+
+        badge.textContent = "📅 Nghỉ có phép";
+        badge.className =
+            "inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700";
+
+        countdownEl?.classList.add("hidden");
+        progressWrapper?.classList.add("hidden");
+
+        return;
+    }
+
+    if (window.attendanceState?.hasCheckIn) {
+
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+
+        badge.textContent =
+            "✅ Đã check-in lúc " + window.attendanceState.checkInTime;
+
+        badge.className =
+            "inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700";
+
+        countdownEl?.classList.add("hidden");
+        progressWrapper?.classList.add("hidden");
+
+        return;
+    }
+
+    const now = new Date();
+    const current = now.toTimeString().slice(0, 8);
+
+    if (current < CHECKIN_FROM) {
+
+        const diff = getTimeDiff(CHECKIN_FROM);
+
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+
+        badge.textContent = "⏳ Chưa tới giờ";
+        badge.className = "inline-block px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700";
+
+        countdownEl.classList.remove("hidden");
+        countdownEl.textContent = diff ?? "00:00:00";
+
+        progressWrapper.classList.add("hidden");
+    }
+    else if (current > CHECKIN_TO) {
+
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+
+        countdownEl.classList.add("hidden");
+        progressWrapper.classList.add("hidden");
+
+        if (window.attendanceState?.hasCheckIn) {
+
+            badge.textContent =
+                "✅ Đã check-in lúc " + window.attendanceState.checkInTime;
+
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700";
+        }
+        else {
+
+            badge.textContent = "❌ Đã đóng - Chưa check-in";
+
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700";
+        }
+    }
+    else {
+
+        btn.disabled = false;
+        btn.classList.remove("opacity-50", "cursor-not-allowed");
+
+        badge.textContent = "🟢 Đang mở";
+        badge.className = "inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700";
+
+        countdownEl.classList.remove("hidden");
+
+        const diff = getTimeDiff(CHECKIN_TO);
+        countdownEl.textContent = diff ?? "00:00:00";
+
+        // progress bar
+        const total =
+            new Date(`1970-01-01T${CHECKIN_TO}`) -
+            new Date(`1970-01-01T${CHECKIN_FROM}`);
+
+        const passed =
+            new Date(`1970-01-01T${current}`) -
+            new Date(`1970-01-01T${CHECKIN_FROM}`);
+
+        const percent = Math.min(100, Math.max(0, (passed / total) * 100));
+
+        progressWrapper.classList.remove("hidden");
+        progressBar.style.width = percent + "%";
+    }
+}
+
+function updateCheckOutUI() {
+    const btn = document.getElementById("startCheckOutCameraBtn");
+    const badge = document.getElementById("checkOutBadge");
+    const countdownEl = document.getElementById("checkOutCountdown");
+    const progressWrapper = document.getElementById("checkOutProgressWrapper");
+    const progressBar = document.getElementById("checkOutProgress");
+
+    if (!btn || !badge) return;
+
+    if (window.attendanceState?.isLeave) {
+
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+
+        badge.textContent = "📅 Nghỉ có phép";
+        badge.className =
+            "inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700";
+
+        countdownEl?.classList.add("hidden");
+        progressWrapper?.classList.add("hidden");
+
+        return;
+    }
+
+    if (window.attendanceState?.hasCheckOut) {
+
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+
+        badge.textContent =
+            "✅ Đã check-out lúc " + window.attendanceState.checkOutTime;
+
+        badge.className =
+            "inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700";
+
+        countdownEl?.classList.add("hidden");
+        progressWrapper?.classList.add("hidden");
+
+        return;
+    }
+
+    const now = new Date();
+    const current = now.toTimeString().slice(0, 8);
+
+    if (current < CHECKOUT_FROM) {
+
+        const diff = getTimeDiff(CHECKOUT_FROM);
+
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+
+        badge.textContent = "⏳ Chưa tới giờ";
+        badge.className = "inline-block px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700";
+
+        countdownEl.classList.remove("hidden");
+        countdownEl.textContent = diff ?? "00:00:00";
+
+        progressWrapper.classList.add("hidden");
+    }
+    else if (current > CHECKOUT_TO) {
+
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+
+        countdownEl.classList.add("hidden");
+        progressWrapper.classList.add("hidden");
+
+        if (window.attendanceState?.hasCheckOut) {
+
+            badge.textContent =
+                "✅ Đã check-out lúc " + window.attendanceState.checkOutTime;
+
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700";
+        }
+        else if (window.attendanceState?.hasCheckIn) {
+
+            badge.textContent = "⚠ Đã đóng - Chưa check-out";
+
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700";
+        }
+        else {
+
+            badge.textContent = "❌ Đã đóng - Chưa check-in";
+
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700";
+        }
+    }
+    else {
+
+        btn.disabled = false;
+        btn.classList.remove("opacity-50", "cursor-not-allowed");
+
+        badge.textContent = "🟢 Đang mở";
+        badge.className = "inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700";
+
+        countdownEl.classList.remove("hidden");
+
+        const diff = getTimeDiff(CHECKOUT_TO);
+        countdownEl.textContent = diff ?? "00:00:00";
+
+        // progress bar
+        const total =
+            new Date(`1970-01-01T${CHECKOUT_TO}`) -
+            new Date(`1970-01-01T${CHECKOUT_FROM}`);
+
+        const passed =
+            new Date(`1970-01-01T${current}`) -
+            new Date(`1970-01-01T${CHECKOUT_FROM}`);
+
+        const percent = Math.min(100, Math.max(0, (passed / total) * 100));
+
+        progressWrapper.classList.remove("hidden");
+        progressBar.style.width = percent + "%";
+    }
 }
 
 // ===== BẢNG DỮ LIỆU (chỉ giao diện - hiển thị trống) =====
-//function loadAttendanceUI() {
-//    const tbody = document.getElementById('attendanceTableBody');
-//    if (!tbody) return;
-//    tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-500">Chưa có dữ liệu chấm công</td></tr>';
-//    document.getElementById('attendancePagination').innerHTML = '';
-//}
-
 function loadLeavesUI() {
     const tbody = document.getElementById('leavesTableBody');
     if (!tbody) return;

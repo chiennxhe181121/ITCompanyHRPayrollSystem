@@ -1,0 +1,253 @@
+﻿@model IEnumerable<HumanResourcesManager.BLL.DTOs.Allowance.AllowanceDTO>
+@using HumanResourcesManager.DAL.Shared
+
+@{
+    ViewData["Title"] = "Danh Mục Phụ Cấp";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    string keyword = ViewBag.Keyword as string;
+    int? status = ViewBag.Status as int?;
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    int stt = (currentPage - 1) * 10;
+}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+<div id="notification-area" class="fixed top-5 right-5 z-50 space-y-2 pointer-events-none">
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert-toast pointer-events-auto flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-xl shadow-lg border-l-4 border-red-500 animate__animated animate__fadeInRight">
+            <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-red-500 bg-red-100 rounded-lg"><i class="fa-solid fa-circle-exclamation"></i></div>
+            <div class="ml-3 text-sm font-medium text-red-600">@TempData["Error"]</div>
+        </div>
+    }
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-toast pointer-events-auto flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-xl shadow-lg border-l-4 border-emerald-500 animate__animated animate__fadeInRight">
+            <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-emerald-500 bg-emerald-100 rounded-lg"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="ml-3 text-sm font-medium text-emerald-600">@TempData["Success"]</div>
+        </div>
+    }
+</div>
+
+<div class="px-8 py-6 bg-white border-b border-slate-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="animate__animated animate__fadeInLeft">
+        <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight flex items-center gap-3">
+            <span class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-white shadow-lg shadow-orange-200">
+                <i class="fa-solid fa-coins"></i>
+            </span>
+            Danh Mục Phụ Cấp
+        </h2>
+        <p class="text-sm text-slate-500 mt-1 ml-14">Quản lý các khoản trợ cấp, phụ cấp lương.</p>
+    </div>
+    <a href="/HumanResourcesManager/admin/allowances/create" class="animate__animated animate__fadeInRight group inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-amber-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-0.5">
+        <i class="fa-solid fa-plus transition-transform group-hover:rotate-90"></i> <span>Thêm phụ cấp</span>
+    </a>
+</div>
+
+<div class="px-8 py-5 bg-slate-50 border-b border-slate-200 sticky top-0 z-20 backdrop-blur-sm bg-slate-50/90">
+    <div class="flex flex-col xl:flex-row gap-4 justify-between items-end xl:items-center">
+        <form method="get" class="flex flex-wrap gap-3 items-center w-full xl:w-auto">
+            <div class="relative group w-full sm:w-60">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-amber-500 transition-colors"></i>
+                <input name="keyword" value="@keyword" placeholder="Tìm tên phụ cấp..." class="w-full pl-10 pr-3 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 outline-none shadow-sm transition-all" />
+            </div>
+            <div class="w-full sm:w-40">
+                <select name="status" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 outline-none shadow-sm cursor-pointer">
+                    <option value="">-- Trạng thái --</option>
+                    <option value="1" selected="@(status == 1)">Active</option>
+                    <option value="0" selected="@(status == 0)">Inactive</option>
+                </select>
+            </div>
+            <button class="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"><i class="fa-solid fa-filter mr-1"></i> Lọc</button>
+            <a href="/HumanResourcesManager/admin/allowances" class="bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 px-3 py-2.5 rounded-xl text-sm transition-colors" title="Làm mới"><i class="fa-solid fa-rotate-right"></i></a>
+        </form>
+
+        <div class="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+            <button id="btnGridView" onclick="switchView('grid')" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all"><i class="fa-solid fa-border-all mr-1"></i> Grid</button>
+            <button id="btnListView" onclick="switchView('list')" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all"><i class="fa-solid fa-list mr-1"></i> List</button>
+        </div>
+    </div>
+</div>
+
+<div class="p-8 bg-slate-100 min-h-screen">
+    @if (!Model.Any())
+    {
+        <div class="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-slate-300 animate__animated animate__fadeInUp">
+            <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-300"><i class="fa-solid fa-box-open text-4xl"></i></div>
+            <h3 class="text-lg font-semibold text-slate-600">Không tìm thấy dữ liệu</h3>
+            <p class="text-slate-400 text-sm mt-1">Hãy thử thay đổi bộ lọc hoặc thêm mới.</p>
+        </div>
+    }
+    else
+    {
+        <div id="gridViewContainer" class="animate__animated animate__fadeIn">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
+                @foreach (var item in Model)
+                {
+                    bool isActive = item.Status == 1;
+                    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative group flex flex-col h-full">
+                        <div class="absolute top-4 right-4 z-10">
+                            @if (isActive)
+                            {
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span> Active</span>
+                            }
+                            else
+                            {
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200">Inactive</span>
+                            }
+                        </div>
+
+                        <div class="flex flex-col items-center mb-4 pt-2">
+                            <div class="w-16 h-16 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center text-2xl mb-3 border-4 border-slate-50 shadow-sm">
+                                <i class="fa-solid fa-coins"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800 text-center line-clamp-1 mb-3" title="@item.AllowanceName">@item.AllowanceName</h3>
+
+                            <div class="flex items-center gap-2">
+                                <span class="text-emerald-700 font-mono font-bold bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100 shadow-sm">
+                                    <i class="fa-solid fa-coins text-emerald-500 mr-1.5 text-xs"></i>
+                                    @item.Amount.ToString("N0") <span class="text-xs font-sans text-emerald-600 ml-1">VNĐ</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 pt-4 border-t border-slate-100 mt-auto">
+                            <a asp-action="Edit" asp-route-id="@item.AllowanceId" asp-route-page="@currentPage" asp-route-keyword="@keyword" asp-route-status="@status" class="py-2 flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:border-blue-500 hover:text-blue-500 transition-colors" title="Sửa"><i class="fa-solid fa-pen"></i></a>
+                            <form asp-action="ToggleStatus" asp-route-id="@item.AllowanceId" asp-route-page="@currentPage" asp-route-keyword="@keyword" asp-route-status="@status" method="post" class="contents" onsubmit="return confirmToggle(event, this, @(isActive ? "true" : "false"))">
+                                <button type="submit" class="py-2 flex items-center justify-center rounded-lg border border-slate-200 @(isActive ? "text-red-500 hover:bg-red-500" : "text-emerald-600 hover:bg-emerald-600") hover:text-white transition-colors">
+                                    <i class="fa-solid @(isActive ? "fa-lock" : "fa-lock-open")"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div id="listViewContainer" class="animate__animated animate__fadeIn hidden">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-slate-50/80 text-slate-600 font-bold uppercase text-xs tracking-wider border-b border-slate-200">
+                            <tr>
+                                <th class="px-6 py-4 w-16 text-center">STT</th>
+                                <th class="px-6 py-4">Tên phụ cấp</th>
+                                <th class="px-6 py-4">Số tiền</th>
+                                <th class="px-6 py-4 text-center">Trạng thái</th>
+                                <th class="px-6 py-4 text-right w-40">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @foreach (var item in Model)
+                            {
+                                bool isActive = item.Status == 1;
+                                <tr class="hover:bg-amber-50/30 transition-colors group">
+                                    <td class="px-6 py-4 text-center text-slate-400 font-medium">@(++stt)</td>
+                                    <td class="px-6 py-4 font-bold text-slate-700">@item.AllowanceName</td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center">
+                                            <span class="text-emerald-700 font-mono font-bold bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 shadow-sm inline-flex items-center">
+                                                <i class="fa-solid fa-coins text-emerald-500 mr-1.5 text-[10px]"></i>
+                                                @item.Amount.ToString("N0")
+                                                <span class="text-[10px] font-sans text-emerald-600 ml-1">VNĐ</span>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        @if (isActive)
+                                        {
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200">Inactive</span>
+                                        }
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="flex items-center justify-end gap-2 opacity-80 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                            <a asp-action="Edit" asp-route-id="@item.AllowanceId" asp-route-page="@currentPage" asp-route-keyword="@keyword" asp-route-status="@status" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm"><i class="fa-solid fa-pen text-xs"></i></a>
+                                            <form asp-action="ToggleStatus" asp-route-id="@item.AllowanceId" asp-route-page="@currentPage" asp-route-keyword="@keyword" asp-route-status="@status" method="post" class="inline-block" onsubmit="return confirmToggle(event, this, @(isActive ? "true" : "false"))">
+                                                <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 @(isActive ? "text-red-500 hover:bg-red-500" : "text-emerald-600 hover:bg-emerald-600") hover:text-white transition-all shadow-sm">
+                                                    <i class="fa-solid @(isActive ? "fa-lock" : "fa-lock-open") text-xs"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        @if (totalPages > 1)
+        {
+            <div class="mt-8 flex justify-center pb-8">
+                <nav class="inline-flex rounded-xl shadow-sm bg-white p-1.5 gap-1 border border-slate-200">
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        <a href="?page=@i&keyword=@keyword&status=@status" class="w-9 h-9 flex items-center justify-center rounded-lg text-sm font-bold transition-all @(i == currentPage ? "bg-amber-600 text-white shadow-md scale-105" : "text-slate-600 hover:bg-slate-100")">@i</a>
+                    }
+                </nav>
+            </div>
+        }
+    }
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const alerts = document.querySelectorAll(".alert-toast");
+        if (alerts.length > 0) {
+            setTimeout(() => {
+                alerts.forEach(el => {
+                    el.classList.remove("animate__fadeInRight");
+                    el.classList.add("animate__fadeOutRight");
+                    setTimeout(() => el.remove(), 1000);
+                });
+            }, 3000);
+        }
+        const savedMode = localStorage.getItem('allowanceViewMode') || 'grid';
+        switchView(savedMode);
+    });
+
+    function switchView(mode) {
+        const listContainer = document.getElementById('listViewContainer');
+        const gridContainer = document.getElementById('gridViewContainer');
+        const btnList = document.getElementById('btnListView');
+        const btnGrid = document.getElementById('btnGridView');
+
+        if (mode === 'grid') {
+            listContainer.classList.add('hidden');
+            gridContainer.classList.remove('hidden');
+            btnGrid.classList.add('bg-amber-100', 'text-amber-700');
+            btnList.classList.remove('bg-amber-100', 'text-amber-700');
+            btnList.classList.add('text-slate-500');
+        } else {
+            gridContainer.classList.add('hidden');
+            listContainer.classList.remove('hidden');
+            btnList.classList.add('bg-amber-100', 'text-amber-700');
+            btnGrid.classList.remove('bg-amber-100', 'text-amber-700');
+            btnGrid.classList.add('text-slate-500');
+        }
+        localStorage.setItem('allowanceViewMode', mode);
+    }
+
+    function confirmToggle(e, form, isActive) {
+        e.preventDefault();
+        const title = isActive ? "Khóa phụ cấp?" : "Mở khóa phụ cấp?";
+        const text = isActive ? "Phụ cấp này sẽ tạm thời không được áp dụng." : "Phụ cấp sẽ hoạt động trở lại bình thường.";
+        const color = isActive ? "#ef4444" : "#10b981";
+        const btnText = isActive ? "Khóa ngay" : "Kích hoạt";
+
+        Swal.fire({
+            title: title, text: text, icon: isActive ? "warning" : "question",
+            showCancelButton: true, confirmButtonColor: color, cancelButtonColor: '#64748b',
+            confirmButtonText: btnText, cancelButtonText: 'Hủy'
+        }).then((result) => { if (result.isConfirmed) form.submit(); });
+        return false;
+    }
+</script>
