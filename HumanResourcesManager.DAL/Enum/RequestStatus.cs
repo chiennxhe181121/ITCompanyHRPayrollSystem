@@ -8,9 +8,9 @@ namespace HumanResourcesManager.DAL.Enum
 {
     public enum RequestStatus
     {
-        Pending = 10,
-        Approved = 11,
-        Rejected = 12,
-        Cancelled = 13
+        Pending = 0,
+        Approved = 1,
+        Rejected = 2,
+        Cancelled = 3
     }
 }

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HumanResourcesManager.DAL.Migrations
 {
     [DbContext(typeof(HumanManagerContext))]
-    [Migration("20260214212734_InitDatabase")]
+    [Migration("20260215154452_InitDatabase")]
     partial class InitDatabase
     {
         /// <inheritdoc />
@@ -40,6 +40,9 @@ namespace HumanResourcesManager.DAL.Migrations
                     b.Property<decimal>("Amount")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("AllowanceId");
 
@@ -272,6 +275,15 @@ namespace HumanResourcesManager.DAL.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LeaveRequestId"));
 
+                    b.Property<int?>("ApprovedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ApprovedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
@@ -281,8 +293,14 @@ namespace HumanResourcesManager.DAL.Migrations
                     b.Property<int>("LeaveTypeId")
                         .HasColumnType("int");
 
-                    b.Property<long>("Status")
-                        .HasColumnType("bigint");
+                    b.Property<string>("Reason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Reply")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("ToDate")
                         .HasColumnType("datetime2");

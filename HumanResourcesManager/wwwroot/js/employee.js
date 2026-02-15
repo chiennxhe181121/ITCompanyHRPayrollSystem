@@ -1,7 +1,6 @@
 // Employee Dashboard - JavaScript giao diện (không dùng getCurrentUser/getDatabase/saveDatabase)
-let currentPage = { attendance: 1, leaves: 1, overtime: 1, overtimeAvailable: 1, payroll: 1 };
-const itemsPerPage = 10;
 let profileEditMode = false;
+
 const STAT_IDS = ['monthAttendance', 'leavesRemaining', 'overtimeHours', 'currentSalary'];
 let statsVisibility = { monthAttendance: true, leavesRemaining: true, overtimeHours: true, currentSalary: true };
 

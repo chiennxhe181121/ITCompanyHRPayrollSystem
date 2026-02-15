@@ -1,6 +1,7 @@
 ﻿using HumanResourcesManager.BLL.DTOs.Employee;
 using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.DAL.Enum;
+using HumanResourcesManager.DAL.Shared;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -16,15 +17,18 @@ public class EmployeeController : Controller
     private readonly IEmployeeService _employeeService;
     private readonly IAttendanceService _attendanceService;
     private readonly IUserAccountService _userAccountService;
+    private readonly ILeaveRequestService _leaveRequestService;
 
     public EmployeeController(
         IEmployeeService employeeService,
         IAttendanceService attendanceService,
-        IUserAccountService userAccountService)
+        IUserAccountService userAccountService,
+        ILeaveRequestService leaveRequestService)
     {
         _employeeService = employeeService;
         _attendanceService = attendanceService;
         _userAccountService = userAccountService;
+        _leaveRequestService = leaveRequestService;
     }
 
     // Lấy userId từ session
@@ -191,11 +195,24 @@ public class EmployeeController : Controller
     }
 
     // ===== Leaves =====
+    // view leaves
     [HttpGet("leaves")]
     public IActionResult Leaves()
     {
         var employee = _employeeService.GetOwnProfile(CurrentUserId);
         return View("~/Views/Employee/LeavesTab.cshtml", employee);
+    }
+
+    // create leave request
+    [HttpPost("leaves/create")]
+    [ValidateAntiForgeryToken]
+    public IActionResult CreateLeave(CreateLeaveRequestDTO dto)
+    {
+        var result = _leaveRequestService.CreateLeaveRequest(CurrentUserId, dto);
+
+        TempData[result.IsSuccess ? "Success" : "Error"] = result.Message;
+
+        return RedirectToAction("Leaves");
     }
 
     [HttpGet("overtime")]

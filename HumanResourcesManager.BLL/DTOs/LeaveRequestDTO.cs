@@ -1,4 +1,6 @@
-﻿public class LeaveRequestDTO
+﻿using HumanResourcesManager.DAL.Enum;
+
+public class LeaveRequestDTO
 {
     public int LeaveRequestId { get; set; }
 
@@ -10,7 +12,5 @@
 
     public DateTime FromDate { get; set; }
     public DateTime ToDate { get; set; }
-
-    // 0 = Pending, 1 = Approved, -1 = Rejected
-    public long Status { get; set; }
+    public RequestStatus Status { get; set; }
 }

@@ -40,7 +40,7 @@ namespace HumanResourcesManager.DAL.Data
         public DbSet<OverTimeRequest> OverTimeRequests { get; set; }
         public DbSet<OTAttendance> OTAttendances { get; set; }
         public DbSet<Role> Roles { get; set; }
-
+        public DbSet<AnnualLeaveBalance> AnnualLeaveBalance { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -237,7 +237,7 @@ namespace HumanResourcesManager.DAL.Data
                 entity.HasIndex(u => u.Username).IsUnique();
 
                 entity.Property(u => u.Status).IsRequired();
-              
+
                 entity.HasOne(u => u.Role)
                       .WithMany(r => r.UserAccounts)
                       .HasForeignKey(u => u.RoleId)
