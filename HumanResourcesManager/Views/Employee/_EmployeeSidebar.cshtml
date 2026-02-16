@@ -3,118 +3,146 @@
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
 }
 
-<aside class="employee-sidebar w-64 bg-white border-r border-slate-200/80 flex-shrink-0 shadow-sm">
-    <div class="h-full flex flex-col">
-        <div class="p-5 border-b border-slate-100">
-            <div class="flex items-center gap-3">
-                <div id="sidebarAvatarWrap" class="w-12 h-12 rounded-full flex-shrink-0 shadow-md overflow-hidden flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 ring-2 ring-white">
-                    <img id="sidebarAvatarImg" class="w-full h-full object-cover hidden" alt="">
-                    <span id="userInitial" class="text-white text-lg font-bold">E</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold text-slate-800 truncate leading-tight"
-                       id="userName">
-                        Employee
-                    </p>
-                    <p class="text-xs text-slate-500 mt-0.5"
-                       id="userPosition">
-                        Nhân viên
-                    </p>
+<aside class="employee-sidebar w-72 bg-white border-r border-slate-200
+              flex-shrink-0 h-screen sticky top-0
+              hidden lg:block
+              shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+
+    <div class="h-full flex flex-col justify-between">
+
+        <!-- TOP -->
+        <div>
+
+            <!-- LOGO AREA -->
+            <div class="h-16 flex items-center px-6 border-b border-slate-100">
+                <div class="flex items-center gap-2 text-indigo-700 font-extrabold text-xl tracking-tight">
+                    <i class="fa-solid fa-layer-group text-2xl"></i>
+                    <span>HRM System</span>
                 </div>
             </div>
+
+            <!-- USER CARD -->
+            <div class="flex items-center gap-4 p-3 user-card">
+                <div class="flex items-center gap-4 p-3
+                            rounded-2xl bg-slate-50
+                            border border-slate-100">
+
+                    <div class="w-12 h-12 rounded-full
+                                bg-gradient-to-br
+                                from-indigo-500 to-purple-600
+                                text-white
+                                flex items-center justify-center
+                                font-bold shadow-md">
+                        E
+                    </div>
+
+                    <div>
+                        <p class="font-bold text-slate-800 text-sm truncate"
+                           id="sidebarUserName">
+                            Employee
+                        </p>
+                        <p class="text-xs text-slate-500 font-medium mt-0.5"
+                           id="sidebarUserPosition">
+                            Nhân viên
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NAVIGATION -->
+            <nav class="flex-1 p-3 overflow-y-auto">
+                <div class="space-y-0.5">
+
+                    <!-- Profile -->
+                    <a asp-controller="Employee"
+                       asp-action="Profile"
+                       class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
+           @((currentAction == "Profile" || currentAction == "ChangePassword")
+                       ? "active" : "text-slate-600 hover:bg-slate-50 hover:text-slate-800")">
+
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+
+                        <span>Hồ Sơ</span>
+                    </a>
+
+                    <!-- Attendance -->
+                    <a asp-controller="Employee"
+                       asp-action="Index"
+                       class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
+           @((currentAction == "Index" || currentAction == "History")
+                       ? "active" : "text-slate-600 hover:bg-slate-50 hover:text-slate-800")">
+
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        </svg>
+
+                        <span>Chấm Công</span>
+                    </a>
+
+                    <!-- Leaves -->
+                    <a asp-controller="Employee"
+                       asp-action="Leaves"
+                       class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
+           @((currentAction == "Leaves" || currentAction == "CreateLeave")
+                       ? "active" : "text-slate-600 hover:bg-slate-50 hover:text-slate-800")">
+
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+
+                        <span>Nghỉ Phép</span>
+                    </a>
+
+                    <!-- Overtime -->
+                    <a asp-controller="Employee"
+                       asp-action="Overtime"
+                       class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
+           @(currentAction == "Overtime"
+                       ? "active" : "text-slate-600 hover:bg-slate-50 hover:text-slate-800")">
+
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+
+                        <span>Tăng Ca</span>
+                    </a>
+
+                    <!-- Payroll -->
+                    <a asp-controller="Employee"
+                       asp-action="Payroll"
+                       class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
+           @(currentAction == "Payroll"
+                       ? "active" : "text-slate-600 hover:bg-slate-50 hover:text-slate-800")">
+
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+
+                        <span>Bảng Lương</span>
+                    </a>
+
+                </div>
+            </nav>
         </div>
 
-        <nav class="flex-1 p-3 overflow-y-auto">
-            <div class="space-y-0.5">
-
-                <!-- Profile -->
-                <a asp-controller="Employee"
-                   asp-action="Profile"
-                   class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
-           @((currentAction == "Profile" || currentAction == "ChangePassword")
-                                   ? "bg-indigo-50 text-indigo-700"
-                                   : "text-slate-600 hover:bg-slate-50 hover:text-slate-800")">
-
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-
-                    <span>Hồ Sơ Cá Nhân</span>
-                </a>
-
-                <!-- Attendance -->
-                <a asp-controller="Employee"
-                   asp-action="Index"
-                   class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
-           @((currentAction == "Index" || currentAction == "History")
-                                   ? "bg-indigo-50 text-indigo-700"
-                                   : "text-slate-600 hover:bg-slate-50 hover:text-slate-800")">
-
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                    </svg>
-
-                    <span>Chấm Công</span>
-                </a>
-
-                <!-- Leaves -->
-                <a asp-controller="Employee"
-                   asp-action="Leaves"
-                   class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
-           @((currentAction == "Leaves" || currentAction == "CreateLeave")
-                                                                         ? "bg-indigo-50 text-indigo-700"
-                                                                         : "text-slate-600 hover:bg-slate-50 hover:text-slate-800")">
-
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-
-                    <span>Nghỉ Phép</span>
-                </a>
-
-                <!-- Overtime -->
-                <a asp-controller="Employee"
-                   asp-action="Overtime"
-                   class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
-           @(currentAction == "Overtime"
-                                   ? "bg-indigo-50 text-indigo-700"
-                                   : "text-slate-600 hover:bg-slate-50 hover:text-slate-800")">
-
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-
-                    <span>Tăng Ca</span>
-                </a>
-
-                <!-- Payroll -->
-                <a asp-controller="Employee"
-                   asp-action="Payroll"
-                   class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
-           @(currentAction == "Payroll"
-                                   ? "bg-indigo-50 text-indigo-700"
-                                   : "text-slate-600 hover:bg-slate-50 hover:text-slate-800")">
-
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-
-                    <span>Bảng Lương</span>
-                </a>
-
-            </div>
-        </nav>
-        <div class="p-3 border-t border-slate-100">
-            <button id="logoutBtn" class="w-full bg-slate-50 hover:bg-red-50 text-slate-600 hover:text-red-600 font-medium py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                </svg>
-                <span>Đăng Xuất</span>
+        <!-- LOGOUT -->
+        <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+            <button id="logoutBtn"
+                    class="group flex items-center justify-center gap-2 w-full
+                       py-3 px-4 rounded-xl text-sm font-bold
+                       text-slate-600 bg-white border border-slate-200
+                       hover:bg-red-50 hover:text-red-600
+                       hover:border-red-100 transition-all duration-200 shadow-sm">
+                <i class="fa-solid fa-arrow-right-from-bracket
+                          transition-transform group-hover:-translate-x-1"></i>
+                <span>Đăng xuất</span>
             </button>
         </div>
         <form id="logoutForm"
