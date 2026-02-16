@@ -654,8 +654,11 @@ function updateCheckInUI() {
 
     if (!btn || !badge) return;
 
-    if (window.attendanceState?.isLeave || window.attendanceState?.isHoliday) {
-
+    if (
+        window.attendanceState?.isLeave ||
+        window.attendanceState?.isHoliday ||
+        window.attendanceState?.isWeekend
+    ) {
         btn.disabled = true;
         btn.classList.add("opacity-50", "cursor-not-allowed");
 
@@ -663,7 +666,13 @@ function updateCheckInUI() {
             badge.textContent = "🎉 Nghỉ lễ";
             badge.className =
                 "inline-block px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-700";
-        } else {
+        }
+        else if (window.attendanceState?.isWeekend) {
+            badge.textContent = "🛌 Nghỉ cuối tuần";
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-700";
+        }
+        else if (window.attendanceState?.isLeave) {
             badge.textContent = "📅 Nghỉ có phép";
             badge.className =
                 "inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700";
@@ -728,7 +737,7 @@ function updateCheckInUI() {
         }
         else {
 
-            badge.textContent = "❌ Đã đóng - Chưa check-in";
+            badge.textContent = "⛔ Đã đóng - Chưa check-in";
 
             badge.className =
                 "inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700";
@@ -772,8 +781,11 @@ function updateCheckOutUI() {
 
     if (!btn || !badge) return;
 
-    if (window.attendanceState?.isLeave || window.attendanceState?.isHoliday) {
-
+    if (
+        window.attendanceState?.isLeave ||
+        window.attendanceState?.isHoliday ||
+        window.attendanceState?.isWeekend
+    ) {
         btn.disabled = true;
         btn.classList.add("opacity-50", "cursor-not-allowed");
 
@@ -781,7 +793,13 @@ function updateCheckOutUI() {
             badge.textContent = "🎉 Nghỉ lễ";
             badge.className =
                 "inline-block px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-700";
-        } else {
+        }
+        else if (window.attendanceState?.isWeekend) {
+            badge.textContent = "🛌 Nghỉ cuối tuần";
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-700";
+        }
+        else if (window.attendanceState?.isLeave) {
             badge.textContent = "📅 Nghỉ có phép";
             badge.className =
                 "inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700";
@@ -803,6 +821,22 @@ function updateCheckOutUI() {
 
         badge.className =
             "inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700";
+
+        countdownEl?.classList.add("hidden");
+        progressWrapper?.classList.add("hidden");
+
+        return;
+    }
+
+    // Chưa check-in thì không cho check-out (bất kể giờ)
+    if (!window.attendanceState?.hasCheckIn) {
+
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+
+        badge.textContent = "⛔ Chưa check-in";
+        badge.className =
+            "inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700";
 
         countdownEl?.classList.add("hidden");
         progressWrapper?.classList.add("hidden");
@@ -844,16 +878,9 @@ function updateCheckOutUI() {
             badge.className =
                 "inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700";
         }
-        else if (window.attendanceState?.hasCheckIn) {
-
-            badge.textContent = "⚠ Đã đóng - Chưa check-out";
-
-            badge.className =
-                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700";
-        }
         else {
 
-            badge.textContent = "❌ Đã đóng - Chưa check-in";
+            badge.textContent = "⛔ Đã đóng - Chưa check-out";
 
             badge.className =
                 "inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700";

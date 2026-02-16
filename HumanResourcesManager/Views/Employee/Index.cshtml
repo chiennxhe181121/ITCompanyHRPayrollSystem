@@ -229,6 +229,7 @@
 			hasCheckOut: @(Model.CheckOutTime != null ? "true" : "false"),
 			isLeave: @(Model.IsApprovedLeave ? "true" : "false"),
 			isHoliday: @(Model.IsHoliday ? "true" : "false"),
+			isWeekend: @(Model.IsWeekend ? "true" : "false"),
 			checkInTime: '@(Model.CheckInTime?.ToString(@"hh\:mm\:ss"))',
 			checkOutTime: '@(Model.CheckOutTime?.ToString(@"hh\:mm\:ss"))'
 		};

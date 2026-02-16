@@ -142,6 +142,13 @@ namespace HumanResourcesManager.BLL.Services
 
             var today = GetVietnamNow().Date;
 
+            // ❗ Không cho check-in vào thứ 7 / chủ nhật
+            if (today.DayOfWeek == DayOfWeek.Saturday ||
+                today.DayOfWeek == DayOfWeek.Sunday)
+            {
+                return ServiceResult.Failure("Hôm nay là cuối tuần, không thể check-in.");
+            }
+
             var existingAttendance = _attendanceRepository
                 .GetByEmployeeAndWorkDate(employee.EmployeeId, today);
 
@@ -219,6 +226,13 @@ namespace HumanResourcesManager.BLL.Services
                 return ServiceResult.Failure("Không tìm thấy nhân viên.");
 
             var today = GetVietnamNow().Date;
+
+            // ❗ Không cho check-out vào thứ 7 / chủ nhật
+            if (today.DayOfWeek == DayOfWeek.Saturday ||
+                today.DayOfWeek == DayOfWeek.Sunday)
+            {
+                return ServiceResult.Failure("Hôm nay là cuối tuần, không thể check-out.");
+            }
 
             var attendance = _attendanceRepository
                 .GetByEmployeeAndWorkDate(employee.EmployeeId, today);
@@ -324,19 +338,46 @@ namespace HumanResourcesManager.BLL.Services
             );
         }
 
-        public void FinalizeDailyAttendance()
+        public void FinalizeDailyAttendance(DateTime now)
         {
-            var now = DateTime.Now;
             var cutoff = now.Date + Constants.CheckOutTo;
 
             if (now < cutoff)
                 return;
 
-            var attendances = _attendanceRepository
-                .GetPendingByDate(now);
+            var workDate = now.Date;
 
-            foreach (var attendance in attendances)
+            // 1️⃣ Lấy tất cả nhân viên
+            var employees = _employeeRepository.GetAll().Where(e => e.Status == Constants.Active);
+
+            // 2️⃣ Lấy tất cả attendance trong ngày
+            var attendances = _attendanceRepository.GetByDate(workDate);
+
+            foreach (var employee in employees)
             {
+                var attendance = attendances
+                    .FirstOrDefault(a => a.EmployeeId == employee.EmployeeId);
+
+                // ❗ Nếu chưa có record → Absent
+                if (attendance == null)
+                {
+                    _attendanceRepository.Add(new Attendance
+                    {
+                        EmployeeId = employee.EmployeeId,
+                        WorkDate = workDate,
+                        Status = AttendanceStatus.Absent
+                    });
+
+                    continue;
+                }
+
+                // ❗ Chỉ xử lý khi đang Pending
+                if (attendance.Status != AttendanceStatus.Pending)
+                {
+                    continue; // Holiday, Weekend, ApprovedLeave... bỏ qua
+                }
+
+                // ❗ Finalize Pending
                 if (attendance.CheckIn == null)
                 {
                     attendance.Status = AttendanceStatus.Absent;
@@ -360,9 +401,11 @@ namespace HumanResourcesManager.BLL.Services
             _attendanceRepository.Save();
         }
 
-        public void GenerateHolidayAttendance()
+        public void GenerateSpecialDayAttendance(DateTime today)
         {
-            var today = DateTime.Today;
+            bool isWeekend =
+                today.DayOfWeek == DayOfWeek.Saturday ||
+                today.DayOfWeek == DayOfWeek.Sunday;
 
             bool isFixedHoliday = Constants.FixedHolidays
                 .Any(h => h.Day == today.Day && h.Month == today.Month);
@@ -371,30 +414,33 @@ namespace HumanResourcesManager.BLL.Services
                 .GetTetHolidayDates(today.Year)
                 .Contains(today);
 
-            if (!isFixedHoliday && !isTetHoliday)
+            if (!isWeekend && !isFixedHoliday && !isTetHoliday)
                 return;
 
             var employees = _employeeRepository
                 .GetAll()
-                .Where(e => e.Status == Constants.Active);
+                .Where(e => e.Status == Constants.Active)
+                .ToList();
+
+            // Lấy tất cả attendance của ngày đó 1 lần
+            var existingAttendances = _attendanceRepository
+                .GetByDate(today)
+                .ToDictionary(a => a.EmployeeId);
 
             foreach (var emp in employees)
             {
-                var existing = _attendanceRepository
-                    .GetByEmployeeAndWorkDate(emp.EmployeeId, today);
-
-                if (existing != null)
+                if (existingAttendances.ContainsKey(emp.EmployeeId))
                     continue;
 
-                var attendance = new Attendance
+                _attendanceRepository.Add(new Attendance
                 {
                     EmployeeId = emp.EmployeeId,
                     WorkDate = today,
-                    Status = AttendanceStatus.Holiday,
+                    Status = isWeekend
+                        ? AttendanceStatus.Weekend
+                        : AttendanceStatus.Holiday,
                     MissingMinutes = 0
-                };
-
-                _attendanceRepository.Add(attendance);
+                });
             }
 
             _attendanceRepository.Save();

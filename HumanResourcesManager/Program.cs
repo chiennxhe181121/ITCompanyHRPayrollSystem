@@ -102,7 +102,7 @@ namespace HumanResourcesManager
             builder.Services.AddScoped<ILeaveRequestService, LeaveRequestService>();
 
             builder.Services.AddHostedService<AttendanceFinalizeJob>(); // cronjob cho ket luan attendance 20:10 moi ngay
-            builder.Services.AddHostedService<HolidayGenerateJob>(); // cronjob cho attendance holiday
+            builder.Services.AddHostedService<SpecialDayGenerateJob>(); // cronjob cho attendance t7,cn,holiday
 
             // Session configuration
             builder.Services.AddDistributedMemoryCache();

@@ -17,5 +17,6 @@ namespace HumanResourcesManager.DAL.Interfaces
         int CountWorkingDays(int employeeId);
         Attendance? GetByEmployeeAndWorkDate(int employeeId, DateTime workDate);
         List<Attendance> GetPendingByDate(DateTime workDate);
+        List<Attendance> GetByDate(DateTime workDate);
     }
 }

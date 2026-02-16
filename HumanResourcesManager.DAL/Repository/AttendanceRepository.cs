@@ -75,5 +75,14 @@ namespace HumanResourcesManager.DAL.Repository
                          && a.Status == AttendanceStatus.Pending)
                 .ToList();
         }
+        public List<Attendance> GetByDate(DateTime workDate)
+        {
+            var start = workDate.Date;
+            var end = start.AddDays(1);
+
+            return _context.Attendances
+                .Where(a => a.WorkDate >= start && a.WorkDate < end)
+                .ToList();
+        }
     }
 }

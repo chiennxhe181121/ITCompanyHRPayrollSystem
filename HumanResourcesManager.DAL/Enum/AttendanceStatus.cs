@@ -8,6 +8,7 @@
         MissingCheckOut = 3,
         ApprovedLeave = 4,
         Absent = 5,
-        Holiday = 6
+        Holiday = 6,
+        Weekend = 7
     }
 }

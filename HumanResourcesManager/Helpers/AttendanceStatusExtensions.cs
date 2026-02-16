@@ -15,6 +15,7 @@ namespace HumanResourcesManager.Helpers
                 AttendanceStatus.ApprovedLeave => "Nghỉ phép",
                 AttendanceStatus.Absent => "Vắng",
                 AttendanceStatus.Holiday => "Ngày nghỉ lễ",
+                AttendanceStatus.Weekend => "Nghỉ cuối tuần",
                 _ => "Không xác định"
             };
         }

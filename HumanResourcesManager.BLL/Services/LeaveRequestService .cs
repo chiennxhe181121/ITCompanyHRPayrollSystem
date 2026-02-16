@@ -185,74 +185,74 @@ public class LeaveRequestService : ILeaveRequestService
             $"Tạo đơn nghỉ thành công. Số ngày yêu cầu: {requestedDays}.");
     }
 
-    public ServiceResult ApproveLeaveRequest(int leaveRequestId, int approverId)
-    {
-        var leave = _leaveRequestRepo.GetById(leaveRequestId);
+    //public ServiceResult ApproveLeaveRequest(int leaveRequestId, int approverId)
+    //{
+    //    var leave = _leaveRequestRepo.GetById(leaveRequestId);
 
-        if (leave == null)
-            return ServiceResult.Failure("Không tìm thấy đơn nghỉ.");
+    //    if (leave == null)
+    //        return ServiceResult.Failure("Không tìm thấy đơn nghỉ.");
 
-        if (leave.Status != RequestStatus.Pending)
-            return ServiceResult.Failure("Chỉ có thể duyệt đơn đang chờ.");
+    //    if (leave.Status != RequestStatus.Pending)
+    //        return ServiceResult.Failure("Chỉ có thể duyệt đơn đang chờ.");
 
-        leave.Status = RequestStatus.Approved;
-        leave.ApprovedBy = approverId;
-        leave.ApprovedDate = GetVietnamNow();
+    //    leave.Status = RequestStatus.Approved;
+    //    leave.ApprovedBy = approverId;
+    //    leave.ApprovedDate = GetVietnamNow();
 
-        _leaveRequestRepo.Update(leave);
-        _leaveRequestRepo.Save();
+    //    _leaveRequestRepo.Update(leave);
+    //    _leaveRequestRepo.Save();
 
-        // 👉 Tạo / cập nhật Attendance sau khi duyệt
-        for (var date = leave.FromDate.Date; date <= leave.ToDate.Date; date = date.AddDays(1))
-        {
-            var attendance = _attendanceRepository
-                .GetByEmployeeAndWorkDate(leave.EmployeeId, date);
+    //    // 👉 Tạo / cập nhật Attendance sau khi duyệt
+    //    for (var date = leave.FromDate.Date; date <= leave.ToDate.Date; date = date.AddDays(1))
+    //    {
+    //        var attendance = _attendanceRepository
+    //            .GetByEmployeeAndWorkDate(leave.EmployeeId, date);
 
-            if (attendance == null)
-            {
-                var newAttendance = new Attendance
-                {
-                    EmployeeId = leave.EmployeeId,
-                    WorkDate = date,
-                    Status = AttendanceStatus.ApprovedLeave,
-                    MissingMinutes = 0
-                };
+    //        if (attendance == null)
+    //        {
+    //            var newAttendance = new Attendance
+    //            {
+    //                EmployeeId = leave.EmployeeId,
+    //                WorkDate = date,
+    //                Status = AttendanceStatus.ApprovedLeave,
+    //                MissingMinutes = 0
+    //            };
 
-                _attendanceRepository.Add(newAttendance);
-            }
-            else
-            {
-                attendance.Status = AttendanceStatus.ApprovedLeave;
-                attendance.MissingMinutes = 0;
-                _attendanceRepository.Update(attendance);
-            }
-        }
+    //            _attendanceRepository.Add(newAttendance);
+    //        }
+    //        else
+    //        {
+    //            attendance.Status = AttendanceStatus.ApprovedLeave;
+    //            attendance.MissingMinutes = 0;
+    //            _attendanceRepository.Update(attendance);
+    //        }
+    //    }
 
-        _attendanceRepository.Save();
+    //    _attendanceRepository.Save();
 
-        // Cập nhật AnnualLeaveBalance của cronjob tạo sau khi duyệt
-        // TODO: Đang thiếu cronjob tạo record 12 nghỉ/ năm, chạy theo ngày rồi tạo hoặc cập nhật thay vì chạy theo năm
+    //    // Cập nhật AnnualLeaveBalance của cronjob tạo sau khi duyệt
+    //    // TODO: Đang thiếu cronjob tạo record 12 nghỉ/ năm, chạy theo ngày rồi tạo hoặc cập nhật thay vì chạy theo năm
 
-        return ServiceResult.Success("Duyệt đơn nghỉ thành công.");
-    }
+    //    return ServiceResult.Success("Duyệt đơn nghỉ thành công.");
+    //}
 
-    public ServiceResult RejectLeaveRequest(int leaveRequestId, int approverId)
-    {
-        var leave = _leaveRequestRepo.GetById(leaveRequestId);
+    //public ServiceResult RejectLeaveRequest(int leaveRequestId, int approverId)
+    //{
+    //    var leave = _leaveRequestRepo.GetById(leaveRequestId);
 
-        if (leave == null)
-            return ServiceResult.Failure("Không tìm thấy đơn nghỉ.");
+    //    if (leave == null)
+    //        return ServiceResult.Failure("Không tìm thấy đơn nghỉ.");
 
-        if (leave.Status != RequestStatus.Pending)
-            return ServiceResult.Failure("Chỉ có thể từ chối đơn đang chờ.");
+    //    if (leave.Status != RequestStatus.Pending)
+    //        return ServiceResult.Failure("Chỉ có thể từ chối đơn đang chờ.");
 
-        leave.Status = RequestStatus.Rejected;
-        leave.ApprovedBy = approverId;
-        leave.ApprovedDate = GetVietnamNow();
+    //    leave.Status = RequestStatus.Rejected;
+    //    leave.ApprovedBy = approverId;
+    //    leave.ApprovedDate = GetVietnamNow();
 
-        _leaveRequestRepo.Update(leave);
-        _leaveRequestRepo.Save();
+    //    _leaveRequestRepo.Update(leave);
+    //    _leaveRequestRepo.Save();
 
-        return ServiceResult.Success("Đã từ chối đơn nghỉ.");
-    }
+    //    return ServiceResult.Success("Đã từ chối đơn nghỉ.");
+    //}
 }
