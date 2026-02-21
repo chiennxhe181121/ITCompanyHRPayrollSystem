@@ -14,7 +14,7 @@ namespace HumanResourcesManager.Helpers
                 AttendanceStatus.MissingCheckOut => "Quên check-out",
                 AttendanceStatus.ApprovedLeave => "Nghỉ phép",
                 AttendanceStatus.Absent => "Vắng",
-                AttendanceStatus.Holiday => "Ngày nghỉ lễ",
+                AttendanceStatus.Holiday => "Nghỉ lễ",
                 AttendanceStatus.Weekend => "Nghỉ cuối tuần",
                 _ => "Không xác định"
             };

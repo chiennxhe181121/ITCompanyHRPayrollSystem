@@ -9,7 +9,7 @@ namespace HumanResourcesManager.DAL.Data
         public static void Initialize(HumanManagerContext context)
         {
             // ❌ KHÔNG dùng EnsureCreated khi có Migration
-            // context.Database.EnsureCreated();
+             //context.Database.EnsureCreated();
 
             // ===================== ROLE =====================
             if (!context.Roles.Any())

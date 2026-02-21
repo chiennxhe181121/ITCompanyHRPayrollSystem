@@ -55,9 +55,6 @@ public class EmployeeController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CheckIn(CheckInDTO dto)
     {
-        Console.WriteLine(DateTime.Now);
-        Console.WriteLine(DateTime.UtcNow);
-
         var result = await _attendanceService.CheckIn(CurrentUserId, dto);
 
         TempData[result.IsSuccess ? "Success" : "Error"] = result.Message;

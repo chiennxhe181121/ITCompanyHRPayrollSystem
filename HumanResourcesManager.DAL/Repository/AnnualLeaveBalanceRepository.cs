@@ -32,6 +32,11 @@ namespace HumanResourcesManager.DAL.Repository
             }
         }
 
+        public IQueryable<AnnualLeaveBalance> GetAll()
+        {
+            return _context.AnnualLeaveBalance.AsQueryable();
+        }
+
         public void Save()
         {
             _context.SaveChanges();
@@ -43,6 +48,24 @@ namespace HumanResourcesManager.DAL.Repository
                 .FirstOrDefault(x =>
                     x.EmployeeId == employeeId &&
                     x.Year == year);
+        }
+
+        public bool Exists(int employeeId, int year)
+        {
+            return _context.AnnualLeaveBalance
+                .Any(x => x.EmployeeId == employeeId &&
+                          x.Year == year);
+        }
+
+        public List<AnnualLeaveBalance>
+    GetPreviousBalances(int employeeId, int year)
+        {
+            return _context.AnnualLeaveBalance
+                .Where(x => x.EmployeeId == employeeId &&
+                            x.Year < year)
+                .OrderByDescending(x => x.Year)
+                .Take(3)
+                .ToList();
         }
     }
 }

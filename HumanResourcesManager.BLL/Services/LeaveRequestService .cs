@@ -2,6 +2,7 @@
 using HumanResourcesManager.DAL.Enum;
 using HumanResourcesManager.DAL.Interfaces;
 using HumanResourcesManager.DAL.Models;
+using HumanResourcesManager.DAL.Repositories;
 using HumanResourcesManager.DAL.Repository;
 namespace HumanResourcesManager.DAL.Shared;
 
@@ -11,13 +12,20 @@ public class LeaveRequestService : ILeaveRequestService
     private readonly IAttendanceRepository _attendanceRepository;
     private readonly IAnnualLeaveBalanceRepositry _annualLeaveBalanceRepositry;
     private readonly ILeaveTypeRepository _leaveTypeRepository;
+    private readonly IEmployeeRepository _employeeRepository;
 
-    public LeaveRequestService(ILeaveRequestRepository leaveRequestRepository, IAttendanceRepository attendanceRepository, IAnnualLeaveBalanceRepositry annualLeaveBalanceRepositry, ILeaveTypeRepository leaveTypeRepository)
+
+    public LeaveRequestService(ILeaveRequestRepository leaveRequestRepository,
+        IAttendanceRepository attendanceRepository,
+        IAnnualLeaveBalanceRepositry annualLeaveBalanceRepositry,
+        ILeaveTypeRepository leaveTypeRepository,
+        IEmployeeRepository employeeRepository)
     {
         _leaveRequestRepo = leaveRequestRepository;
         _attendanceRepository = attendanceRepository;
         _annualLeaveBalanceRepositry = annualLeaveBalanceRepositry;
         _leaveTypeRepository = leaveTypeRepository;
+        _employeeRepository = employeeRepository;
     }
 
     public List<LeaveRequestDTO> GetAll()
@@ -91,6 +99,77 @@ public class LeaveRequestService : ILeaveRequestService
         return totalDays;
     }
 
+    private void EnsureAnnualLeaveBalance(int employeeId, int year)
+    {
+        if (_annualLeaveBalanceRepositry.Exists(employeeId, year))
+            return;
+
+        var now = GetVietnamNow();
+
+        double carryOver = 0;
+
+        var previousBalances = _annualLeaveBalanceRepositry
+            .GetAll()
+            .Where(x => x.EmployeeId == employeeId
+                        && x.Year < year
+                        && !x.IsExpired)
+            .OrderByDescending(x => x.Year)
+            .Take(3)
+            .ToList();
+
+        foreach (var prev in previousBalances)
+        {
+            if (prev.RemainingDays > 0)
+                carryOver += prev.RemainingDays;
+        }
+
+        var employee = _employeeRepository.GetById(employeeId);
+        if (employee == null)
+            return;
+
+        double entitled;
+
+        if (employee.HireDate.Year < year)
+        {
+            entitled = Constants.AnnualLeavePerYear;
+        }
+        else if (employee.HireDate.Year == year)
+        {
+            int monthsRemaining =
+                Constants.MonthsInYear - employee.HireDate.Month + 1;
+
+            double leavePerMonth =
+                Constants.AnnualLeavePerYear / Constants.MonthsInYear;
+
+            entitled = Math.Round(leavePerMonth * monthsRemaining, 1);
+        }
+        else
+        {
+            return;
+        }
+
+        var balance = new AnnualLeaveBalance
+        {
+            EmployeeId = employeeId,
+            Year = year,
+            EntitledDays = entitled,
+            UsedDays = 0,
+            RemainingDays = entitled + carryOver,
+            CreatedDate = now,
+            IsExpired = false
+        };
+
+        _annualLeaveBalanceRepositry.Add(balance);
+
+        foreach (var prev in previousBalances)
+        {
+            prev.IsExpired = true;
+            _annualLeaveBalanceRepositry.Update(prev);
+        }
+
+        _annualLeaveBalanceRepositry.Save();
+    }
+
     public ServiceResult CreateLeaveRequest(int employeeId, CreateLeaveRequestDTO dto)
     {
         if (dto.FromDate.Date > dto.ToDate.Date)
@@ -147,14 +226,19 @@ public class LeaveRequestService : ILeaveRequestService
         {
             int year = dto.FromDate.Year;
 
+            // 1️⃣ Đảm bảo balance tồn tại (có carry 3 năm nếu cần)
+            EnsureAnnualLeaveBalance(employeeId, year);
+
+            // 2️⃣ Lấy balance sau khi đã ensure
             var balance = _annualLeaveBalanceRepositry
                 .GetByEmployeeAndYear(employeeId, year);
 
-            if (balance == null)
+            if (balance == null || balance.IsExpired)
             {
-                return ServiceResult.Failure("Không tìm thấy thông tin số ngày phép năm.");
+                return ServiceResult.Failure("Không tìm thấy số dư phép năm hợp lệ.");
             }
 
+            // 3️⃣ Check quota
             if (balance.RemainingDays < requestedDays)
             {
                 return ServiceResult.Failure(

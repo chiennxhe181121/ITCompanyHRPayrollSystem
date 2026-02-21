@@ -2,11 +2,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-public class SpecialDayGenerateJob : BackgroundService
+public class DailyAttendanceGenerateJob : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
 
-    public SpecialDayGenerateJob(IServiceProvider serviceProvider)
+    public DailyAttendanceGenerateJob(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
@@ -19,26 +19,26 @@ public class SpecialDayGenerateJob : BackgroundService
         );
     }
 
-    private DateTime? _lastRunDate;
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
             var now = GetVietnamNow();
 
-            if (_lastRunDate != now.Date &&
-                now.TimeOfDay >= new TimeSpan(0, 5, 0))
+            // ⏰ 00:05 - 00:10 mỗi ngày
+            if (now.TimeOfDay >= new TimeSpan(0, 5, 0) &&
+                now.TimeOfDay < new TimeSpan(0, 10, 0))
             {
                 using (var scope = _serviceProvider.CreateScope())
                 {
                     var service = scope.ServiceProvider
                         .GetRequiredService<IAttendanceService>();
 
-                    service.GenerateSpecialDayAttendance(now.Date);
+                    service.GenerateDailyAttendance(now.Date);
                 }
 
-                _lastRunDate = now.Date;
+                // tránh chạy nhiều lần trong 5 phút đó
+                await Task.Delay(TimeSpan.FromMinutes(6), stoppingToken);
             }
 
             await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
