@@ -27,25 +27,37 @@
                             rounded-2xl bg-slate-50
                             border border-slate-100">
 
-                    <div class="w-12 h-12 rounded-full
-                                bg-gradient-to-br
-                                from-indigo-500 to-purple-600
-                                text-white
-                                flex items-center justify-center
-                                font-bold shadow-md">
-                        E
+                    <div class="w-12 h-12 rounded-full overflow-hidden shadow-md">
+                        @if (ViewBag.HasAvatar == true)
+                        {
+                            <img src="@Url.Content(ViewBag.SidebarUserAvatar)"
+                                 alt="Avatar"
+                                 class="w-full h-full object-cover" />
+                        }
+                        else
+                        {
+                            <div class="w-full h-full
+                        bg-gradient-to-br
+                        from-indigo-500 to-purple-600
+                        text-white
+                        flex items-center justify-center
+                        font-bold">
+                                @ViewBag.SidebarUserAvatarInitial
+                            </div>
+                        }
                     </div>
 
                     <div>
                         <p class="font-bold text-slate-800 text-sm truncate"
                            id="sidebarUserName">
-                            Employee
+                            @ViewBag.SidebarUserName
                         </p>
                         <p class="text-xs text-slate-500 font-medium mt-0.5"
                            id="sidebarUserPosition">
-                            Nhân viên
+                            @ViewBag.SidebarUserPosition
                         </p>
                     </div>
+
                 </div>
             </div>
 

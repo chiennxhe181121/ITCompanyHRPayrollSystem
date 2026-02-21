@@ -17,6 +17,10 @@ namespace HumanResourcesManager.BLL.Services
             _employeeRepo = employeeRepo;
             _balanceRepo = balanceRepo;
         }
+        public double GetRemainingDays(int employeeId, int year)
+        {
+            return _balanceRepo.GetRemainingDaysAsync(employeeId, year).Result;
+        }
 
         private DateTime GetVietnamNow()
         {

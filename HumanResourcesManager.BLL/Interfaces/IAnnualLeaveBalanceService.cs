@@ -3,5 +3,7 @@
     public interface IAnnualLeaveBalanceService
     {
         void GenerateAnnualLeaveForYear(int year);
+        double GetRemainingDays(int employeeId, int year);
+
     }
 }

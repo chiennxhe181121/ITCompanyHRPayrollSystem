@@ -126,6 +126,14 @@ namespace HumanResourcesManager.BLL.Services
                 Status = attendance?.Status
             };
         }
+        public int CountAttendanceDays(int currentUserId, int month, int year)
+        {
+            var employee = _employeeRepository.GetByUserId(currentUserId);
+
+            return employee == null
+                ? throw new Exception("Employee not found")
+                : _attendanceRepository.CountAttendanceDays(employee.EmployeeId, month, year);
+        }
 
         public async Task<ServiceResult> CheckIn(int userId, CheckInDTO dto)
         {

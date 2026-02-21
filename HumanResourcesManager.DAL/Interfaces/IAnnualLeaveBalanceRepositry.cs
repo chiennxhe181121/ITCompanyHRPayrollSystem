@@ -14,5 +14,6 @@ namespace HumanResourcesManager.DAL.Interfaces
         bool Exists(int employeeId, int year);
 
         List<AnnualLeaveBalance> GetPreviousBalances(int employeeId, int year);
+        Task<double> GetRemainingDaysAsync(int employeeId, int year);
     }
 }

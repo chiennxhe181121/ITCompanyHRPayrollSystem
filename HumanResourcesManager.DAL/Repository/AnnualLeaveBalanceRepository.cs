@@ -1,6 +1,7 @@
 ﻿using HumanResourcesManager.DAL.Data;
 using HumanResourcesManager.DAL.Interfaces;
 using HumanResourcesManager.DAL.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace HumanResourcesManager.DAL.Repository
 {
@@ -66,6 +67,21 @@ namespace HumanResourcesManager.DAL.Repository
                 .OrderByDescending(x => x.Year)
                 .Take(3)
                 .ToList();
+        }
+
+        public async Task<double> GetRemainingDaysAsync(int employeeId, int year)
+        {
+            var balance = await _context.AnnualLeaveBalance
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x =>
+                    x.EmployeeId == employeeId
+                    && x.Year == year
+                    && !x.IsExpired);
+
+            if (balance == null)
+                return 0;
+
+            return balance.RemainingDays;
         }
     }
 }
