@@ -46,13 +46,15 @@ namespace HumanResourcesManager.DAL.Repository
                 .AsNoTracking();
         }
 
-        public int CountWorkingDays(int employeeId)
+        public int CountAttendanceDays(int employeeId, int month, int year)
         {
             return _context.Attendances
                 .Count(a => a.EmployeeId == employeeId
-                         && a.Status != AttendanceStatus.ApprovedLeave
-                         && a.Status != AttendanceStatus.Absent);
+                         && a.WorkDate.Year == year
+                         && a.WorkDate.Month == month
+                         && a.CheckIn != null);
         }
+
         public Attendance? GetByEmployeeAndWorkDate(int employeeId, DateTime workDate)
         {
             var start = workDate.Date;
@@ -73,6 +75,15 @@ namespace HumanResourcesManager.DAL.Repository
                 .Where(a => a.WorkDate >= start
                          && a.WorkDate < end
                          && a.Status == AttendanceStatus.Pending)
+                .ToList();
+        }
+        public List<Attendance> GetByDate(DateTime workDate)
+        {
+            var start = workDate.Date;
+            var end = start.AddDays(1);
+
+            return _context.Attendances
+                .Where(a => a.WorkDate >= start && a.WorkDate < end)
                 .ToList();
         }
     }

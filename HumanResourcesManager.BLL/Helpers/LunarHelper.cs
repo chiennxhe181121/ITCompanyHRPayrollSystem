@@ -6,18 +6,26 @@ public static class LunarHelper
     {
         var lunar = new ChineseLunisolarCalendar();
 
-        // Mùng 1 tháng 1 âm lịch
-        int lunarYear = lunar.GetYear(new DateTime(year, 1, 1));
-        DateTime tet = lunar.ToDateTime(
-            lunarYear,
-            1,      // tháng 1 âm
-            1,      // ngày 1 âm
-            0, 0, 0, 0
-        );
+        DateTime start = new DateTime(year, 1, 21);
+        DateTime end = new DateTime(year, 2, 20);
 
-        // Ví dụ nghỉ 5 ngày (từ mùng 1 → mùng 5)
+        DateTime? tet = null;
+
+        for (var d = start; d <= end; d = d.AddDays(1))
+        {
+            if (lunar.GetMonth(d) == 1 &&
+                lunar.GetDayOfMonth(d) == 1)
+            {
+                tet = d;
+                break;
+            }
+        }
+
+        if (tet == null)
+            throw new Exception("Không tìm thấy Tết");
+
         return Enumerable.Range(0, 5)
-            .Select(i => tet.AddDays(i))
+            .Select(i => tet.Value.AddDays(i))
             .ToList();
     }
 }

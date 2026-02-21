@@ -1,6 +1,7 @@
 ﻿using HumanResourcesManager.DAL.Data;
 using HumanResourcesManager.DAL.Interfaces;
 using HumanResourcesManager.DAL.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace HumanResourcesManager.DAL.Repository
 {
@@ -32,6 +33,11 @@ namespace HumanResourcesManager.DAL.Repository
             }
         }
 
+        public IQueryable<AnnualLeaveBalance> GetAll()
+        {
+            return _context.AnnualLeaveBalance.AsQueryable();
+        }
+
         public void Save()
         {
             _context.SaveChanges();
@@ -43,6 +49,39 @@ namespace HumanResourcesManager.DAL.Repository
                 .FirstOrDefault(x =>
                     x.EmployeeId == employeeId &&
                     x.Year == year);
+        }
+
+        public bool Exists(int employeeId, int year)
+        {
+            return _context.AnnualLeaveBalance
+                .Any(x => x.EmployeeId == employeeId &&
+                          x.Year == year);
+        }
+
+        public List<AnnualLeaveBalance>
+    GetPreviousBalances(int employeeId, int year)
+        {
+            return _context.AnnualLeaveBalance
+                .Where(x => x.EmployeeId == employeeId &&
+                            x.Year < year)
+                .OrderByDescending(x => x.Year)
+                .Take(3)
+                .ToList();
+        }
+
+        public async Task<double> GetRemainingDaysAsync(int employeeId, int year)
+        {
+            var balance = await _context.AnnualLeaveBalance
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x =>
+                    x.EmployeeId == employeeId
+                    && x.Year == year
+                    && !x.IsExpired);
+
+            if (balance == null)
+                return 0;
+
+            return balance.RemainingDays;
         }
     }
 }

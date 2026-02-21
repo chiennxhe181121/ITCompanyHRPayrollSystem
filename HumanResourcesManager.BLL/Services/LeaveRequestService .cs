@@ -2,6 +2,7 @@
 using HumanResourcesManager.DAL.Enum;
 using HumanResourcesManager.DAL.Interfaces;
 using HumanResourcesManager.DAL.Models;
+using HumanResourcesManager.DAL.Repositories;
 using HumanResourcesManager.DAL.Repository;
 namespace HumanResourcesManager.DAL.Shared;
 
@@ -11,13 +12,20 @@ public class LeaveRequestService : ILeaveRequestService
     private readonly IAttendanceRepository _attendanceRepository;
     private readonly IAnnualLeaveBalanceRepositry _annualLeaveBalanceRepositry;
     private readonly ILeaveTypeRepository _leaveTypeRepository;
+    private readonly IEmployeeRepository _employeeRepository;
 
-    public LeaveRequestService(ILeaveRequestRepository leaveRequestRepository, IAttendanceRepository attendanceRepository, IAnnualLeaveBalanceRepositry annualLeaveBalanceRepositry, ILeaveTypeRepository leaveTypeRepository)
+
+    public LeaveRequestService(ILeaveRequestRepository leaveRequestRepository,
+        IAttendanceRepository attendanceRepository,
+        IAnnualLeaveBalanceRepositry annualLeaveBalanceRepositry,
+        ILeaveTypeRepository leaveTypeRepository,
+        IEmployeeRepository employeeRepository)
     {
         _leaveRequestRepo = leaveRequestRepository;
         _attendanceRepository = attendanceRepository;
         _annualLeaveBalanceRepositry = annualLeaveBalanceRepositry;
         _leaveTypeRepository = leaveTypeRepository;
+        _employeeRepository = employeeRepository;
     }
 
     public List<LeaveRequestDTO> GetAll()
@@ -91,6 +99,77 @@ public class LeaveRequestService : ILeaveRequestService
         return totalDays;
     }
 
+    private void EnsureAnnualLeaveBalance(int employeeId, int year)
+    {
+        if (_annualLeaveBalanceRepositry.Exists(employeeId, year))
+            return;
+
+        var now = GetVietnamNow();
+
+        double carryOver = 0;
+
+        var previousBalances = _annualLeaveBalanceRepositry
+            .GetAll()
+            .Where(x => x.EmployeeId == employeeId
+                        && x.Year < year
+                        && !x.IsExpired)
+            .OrderByDescending(x => x.Year)
+            .Take(3)
+            .ToList();
+
+        foreach (var prev in previousBalances)
+        {
+            if (prev.RemainingDays > 0)
+                carryOver += prev.RemainingDays;
+        }
+
+        var employee = _employeeRepository.GetById(employeeId);
+        if (employee == null)
+            return;
+
+        double entitled;
+
+        if (employee.HireDate.Year < year)
+        {
+            entitled = Constants.AnnualLeavePerYear;
+        }
+        else if (employee.HireDate.Year == year)
+        {
+            int monthsRemaining =
+                Constants.MonthsInYear - employee.HireDate.Month + 1;
+
+            double leavePerMonth =
+                Constants.AnnualLeavePerYear / Constants.MonthsInYear;
+
+            entitled = Math.Round(leavePerMonth * monthsRemaining, 1);
+        }
+        else
+        {
+            return;
+        }
+
+        var balance = new AnnualLeaveBalance
+        {
+            EmployeeId = employeeId,
+            Year = year,
+            EntitledDays = entitled,
+            UsedDays = 0,
+            RemainingDays = entitled + carryOver,
+            CreatedDate = now,
+            IsExpired = false
+        };
+
+        _annualLeaveBalanceRepositry.Add(balance);
+
+        foreach (var prev in previousBalances)
+        {
+            prev.IsExpired = true;
+            _annualLeaveBalanceRepositry.Update(prev);
+        }
+
+        _annualLeaveBalanceRepositry.Save();
+    }
+
     public ServiceResult CreateLeaveRequest(int employeeId, CreateLeaveRequestDTO dto)
     {
         if (dto.FromDate.Date > dto.ToDate.Date)
@@ -147,14 +226,19 @@ public class LeaveRequestService : ILeaveRequestService
         {
             int year = dto.FromDate.Year;
 
+            // 1️⃣ Đảm bảo balance tồn tại (có carry 3 năm nếu cần)
+            EnsureAnnualLeaveBalance(employeeId, year);
+
+            // 2️⃣ Lấy balance sau khi đã ensure
             var balance = _annualLeaveBalanceRepositry
                 .GetByEmployeeAndYear(employeeId, year);
 
-            if (balance == null)
+            if (balance == null || balance.IsExpired)
             {
-                return ServiceResult.Failure("Không tìm thấy thông tin số ngày phép năm.");
+                return ServiceResult.Failure("Không tìm thấy số dư phép năm hợp lệ.");
             }
 
+            // 3️⃣ Check quota
             if (balance.RemainingDays < requestedDays)
             {
                 return ServiceResult.Failure(
@@ -185,74 +269,74 @@ public class LeaveRequestService : ILeaveRequestService
             $"Tạo đơn nghỉ thành công. Số ngày yêu cầu: {requestedDays}.");
     }
 
-    public ServiceResult ApproveLeaveRequest(int leaveRequestId, int approverId)
-    {
-        var leave = _leaveRequestRepo.GetById(leaveRequestId);
+    //public ServiceResult ApproveLeaveRequest(int leaveRequestId, int approverId)
+    //{
+    //    var leave = _leaveRequestRepo.GetById(leaveRequestId);
 
-        if (leave == null)
-            return ServiceResult.Failure("Không tìm thấy đơn nghỉ.");
+    //    if (leave == null)
+    //        return ServiceResult.Failure("Không tìm thấy đơn nghỉ.");
 
-        if (leave.Status != RequestStatus.Pending)
-            return ServiceResult.Failure("Chỉ có thể duyệt đơn đang chờ.");
+    //    if (leave.Status != RequestStatus.Pending)
+    //        return ServiceResult.Failure("Chỉ có thể duyệt đơn đang chờ.");
 
-        leave.Status = RequestStatus.Approved;
-        leave.ApprovedBy = approverId;
-        leave.ApprovedDate = GetVietnamNow();
+    //    leave.Status = RequestStatus.Approved;
+    //    leave.ApprovedBy = approverId;
+    //    leave.ApprovedDate = GetVietnamNow();
 
-        _leaveRequestRepo.Update(leave);
-        _leaveRequestRepo.Save();
+    //    _leaveRequestRepo.Update(leave);
+    //    _leaveRequestRepo.Save();
 
-        // 👉 Tạo / cập nhật Attendance sau khi duyệt
-        for (var date = leave.FromDate.Date; date <= leave.ToDate.Date; date = date.AddDays(1))
-        {
-            var attendance = _attendanceRepository
-                .GetByEmployeeAndWorkDate(leave.EmployeeId, date);
+    //    // 👉 Tạo / cập nhật Attendance sau khi duyệt
+    //    for (var date = leave.FromDate.Date; date <= leave.ToDate.Date; date = date.AddDays(1))
+    //    {
+    //        var attendance = _attendanceRepository
+    //            .GetByEmployeeAndWorkDate(leave.EmployeeId, date);
 
-            if (attendance == null)
-            {
-                var newAttendance = new Attendance
-                {
-                    EmployeeId = leave.EmployeeId,
-                    WorkDate = date,
-                    Status = AttendanceStatus.ApprovedLeave,
-                    MissingMinutes = 0
-                };
+    //        if (attendance == null)
+    //        {
+    //            var newAttendance = new Attendance
+    //            {
+    //                EmployeeId = leave.EmployeeId,
+    //                WorkDate = date,
+    //                Status = AttendanceStatus.ApprovedLeave,
+    //                MissingMinutes = 0
+    //            };
 
-                _attendanceRepository.Add(newAttendance);
-            }
-            else
-            {
-                attendance.Status = AttendanceStatus.ApprovedLeave;
-                attendance.MissingMinutes = 0;
-                _attendanceRepository.Update(attendance);
-            }
-        }
+    //            _attendanceRepository.Add(newAttendance);
+    //        }
+    //        else
+    //        {
+    //            attendance.Status = AttendanceStatus.ApprovedLeave;
+    //            attendance.MissingMinutes = 0;
+    //            _attendanceRepository.Update(attendance);
+    //        }
+    //    }
 
-        _attendanceRepository.Save();
+    //    _attendanceRepository.Save();
 
-        // Cập nhật AnnualLeaveBalance của cronjob tạo sau khi duyệt
-        // TODO: Đang thiếu cronjob tạo record 12 nghỉ/ năm, chạy theo ngày rồi tạo hoặc cập nhật thay vì chạy theo năm
+    //    // Cập nhật AnnualLeaveBalance của cronjob tạo sau khi duyệt
+    //    // TODO: Đang thiếu cronjob tạo record 12 nghỉ/ năm, chạy theo ngày rồi tạo hoặc cập nhật thay vì chạy theo năm
 
-        return ServiceResult.Success("Duyệt đơn nghỉ thành công.");
-    }
+    //    return ServiceResult.Success("Duyệt đơn nghỉ thành công.");
+    //}
 
-    public ServiceResult RejectLeaveRequest(int leaveRequestId, int approverId)
-    {
-        var leave = _leaveRequestRepo.GetById(leaveRequestId);
+    //public ServiceResult RejectLeaveRequest(int leaveRequestId, int approverId)
+    //{
+    //    var leave = _leaveRequestRepo.GetById(leaveRequestId);
 
-        if (leave == null)
-            return ServiceResult.Failure("Không tìm thấy đơn nghỉ.");
+    //    if (leave == null)
+    //        return ServiceResult.Failure("Không tìm thấy đơn nghỉ.");
 
-        if (leave.Status != RequestStatus.Pending)
-            return ServiceResult.Failure("Chỉ có thể từ chối đơn đang chờ.");
+    //    if (leave.Status != RequestStatus.Pending)
+    //        return ServiceResult.Failure("Chỉ có thể từ chối đơn đang chờ.");
 
-        leave.Status = RequestStatus.Rejected;
-        leave.ApprovedBy = approverId;
-        leave.ApprovedDate = GetVietnamNow();
+    //    leave.Status = RequestStatus.Rejected;
+    //    leave.ApprovedBy = approverId;
+    //    leave.ApprovedDate = GetVietnamNow();
 
-        _leaveRequestRepo.Update(leave);
-        _leaveRequestRepo.Save();
+    //    _leaveRequestRepo.Update(leave);
+    //    _leaveRequestRepo.Save();
 
-        return ServiceResult.Success("Đã từ chối đơn nghỉ.");
-    }
+    //    return ServiceResult.Success("Đã từ chối đơn nghỉ.");
+    //}
 }

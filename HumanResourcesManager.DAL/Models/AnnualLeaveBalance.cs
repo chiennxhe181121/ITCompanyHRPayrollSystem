@@ -20,5 +20,7 @@
 
         // Ngày reset quota
         public DateTime CreatedDate { get; set; }
+
+        public bool IsExpired { get; set; } = false;
     }
 }

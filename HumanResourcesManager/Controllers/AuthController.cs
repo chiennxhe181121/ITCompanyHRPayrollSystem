@@ -128,6 +128,7 @@ namespace HumanResourcesManager.Controllers
             await HttpContext.SignOutAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme
             );
+            TempData["Success"] = "Đăng xuất thành công.";
 
             return RedirectToAction("Login");
         }

@@ -1,4 +1,4 @@
-using HumanResourcesManager.Auth;
+﻿using HumanResourcesManager.Auth;
 using HumanResourcesManager.BLL.DTOs;
 using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.BLL.Services;
@@ -100,9 +100,11 @@ namespace HumanResourcesManager
             builder.Services.AddScoped<IAttendanceService, AttendanceService>();
             builder.Services.AddScoped<IAllowanceService, AllowanceService>(); // 14/02/2026
             builder.Services.AddScoped<ILeaveRequestService, LeaveRequestService>();
+            builder.Services.AddScoped<IAnnualLeaveBalanceService, AnnualLeaveBalanceService>();
 
+            builder.Services.AddHostedService<DailyAttendanceGenerateJob>(); // cronjob tao record attendance moi ngay cho nhan vien
             builder.Services.AddHostedService<AttendanceFinalizeJob>(); // cronjob cho ket luan attendance 20:10 moi ngay
-            builder.Services.AddHostedService<HolidayGenerateJob>(); // cronjob cho attendance holiday
+            builder.Services.AddHostedService<AnnualLeaveGenerateJob>(); // cronjob reset so ngay nghi phep hang nam
 
             // Session configuration
             builder.Services.AddDistributedMemoryCache();
@@ -130,6 +132,9 @@ namespace HumanResourcesManager
                 try
                 {
                     var context = services.GetRequiredService<HumanManagerContext>();
+
+                    context.Database.Migrate(); // ✅ đảm bảo migration được áp dụng
+
                     SeedData.Initialize(context);
                 }
                 catch (Exception ex)
