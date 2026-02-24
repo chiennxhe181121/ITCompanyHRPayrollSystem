@@ -1,5 +1,81 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
 @{
+    ViewData["Title"] = "HR Dashboard";
+    Layout = "~/Views/HR/_HRLayout.cshtml";
 }
+
+<header class="bg-white/90 backdrop-blur-sm border-b border-slate-200/80 px-6 lg:px-8 py-5">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-semibold text-slate-800">HR Dashboard</h1>
+            <p class="text-slate-500 text-sm mt-0.5">Quản lý nhân sự, hợp đồng và lương</p>
+        </div>
+        <div class="flex items-center gap-4 rounded-xl bg-slate-50 px-4 py-2.5 border border-slate-200/80">
+            <div class="text-right">
+                <p class="text-xs text-slate-500 uppercase tracking-wide">Hôm nay</p>
+                <p class="text-sm font-medium text-slate-800" id="currentDate"></p>
+            </div>
+            <p class="text-lg font-semibold text-blue-600 tabular-nums" id="currentTime"></p>
+        </div>
+    </div>
+</header>
+
+<div class="p-5 lg:p-8">
+    <!-- Stats -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="relative bg-white rounded-2xl shadow-sm border border-slate-200/60 p-5 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-500 text-xs font-medium uppercase tracking-wide">Nhân Viên</p>
+                    <p class="text-2xl font-bold text-slate-800 mt-1.5" id="totalEmployees">0</p>
+                </div>
+                <div class="w-11 h-11 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                </div>
+            </div>
+        </div>
+        <div class="relative bg-white rounded-2xl shadow-sm border border-slate-200/60 p-5 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-500 text-xs font-medium uppercase tracking-wide">Chờ Duyệt Nghỉ</p>
+                    <p class="text-2xl font-bold text-slate-800 mt-1.5" id="pendingLeaves">0</p>
+                </div>
+                <div class="w-11 h-11 bg-amber-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                </div>
+            </div>
+        </div>
+        <div class="relative bg-white rounded-2xl shadow-sm border border-slate-200/60 p-5 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-500 text-xs font-medium uppercase tracking-wide">Hợp Đồng</p>
+                    <p class="text-2xl font-bold text-slate-800 mt-1.5" id="totalContracts">0</p>
+                </div>
+                <div class="w-11 h-11 bg-emerald-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                </div>
+            </div>
+        </div>
+        <div class="relative bg-white rounded-2xl shadow-sm border border-slate-200/60 p-5 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-500 text-xs font-medium uppercase tracking-wide">Bảng Lương</p>
+                    <p class="text-2xl font-bold text-slate-800 mt-1.5" id="payrollCount">0</p>
+                </div>
+                <div class="w-11 h-11 bg-violet-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs Content -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
+        @await Html.PartialAsync("_HRProfileTab")
+        @await Html.PartialAsync("_HREmployeesTab")
+        @await Html.PartialAsync("_HRDepartmentsTab")
+        @await Html.PartialAsync("_HRContractsTab")
+        @await Html.PartialAsync("_HRLeavesTab")
+        @await Html.PartialAsync("_HRPayrollsTab")
+        @await Html.PartialAsync("_HRReportsTab")
+    </div>
+</div>

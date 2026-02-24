@@ -1,0 +1,43 @@
+<div id="reportsTab" class="tab-content hidden">
+    <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
+        <h2 class="text-lg font-semibold text-slate-800">Báo Cáo Lương</h2>
+        <p class="text-sm text-slate-500 mt-0.5">Xem tổng hợp lương theo tháng / nhân viên</p>
+    </div>
+    <div class="p-6">
+        <div class="mb-6 flex flex-wrap gap-4 items-end">
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1">Tháng</label>
+                <input type="month" id="reportMonthInput" class="px-4 py-2.5 border border-slate-200 rounded-xl">
+            </div>
+            <button type="button" id="reportLoadBtn" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium">Xem báo cáo</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-slate-50 rounded-xl p-5 border border-slate-200">
+                <p class="text-slate-500 text-sm">Tổng lương tháng</p>
+                <p class="text-2xl font-bold text-slate-800 mt-1" id="reportTotalSalary">0</p>
+            </div>
+            <div class="bg-slate-50 rounded-xl p-5 border border-slate-200">
+                <p class="text-slate-500 text-sm">Số nhân viên được trả</p>
+                <p class="text-2xl font-bold text-slate-800 mt-1" id="reportEmployeeCount">0</p>
+            </div>
+            <div class="bg-slate-50 rounded-xl p-5 border border-slate-200">
+                <p class="text-slate-500 text-sm">Lương trung bình</p>
+                <p class="text-2xl font-bold text-slate-800 mt-1" id="reportAvgSalary">0</p>
+            </div>
+        </div>
+        <div class="overflow-x-auto rounded-xl border border-slate-200/80">
+            <table class="employee-table w-full">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200">
+                        <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Nhân viên</th>
+                        <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Mã NV</th>
+                        <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Lương cơ bản</th>
+                        <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Thực lĩnh</th>
+                        <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody id="reportsTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>

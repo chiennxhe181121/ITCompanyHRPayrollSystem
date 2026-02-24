@@ -1,0 +1,50 @@
+<div id="departmentsTab" class="tab-content hidden">
+    <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <h2 class="text-lg font-semibold text-slate-800">Phòng Ban và Chức Vụ</h2>
+                <p class="text-sm text-slate-500 mt-0.5">Quản lý phòng ban và chức vụ</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" id="orgSubBtnDepartments" data-org-sub="departments" class="org-sub-btn px-4 py-2.5 rounded-xl text-sm font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700">Phòng Ban</button>
+                <button type="button" id="orgSubBtnPositions" data-org-sub="positions" class="org-sub-btn px-4 py-2.5 rounded-xl text-sm font-medium transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200">Chức Vụ</button>
+            </div>
+        </div>
+    </div>
+    <div class="p-6">
+        <div id="orgDepartmentsPanel" class="org-panel">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <h3 class="text-base font-semibold text-slate-700">Danh sách phòng ban</h3>
+                <a href="/HumanResourcesManager/admin/departments" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2.5 rounded-xl shadow-sm transition-colors text-sm inline-block">+ Thêm phòng ban</a>
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-slate-200/80">
+                <table class="employee-table w-full">
+                    <thead><tr class="bg-slate-50 border-b border-slate-200">
+                        <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">ID</th>
+                        <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Tên</th>
+                        <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Mô tả</th>
+                        <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Hành động</th>
+                    </tr></thead>
+                    <tbody id="departmentsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <div id="orgPositionsPanel" class="org-panel hidden">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <h3 class="text-base font-semibold text-slate-700">Danh sách chức vụ</h3>
+                <a href="/HumanResourcesManager/admin/positions" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2.5 rounded-xl shadow-sm transition-colors text-sm inline-block">+ Thêm chức vụ</a>
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-slate-200/80">
+                <table class="employee-table w-full">
+                    <thead><tr class="bg-slate-50 border-b border-slate-200">
+                        <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">ID</th>
+                        <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Tên</th>
+                        <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Mô tả</th>
+                        <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase">Hành động</th>
+                    </tr></thead>
+                    <tbody id="positionsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
