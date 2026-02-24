@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace HumanResourcesManager.DAL.Models
+﻿namespace HumanResourcesManager.DAL.Models
 {
     public class AnnualLeaveBalance
     {
@@ -26,5 +20,7 @@ namespace HumanResourcesManager.DAL.Models
 
         // Ngày reset quota
         public DateTime CreatedDate { get; set; }
+
+        public bool IsExpired { get; set; } = false;
     }
 }

@@ -1,7 +1,6 @@
 // Employee Dashboard - JavaScript giao diện (không dùng getCurrentUser/getDatabase/saveDatabase)
-let currentPage = { attendance: 1, leaves: 1, overtime: 1, overtimeAvailable: 1, payroll: 1 };
-const itemsPerPage = 10;
 let profileEditMode = false;
+
 const STAT_IDS = ['monthAttendance', 'leavesRemaining', 'overtimeHours', 'currentSalary'];
 let statsVisibility = { monthAttendance: true, leavesRemaining: true, overtimeHours: true, currentSalary: true };
 
@@ -10,35 +9,7 @@ const CHECKIN_TO = "09:00:00";
 const CHECKOUT_FROM = "16:30:00";
 const CHECKOUT_TO = "20:00:00";
 
-// ===== STATS =====
-function loadStatsVisibility() {
-    try {
-        const saved = localStorage.getItem('employeeStatsVisibility');
-        if (saved) Object.assign(statsVisibility, JSON.parse(saved));
-    } catch (e) { }
-}
-
-function updateStatsDisplay() {
-    STAT_IDS.forEach(id => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        const value = el.dataset.value ?? el.textContent;
-        if (el.dataset.value !== undefined) el.dataset.value = value;
-        el.textContent = statsVisibility[id] ? value : '•••';
-    });
-}
-
-function updateStatButtonIcons() {
-    document.querySelectorAll('.stat-toggle').forEach(btn => {
-        const statId = btn.dataset.stat;
-        const visible = statsVisibility[statId];
-        const eye = btn.querySelector('.stat-eye');
-        const eyeOff = btn.querySelector('.stat-eye-off');
-        if (eye) eye.classList.toggle('hidden', !visible);
-        if (eyeOff) eyeOff.classList.toggle('hidden', visible);
-    });
-}
-
+// ===== HEADER =====
 function updateClock() {
     const el = document.getElementById('currentTime');
     if (!el) return;
@@ -59,15 +30,48 @@ function updateCurrentDate() {
     });
 }
 
-function loadStatsUI() {
-    const monthEl = document.getElementById('monthAttendance');
-    if (monthEl) { monthEl.dataset.value = '0'; monthEl.textContent = '0'; }
-    const overtimeEl = document.getElementById('overtimeHours');
-    if (overtimeEl) { overtimeEl.dataset.value = '0h'; overtimeEl.textContent = '0h'; }
-    const salaryEl = document.getElementById('currentSalary');
-    if (salaryEl) { salaryEl.dataset.value = '--'; salaryEl.textContent = '--'; }
-    const leavesEl = document.getElementById('leavesRemaining');
-    if (leavesEl) leavesEl.dataset.value = leavesEl.textContent || '0';
+// ===== STATS =====
+function loadStatsVisibility() {
+    try {
+        const saved = localStorage.getItem('employeeStatsVisibility');
+        if (saved) Object.assign(statsVisibility, JSON.parse(saved));
+    } catch (e) { }
+}
+
+function applyStatsVisibility() {
+    Object.keys(statsVisibility).forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        const realValue = el.getAttribute('data-real');
+
+        if (statsVisibility[id]) {
+            el.textContent = realValue;
+        } else {
+            el.textContent = '•••';
+        }
+    });
+}
+
+function saveRealValues() {
+    Object.keys(statsVisibility).forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        // lưu giá trị server render vào attribute
+        el.setAttribute('data-real', el.textContent.trim());
+    });
+}
+
+function updateStatButtonIcons() {
+    document.querySelectorAll('.stat-toggle').forEach(btn => {
+        const statId = btn.dataset.stat;
+        const visible = statsVisibility[statId];
+        const eye = btn.querySelector('.stat-eye');
+        const eyeOff = btn.querySelector('.stat-eye-off');
+        if (eye) eye.classList.toggle('hidden', !visible);
+        if (eyeOff) eyeOff.classList.toggle('hidden', visible);
+    });
 }
 
 // ===== DOM =====
@@ -86,9 +90,9 @@ document.addEventListener('DOMContentLoaded', function () {
             break;
     }
 
-    loadStatsUI();
     loadStatsVisibility();
-    updateStatsDisplay();
+    saveRealValues();
+    applyStatsVisibility();
     updateStatButtonIcons();
     updateCurrentDate();
     updateClock();
@@ -221,10 +225,48 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!statId) return;
             statsVisibility[statId] = !statsVisibility[statId];
             try { localStorage.setItem('employeeStatsVisibility', JSON.stringify(statsVisibility)); } catch (e) { }
-            updateStatsDisplay();
+            applyStatsVisibility();
             updateStatButtonIcons();
         });
     });
+
+    const infoBtn = document.getElementById('attendanceInfoBtn');
+    const infoBox = document.getElementById('attendanceInfoBox');
+
+    if (infoBtn && infoBox) {
+
+        infoBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            infoBox.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', function () {
+            infoBox.classList.add('hidden');
+        });
+
+        infoBox.addEventListener('click', function (e) {
+            e.stopPropagation();
+        });
+    }
+
+    const leaveInfoBtn = document.getElementById('leaveInfoBtn');
+    const leaveInfoBox = document.getElementById('leaveInfoBox');
+
+    if (leaveInfoBtn && leaveInfoBox) {
+
+        leaveInfoBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            leaveInfoBox.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', function () {
+            leaveInfoBox.classList.add('hidden');
+        });
+
+        leaveInfoBox.addEventListener('click', function (e) {
+            e.stopPropagation();
+        });
+    }
 });
 
 // ===== PROFILE =====
@@ -488,49 +530,6 @@ function validateProfileForm() {
     return isValid;
 }
 
-// ===== SIDEBAR =====
-// cần sửa
-//function initializePage() {
-//    if (typeof window.currentEmployee === "undefined" || !window.currentEmployee)
-//        return;
-
-//    const e = window.currentEmployee;
-
-//    // Sidebar name
-//    const userNameEl = document.getElementById('userName');
-//    if (userNameEl) userNameEl.textContent = e.fullName;
-
-//    // Sidebar position
-//    const position = document.getElementById('userPosition');
-//    if (position) position.textContent = e.positionName;
-
-//    if (e.imgAvatar) {
-//        updateSidebarAvatar(e.imgAvatar);
-//    } else {
-//        const initial = e.fullName
-//            ? e.fullName.charAt(0).toUpperCase()
-//            : "?";
-
-//        updateSidebarAvatar(null, initial);
-//    }
-//}
-
-//function updateSidebarAvatar(avatarDataUrl, initialLetter) {
-//    const img = document.getElementById('sidebarAvatarImg');
-//    const span = document.getElementById('userInitial');
-//    if (!img || !span) return;
-//    if (avatarDataUrl) {
-//        img.src = avatarDataUrl;
-//        img.classList.remove('hidden');
-//        span.classList.add('hidden');
-//    } else {
-//        img.classList.add('hidden');
-//        img.src = '';
-//        span.textContent = initialLetter || 'E';
-//        span.classList.remove('hidden');
-//    }
-//}
-
 // ===== ATTENDANCE =====
 let checkInStream = null;
 let checkOutStream = null;
@@ -698,14 +697,29 @@ function updateCheckInUI() {
 
     if (!btn || !badge) return;
 
-    if (window.attendanceState?.isLeave) {
-
+    if (
+        window.attendanceState?.isLeave ||
+        window.attendanceState?.isHoliday ||
+        window.attendanceState?.isWeekend
+    ) {
         btn.disabled = true;
         btn.classList.add("opacity-50", "cursor-not-allowed");
 
-        badge.textContent = "📅 Nghỉ có phép";
-        badge.className =
-            "inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700";
+        if (window.attendanceState?.isHoliday) {
+            badge.textContent = "🎉 Nghỉ lễ";
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-700";
+        }
+        else if (window.attendanceState?.isWeekend) {
+            badge.textContent = "🛌 Nghỉ cuối tuần";
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-700";
+        }
+        else if (window.attendanceState?.isLeave) {
+            badge.textContent = "📅 Nghỉ có phép";
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700";
+        }
 
         countdownEl?.classList.add("hidden");
         progressWrapper?.classList.add("hidden");
@@ -766,7 +780,7 @@ function updateCheckInUI() {
         }
         else {
 
-            badge.textContent = "❌ Đã đóng - Chưa check-in";
+            badge.textContent = "⛔ Đã đóng - Chưa check-in";
 
             badge.className =
                 "inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700";
@@ -810,14 +824,29 @@ function updateCheckOutUI() {
 
     if (!btn || !badge) return;
 
-    if (window.attendanceState?.isLeave) {
-
+    if (
+        window.attendanceState?.isLeave ||
+        window.attendanceState?.isHoliday ||
+        window.attendanceState?.isWeekend
+    ) {
         btn.disabled = true;
         btn.classList.add("opacity-50", "cursor-not-allowed");
 
-        badge.textContent = "📅 Nghỉ có phép";
-        badge.className =
-            "inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700";
+        if (window.attendanceState?.isHoliday) {
+            badge.textContent = "🎉 Nghỉ lễ";
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-700";
+        }
+        else if (window.attendanceState?.isWeekend) {
+            badge.textContent = "🛌 Nghỉ cuối tuần";
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-700";
+        }
+        else if (window.attendanceState?.isLeave) {
+            badge.textContent = "📅 Nghỉ có phép";
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700";
+        }
 
         countdownEl?.classList.add("hidden");
         progressWrapper?.classList.add("hidden");
@@ -835,6 +864,22 @@ function updateCheckOutUI() {
 
         badge.className =
             "inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700";
+
+        countdownEl?.classList.add("hidden");
+        progressWrapper?.classList.add("hidden");
+
+        return;
+    }
+
+    // Chưa check-in thì không cho check-out (bất kể giờ)
+    if (!window.attendanceState?.hasCheckIn) {
+
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+
+        badge.textContent = "⛔ Chưa check-in";
+        badge.className =
+            "inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700";
 
         countdownEl?.classList.add("hidden");
         progressWrapper?.classList.add("hidden");
@@ -876,16 +921,9 @@ function updateCheckOutUI() {
             badge.className =
                 "inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700";
         }
-        else if (window.attendanceState?.hasCheckIn) {
-
-            badge.textContent = "⚠ Đã đóng - Chưa check-out";
-
-            badge.className =
-                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700";
-        }
         else {
 
-            badge.textContent = "❌ Đã đóng - Chưa check-in";
+            badge.textContent = "⛔ Đã đóng - Chưa check-out";
 
             badge.className =
                 "inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700";
@@ -920,7 +958,7 @@ function updateCheckOutUI() {
     }
 }
 
-// ===== BẢNG DỮ LIỆU (chỉ giao diện - hiển thị trống) =====
+// ===== LEAVES =====
 function loadLeavesUI() {
     const tbody = document.getElementById('leavesTableBody');
     if (!tbody) return;
@@ -928,6 +966,7 @@ function loadLeavesUI() {
     document.getElementById('leavesPagination').innerHTML = '';
 }
 
+// ===== OVERTIME =====
 function switchOvertimeView(view) {
     const btnList = document.getElementById('overtimeBtnList');
     const btnHistory = document.getElementById('overtimeBtnHistory');
@@ -966,6 +1005,7 @@ function loadOvertimeUI() {
     document.getElementById('overtimePagination').innerHTML = '';
 }
 
+// ===== PAYROLL =====
 function loadPayrollUI() {
     const tbody = document.getElementById('payrollTableBody');
     if (!tbody) return;
@@ -973,58 +1013,45 @@ function loadPayrollUI() {
     document.getElementById('payrollPagination').innerHTML = '';
 }
 
-// ===== MODAL NGHỈ PHÉP (chỉ giao diện) =====
-function showLeaveModal() {
-    const modal = `
-    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="text-xl font-bold text-gray-900">Đăng Ký Nghỉ Phép</h3>
-          <button type="button" onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
-        </div>
-        <form id="leaveForm" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Loại Phép</label>
-            <select id="leaveType" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
-              <option value="Annual Leave">Phép năm</option>
-              <option value="Sick Leave">Nghỉ ốm</option>
-              <option value="Personal Leave">Nghỉ cá nhân</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Từ Ngày</label>
-            <input type="date" id="startDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Đến Ngày</label>
-            <input type="date" id="endDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Lý Do</label>
-            <textarea id="reason" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required></textarea>
-          </div>
-          <div class="flex space-x-3 pt-4">
-            <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg">Gửi</button>
-            <button type="button" onclick="closeModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 rounded-lg">Hủy</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  `;
-    const container = document.getElementById('modalContainer');
-    if (container) container.innerHTML = modal;
-    document.getElementById('leaveForm')?.addEventListener('submit', function (e) {
-        e.preventDefault();
-        closeModal();
-        alert('Chức năng gửi đơn nghỉ phép sẽ kết nối API khi backend sẵn sàng.');
-    });
-}
+// ===== SIDEBAR =====
+// cần sửa
+//function initializePage() {
+//    if (typeof window.currentEmployee === "undefined" || !window.currentEmployee)
+//        return;
 
-function closeModal() {
-    const container = document.getElementById('modalContainer');
-    if (container) container.innerHTML = '';
-}
+//    const e = window.currentEmployee;
+
+//    // Sidebar name
+//    const userNameEl = document.getElementById('userName');
+//    if (userNameEl) userNameEl.textContent = e.fullName;
+
+//    // Sidebar position
+//    const position = document.getElementById('userPosition');
+//    if (position) position.textContent = e.positionName;
+
+//    if (e.imgAvatar) {
+//        updateSidebarAvatar(e.imgAvatar);
+//    } else {
+//        const initial = e.fullName
+//            ? e.fullName.charAt(0).toUpperCase()
+//            : "?";
+
+//        updateSidebarAvatar(null, initial);
+//    }
+//}
+
+//function updateSidebarAvatar(avatarDataUrl, initialLetter) {
+//    const img = document.getElementById('sidebarAvatarImg');
+//    const span = document.getElementById('userInitial');
+//    if (!img || !span) return;
+//    if (avatarDataUrl) {
+//        img.src = avatarDataUrl;
+//        img.classList.remove('hidden');
+//        span.classList.add('hidden');
+//    } else {
+//        img.classList.add('hidden');
+//        img.src = '';
+//        span.textContent = initialLetter || 'E';
+//        span.classList.remove('hidden');
+//    }
+//}

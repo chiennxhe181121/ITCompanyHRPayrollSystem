@@ -2,11 +2,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-public class AttendanceFinalizeJob : BackgroundService
+public class DailyAttendanceGenerateJob : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
 
-    public AttendanceFinalizeJob(IServiceProvider serviceProvider)
+    public DailyAttendanceGenerateJob(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
@@ -25,19 +25,20 @@ public class AttendanceFinalizeJob : BackgroundService
         {
             var now = GetVietnamNow();
 
-            // 20:10 - 20: 15 mỗi ngày
-            if (now.TimeOfDay >= new TimeSpan(20, 10, 0) &&
-                now.TimeOfDay < new TimeSpan(20, 15, 0))
+            // ⏰ 00:05 - 00:10 mỗi ngày
+            if (now.TimeOfDay >= new TimeSpan(0, 5, 0) &&
+                now.TimeOfDay < new TimeSpan(0, 10, 0))
             {
                 using (var scope = _serviceProvider.CreateScope())
                 {
                     var service = scope.ServiceProvider
                         .GetRequiredService<IAttendanceService>();
 
-                    service.FinalizeDailyAttendance(now);
+                    service.GenerateDailyAttendance(now.Date);
                 }
 
-                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                // tránh chạy nhiều lần trong 5 phút đó
+                await Task.Delay(TimeSpan.FromMinutes(6), stoppingToken);
             }
 
             await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);

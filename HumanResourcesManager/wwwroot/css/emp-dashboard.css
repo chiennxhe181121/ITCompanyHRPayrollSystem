@@ -1,0 +1,134 @@
+﻿/* ================================
+   EMPLOYEE SIDEBAR STYLE (Classic)
+   ================================ */
+
+.employee-sidebar {
+    background: #ffffff;
+}
+
+    /* NAV ITEM BASE */
+    .employee-sidebar .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        border-radius: 14px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #64748b; /* slate-500 */
+        transition: all 0.2s ease;
+        position: relative;
+    }
+
+        /* ICON */
+        .employee-sidebar .nav-item svg {
+            width: 20px;
+            height: 20px;
+            transition: all 0.2s ease;
+        }
+
+        /* HOVER */
+        .employee-sidebar .nav-item:hover {
+            background: #f1f5f9; /* slate-100 */
+            color: #1e293b; /* slate-800 */
+            transform: translateX(4px);
+        }
+
+        /* ACTIVE STATE */
+        .employee-sidebar .nav-item.active {
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            color: #ffffff;
+            font-weight: 600;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
+        }
+
+            /* ACTIVE ICON */
+            .employee-sidebar .nav-item.active svg {
+                color: #ffffff;
+            }
+
+            /* LEFT INDICATOR BAR */
+            .employee-sidebar .nav-item.active::before {
+                content: "";
+                position: absolute;
+                left: -10px;
+                top: 6px;
+                bottom: 6px;
+                width: 4px;
+                border-radius: 4px;
+                background: #4f46e5;
+            }
+
+    /* USER CARD STYLE */
+    .employee-sidebar .user-card {
+        border-radius: 18px;
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+    }
+
+    /* LOGO AREA */
+    .employee-sidebar .logo-area {
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        color: #4338ca;
+    }
+
+/* ================================
+   EMPLOYEE HEADER STYLE (Classic)
+   ================================ */
+
+.employee-header {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+    /* TITLE */
+    .employee-header h1 {
+        font-weight: 600;
+        color: #1e293b; /* slate-800 */
+    }
+
+    .employee-header p {
+        color: #64748b; /* slate-500 */
+    }
+
+    /* CLOCK CONTAINER */
+    .employee-header .clock-box {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 10px 18px;
+        border-radius: 16px;
+        background: #f8fafc; /* slate-50 */
+        border: 1px solid #e2e8f0;
+        transition: all 0.25s ease;
+    }
+
+        /* HOVER EFFECT */
+        .employee-header .clock-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
+        }
+
+    /* DATE TEXT */
+    .employee-header .clock-date-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #94a3b8; /* slate-400 */
+    }
+
+    .employee-header .clock-date-value {
+        font-size: 14px;
+        font-weight: 500;
+        color: #1e293b;
+    }
+
+    /* TIME TEXT */
+    .employee-header .clock-time {
+        font-size: 20px;
+        font-weight: 600;
+        color: #4f46e5; /* indigo-600 */
+        font-variant-numeric: tabular-nums;
+    }

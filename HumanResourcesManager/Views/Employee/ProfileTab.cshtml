@@ -17,8 +17,10 @@
 			<!-- Profile Tab -->
 			<div id="profileTab" class="tab-content">
 				<div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
-					<h2 class="text-lg font-semibold text-slate-800">Hồ Sơ Cá Nhân</h2>
-					<p class="text-sm text-slate-500 mt-0.5">Chỉnh sửa thông tin cá nhân của bạn</p>
+					<h2 class="text-xl font-bold text-slate-800 tracking-tight">
+						Hồ Sơ
+					</h2>
+					<p class="text-sm text-slate-500 mt-1">Xem và chỉnh sửa thông tin của bạn</p>
 				</div>
 				<div class="p-6">
 					<form id="profileForm"
@@ -40,10 +42,9 @@
             bg-white rounded-2xl shadow-sm border border-slate-100">
 
 									<!-- LABEL -->
-									<div class="text-xs uppercase tracking-wider text-slate-800 font-medium">
-										Ảnh đại diện
-									</div>
-
+									<h3 class="text-base font-semibold text-slate-700">
+									Ảnh đại diện
+									</h3>
 									@{
 										var avatarPath = Model.ImgAvatar;
 										var hasAvatar = !string.IsNullOrEmpty(avatarPath);
@@ -120,127 +121,153 @@
 
 							<div></div>
 						</div>
-						<div class="text-red-600 text-sm">
-							@if (!ViewData.ModelState.IsValid)
-							{
-								<div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm">
-									<div class="flex items-start gap-3">
-										<div class="text-red-500 text-lg">
-											<i class="bi bi-exclamation-triangle-fill"></i>
-										</div>
+						<div class="grid grid-cols-1 xl:grid-cols-2 gap-10 pt-6">
 
-										<div class="text-sm text-red-700">
-											<p class="font-medium mb-1">Có lỗi xảy ra:</p>
-											<ul class="list-disc list-inside space-y-1">
-												@foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-												{
-													<li>@error.ErrorMessage</li>
-												}
-											</ul>
-										</div>
+							<!-- ================= LEFT: Editable ================= -->
+							<div>
+								<h3 class="text-base font-semibold text-slate-700 mb-5">
+									Thông tin cá nhân:
+								</h3>
+
+								<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+									<!-- HỌ TÊN -->
+									<div>
+										<label class="block text-sm font-medium text-slate-600 mb-1.5">Họ và tên</label>
+										<input type="text" id="profileFullName" name="FullName"
+											   value="@Model.FullName"
+											   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
+											   readonly>
 									</div>
+
+									<!-- EMAIL -->
+									<div>
+										<label class="block text-sm font-medium text-slate-600 mb-1.5">Email cá nhân</label>
+										<input type="email" id="profileEmail" name="Email"
+											   value="@Model.Email"
+											   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
+											   readonly>
+									</div>
+
+									<!-- GIỚI TÍNH -->
+									<div>
+										<label class="block text-sm font-medium text-slate-600 mb-1.5">
+											Giới tính
+										</label>
+
+										<select id="profileGender"
+												name="Gender"
+												asp-for="Gender"
+												class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
+												disabled>
+											<option value="true">Nam</option>
+											<option value="false">Nữ</option>
+										</select>
+
+										<input type="hidden"
+											   id="profileGenderHidden"
+											   name="Gender"
+											   value="@Model.Gender" />
+									</div>
+
+									<!-- NGÀY SINH -->
+									<div>
+										<label class="block text-sm font-medium text-slate-600 mb-1.5">Ngày sinh</label>
+										<input type="date" id="profileDob" name="DateOfBirth"
+											   value="@Model.DateOfBirth.ToString("yyyy-MM-dd")"
+											   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
+									</div>
+
+									<!-- SỐ ĐIỆN THOẠI -->
+									<div>
+										<label class="block text-sm font-medium text-slate-600 mb-1.5">Số điện thoại</label>
+										<input type="tel" id="profilePhone" name="Phone"
+											   value="@Model.Phone"
+											   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
+									</div>
+
+									<!-- NƠI Ở HIỆN NAY -->
+									<div>
+										<label class="block text-sm font-medium text-slate-600 mb-1.5">Nơi ở hiện nay</label>
+										<input type="text" id="profileAddress"
+											   value="@Model.Address" name="Address"
+											   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
+									</div>
+
 								</div>
-							}
-						</div>
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
-							<!-- HỌ TÊN -->
-							<div>
-								<label class="block text-sm font-medium text-slate-600 mb-1.5">Họ và tên</label>
-								<input type="text" id="profileFullName" name="FullName"
-									   value="@Model.FullName"
-									   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
-									   readonly>
 							</div>
 
-							<!-- EMAIL -->
+							<!-- ================= RIGHT: Readonly ================= -->
 							<div>
-								<label class="block text-sm font-medium text-slate-600 mb-1.5">Email cá nhân</label>
-								<input type="email" id="profileEmail" name="Email"
-									   value="@Model.Email"
-									   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
-									   readonly>
+								<h3 class="text-base font-semibold text-slate-700 mb-5">
+									Thông tin công việc:
+								</h3>
+
+								<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+									<!-- MÃ NHÂN VIÊN -->
+									<div>
+										<label class="block text-sm font-medium text-slate-600 mb-1.5">Mã nhân viên</label>
+										<input type="text" id="profileEmployeeCode"
+											   value="@Model.EmployeeCode"
+											   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
+											   readonly>
+									</div>
+
+									<!-- PHÒNG BAN -->
+									<div>
+										<label class="block text-sm font-medium text-slate-600 mb-1.5">Phòng ban</label>
+										<input type="text" id="profileDepartment"
+											   value="@Model.DepartmentName"
+											   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
+											   readonly>
+									</div>
+
+									<!-- CHỨC VỤ -->
+									<div>
+										<label class="block text-sm font-medium text-slate-600 mb-1.5">Chức vụ</label>
+										<input type="text" id="profilePosition"
+											   value="@Model.PositionName"
+											   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
+											   readonly>
+									</div>
+
+									<!-- NGÀY VÀO LÀM -->
+									<div>
+										<label class="block text-sm font-medium text-slate-600 mb-1.5">Ngày vào làm</label>
+										<input type="text" id="profileHireDate"
+											   value="@Model.HireDate.ToString("dd/MM/yyyy")"
+											   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
+											   readonly>
+									</div>
+
+								</div>
+
+								<div class="text-red-600 text-sm mt-8">
+									@if (!ViewData.ModelState.IsValid)
+									{
+										<div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm">
+											<div class="flex items-start gap-3">
+												<div class="text-red-500 text-lg">
+													<i class="bi bi-exclamation-triangle-fill"></i>
+												</div>
+
+												<div class="text-sm text-red-700">
+													<p class="font-medium mb-1">Có lỗi xảy ra:</p>
+													<ul class="list-disc list-inside space-y-1">
+														@foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+														{
+															<li>@error.ErrorMessage</li>
+														}
+													</ul>
+												</div>
+											</div>
+										</div>
+									}
+								</div>
+
 							</div>
 
-							<!-- GIỚI TÍNH -->
-							<div>
-								<label class="block text-sm font-medium text-slate-600 mb-1.5">
-									Giới tính
-								</label>
-
-								<select id="profileGender"
-										name="Gender"
-										asp-for="Gender"
-										class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
-										disabled>
-									<option value="true">Nam</option>
-									<option value="false">Nữ</option>
-								</select>
-
-								<input type="hidden"
-									   id="profileGenderHidden"
-									   name="Gender"
-									   value="@Model.Gender" />
-							</div>
-
-							<!-- NGÀY SINH -->
-							<div>
-								<label class="block text-sm font-medium text-slate-600 mb-1.5">Ngày sinh</label>
-								<input type="date" id="profileDob" name="DateOfBirth"
-									   value="@Model.DateOfBirth.ToString("yyyy-MM-dd")"
-									   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
-							</div>
-
-							<!-- SỐ ĐIỆN THOẠI -->
-							<div>
-								<label class="block text-sm font-medium text-slate-600 mb-1.5">Số điện thoại</label>
-								<input type="tel" id="profilePhone" name="Phone"
-									   value="@Model.Phone"
-									   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
-							</div>
-
-							<!-- NƠI Ở HIỆN NAY -->
-							<div>
-								<label class="block text-sm font-medium text-slate-600 mb-1.5">Nơi ở hiện nay</label>
-								<input type="text" id="profileAddress"
-									   value="@Model.Address" name="Address"
-									   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
-							</div>
-
-							<!-- MÃ NHÂN VIÊN -->
-							<div>
-								<label class="block text-sm font-medium text-slate-600 mb-1.5">Mã nhân viên</label>
-								<input type="text" id="profileEmployeeCode"
-									   value="@Model.EmployeeCode"
-									   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
-									   readonly>
-							</div>
-
-							<!-- PHÒNG BAN -->
-							<div>
-								<label class="block text-sm font-medium text-slate-600 mb-1.5">Phòng ban</label>
-								<input type="text" id="profileDepartment"
-									   value="@Model.DepartmentName"
-									   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
-									   readonly>
-							</div>
-
-							<!-- CHỨC VỤ -->
-							<div>
-								<label class="block text-sm font-medium text-slate-600 mb-1.5">Chức vụ</label>
-								<input type="text" id="profilePosition"
-									   value="@Model.PositionName"
-									   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
-									   readonly>
-							</div>
-
-							<!-- NGÀY VÀO LÀM -->
-							<div>
-								<label class="block text-sm font-medium text-slate-600 mb-1.5">Ngày vào làm</label>
-								<input type="text" id="profileHireDate"
-									   value="@Model.HireDate.ToString("dd/MM/yyyy")"
-									   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
-									   readonly>
-							</div>
 						</div>
 					</form>
 				</div>

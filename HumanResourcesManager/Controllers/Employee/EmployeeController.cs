@@ -1,6 +1,9 @@
 ﻿using HumanResourcesManager.BLL.DTOs.Employee;
 using HumanResourcesManager.BLL.Interfaces;
+using HumanResourcesManager.BLL.Services;
 using HumanResourcesManager.DAL.Enum;
+using HumanResourcesManager.DAL.Interfaces;
+using HumanResourcesManager.DAL.Shared;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -16,26 +19,90 @@ public class EmployeeController : Controller
     private readonly IEmployeeService _employeeService;
     private readonly IAttendanceService _attendanceService;
     private readonly IUserAccountService _userAccountService;
+    private readonly ILeaveRequestService _leaveRequestService;
+    private readonly ILeaveTypeRepository _leaveTypeRepository;
+    private readonly IAnnualLeaveBalanceService _annualLeaveBalanceService;
 
     public EmployeeController(
         IEmployeeService employeeService,
         IAttendanceService attendanceService,
-        IUserAccountService userAccountService)
+        IUserAccountService userAccountService,
+        ILeaveRequestService leaveRequestService,
+        ILeaveTypeRepository leaveTypeRepository,
+        IAnnualLeaveBalanceService annualLeaveBalanceService
+        )
     {
         _employeeService = employeeService;
         _attendanceService = attendanceService;
         _userAccountService = userAccountService;
+        _leaveRequestService = leaveRequestService;
+        _leaveTypeRepository = leaveTypeRepository;
+        _annualLeaveBalanceService = annualLeaveBalanceService;
     }
 
     // Lấy userId từ session
     private int CurrentUserId =>
         int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+    private DateTime GetVietnamNow()
+    {
+        return TimeZoneInfo.ConvertTimeFromUtc(
+            DateTime.UtcNow,
+            TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time")
+        );
+    }
+
+    // ===== Stats =====
+    private void LoadStats()
+    {
+        var now = GetVietnamNow();
+        Console.WriteLine($"NOW = {now.Month}/{now.Year}");
+
+        ViewBag.MonthAttendance =
+            _attendanceService.CountAttendanceDays(CurrentUserId, now.Month, now.Year);
+
+        ViewBag.RemainingLeaveDays =
+            _annualLeaveBalanceService.GetRemainingDays(CurrentUserId, now.Year);
+    }
+
+    // ===== Sidebar User =====
+    // ===== Sidebar User =====
+    private void LoadSidebarUserCard()
+    {
+        var fullProfile = _employeeService.GetOwnProfile(CurrentUserId);
+
+        if (fullProfile != null)
+        {
+            ViewBag.SidebarUserName = fullProfile.FullName;
+            ViewBag.SidebarUserPosition = fullProfile.PositionName;
+
+            // Nếu có avatar thì dùng avatar
+            if (!string.IsNullOrEmpty(fullProfile.ImgAvatar))
+            {
+                ViewBag.SidebarUserAvatar = fullProfile.ImgAvatar;
+                ViewBag.HasAvatar = true;
+            }
+            else
+            {
+                ViewBag.SidebarUserAvatarInitial =
+                    string.IsNullOrEmpty(fullProfile.FullName)
+                        ? "E"
+                        : fullProfile.FullName.Substring(0, 1).ToUpper();
+
+                ViewBag.HasAvatar = false;
+            }
+        }
+    }
+
     // ===== Attendance =====
     // view attendance
     [HttpGet("attendance")]
     public IActionResult Index()
     {
+        LoadSidebarUserCard();
+
+        LoadStats();
+
         var model = _attendanceService.GetTodayAttendance(CurrentUserId);
 
         return View(model);
@@ -46,9 +113,6 @@ public class EmployeeController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CheckIn(CheckInDTO dto)
     {
-        Console.WriteLine(DateTime.Now);
-        Console.WriteLine(DateTime.UtcNow);
-
         var result = await _attendanceService.CheckIn(CurrentUserId, dto);
 
         TempData[result.IsSuccess ? "Success" : "Error"] = result.Message;
@@ -77,6 +141,8 @@ public class EmployeeController : Controller
         int? year = null,
         AttendanceStatus? status = null)
     {
+        LoadSidebarUserCard();
+
         var model = _attendanceService.GetEmployeeAttendance(
             CurrentUserId,
             page,
@@ -94,6 +160,8 @@ public class EmployeeController : Controller
     [HttpGet("profile")]
     public IActionResult Profile()
     {
+        LoadSidebarUserCard();
+
         var employee = _employeeService.GetOwnProfile(CurrentUserId);
 
         ViewData["EmployeeJson"] = JsonSerializer.Serialize(employee);
@@ -161,6 +229,8 @@ public class EmployeeController : Controller
     [HttpGet("profile/change-password")]
     public IActionResult ChangePassword()
     {
+        LoadSidebarUserCard();
+
         return View("~/Views/Employee/ChangePassword.cshtml");
     }
 
@@ -191,16 +261,69 @@ public class EmployeeController : Controller
     }
 
     // ===== Leaves =====
+    // view leaves
     [HttpGet("leaves")]
     public IActionResult Leaves()
     {
+        LoadSidebarUserCard();
+
+        LoadStats();
         var employee = _employeeService.GetOwnProfile(CurrentUserId);
         return View("~/Views/Employee/LeavesTab.cshtml", employee);
     }
 
+    // GET: hiển thị form
+    [HttpGet("leaves/request")]
+    public IActionResult CreateLeave()
+    {
+        LoadSidebarUserCard();
+
+        LoadLeaveTypes();
+
+        return View("~/Views/Employee/CreateLeave.cshtml");
+    }
+
+    private void LoadLeaveTypes()
+    {
+        ViewBag.LeaveTypes = _leaveTypeRepository.GetAll();
+    }
+
+    // POST: submit form
+    [HttpPost("leaves/request")]
+    [ValidateAntiForgeryToken]
+    public IActionResult CreateLeave(CreateLeaveRequestDTO dto, bool agreeRule)
+    {
+        if (!agreeRule)
+        {
+            ModelState.AddModelError("", "Bạn phải đồng ý với quy định nghỉ phép.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            LoadLeaveTypes();
+            return View(dto);
+        }
+
+        var result = _leaveRequestService.CreateLeaveRequest(CurrentUserId, dto);
+
+        if (!result.IsSuccess)
+        {
+            ModelState.AddModelError(string.Empty, result.Message);
+            LoadLeaveTypes();
+            return View(dto);
+        }
+
+        TempData["Success"] = result.Message;
+        return RedirectToAction("Leaves");
+    }
+
+
     [HttpGet("overtime")]
     public IActionResult Overtime()
     {
+        LoadSidebarUserCard();
+
+        LoadStats();
         var employee = _employeeService.GetOwnProfile(CurrentUserId);
         return View("~/Views/Employee/OvertimeTab.cshtml", employee);
     }
@@ -208,6 +331,9 @@ public class EmployeeController : Controller
     [HttpGet("payroll")]
     public IActionResult Payroll()
     {
+        LoadSidebarUserCard();
+
+        LoadStats();
         var employee = _employeeService.GetOwnProfile(CurrentUserId);
         return View("~/Views/Employee/PayrollTab.cshtml", employee);
     }

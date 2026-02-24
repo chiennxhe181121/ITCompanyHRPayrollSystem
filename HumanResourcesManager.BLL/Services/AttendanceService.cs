@@ -5,6 +5,7 @@ using HumanResourcesManager.DAL.Enum;
 using HumanResourcesManager.DAL.Interfaces;
 using HumanResourcesManager.DAL.Models;
 using HumanResourcesManager.DAL.Shared;
+using Microsoft.EntityFrameworkCore;
 
 namespace HumanResourcesManager.BLL.Services
 {
@@ -125,41 +126,49 @@ namespace HumanResourcesManager.BLL.Services
                 Status = attendance?.Status
             };
         }
+        public int CountAttendanceDays(int currentUserId, int month, int year)
+        {
+            var employee = _employeeRepository.GetByUserId(currentUserId);
+
+            return employee == null
+                ? throw new Exception("Employee not found")
+                : _attendanceRepository.CountAttendanceDays(employee.EmployeeId, month, year);
+        }
 
         public async Task<ServiceResult> CheckIn(int userId, CheckInDTO dto)
         {
-            // Ràng buộc thời gian chấm công
-            if (dto.CheckInTime < Constants.CheckInFrom || dto.CheckInTime > Constants.CheckInTo)
+            if (dto.CheckInTime < Constants.CheckInFrom ||
+                dto.CheckInTime > Constants.CheckInTo)
             {
                 return ServiceResult.Failure("Không nằm trong khung giờ check-in.");
             }
 
             var employee = _employeeRepository.GetByUserId(userId);
-
             if (employee == null)
                 return ServiceResult.Failure("Không tìm thấy nhân viên.");
 
             var today = GetVietnamNow().Date;
 
-            var existingAttendance = _attendanceRepository
+            var attendance = _attendanceRepository
                 .GetByEmployeeAndWorkDate(employee.EmployeeId, today);
 
-            if (existingAttendance != null)
-            {
-                if (existingAttendance.Status == AttendanceStatus.ApprovedLeave)
-                    return ServiceResult.Failure("Ngày này bạn nghỉ có phép.");
+            if (attendance == null)
+                return ServiceResult.Failure("Attendance hôm nay chưa được tạo.");
 
-                if (existingAttendance.Status == AttendanceStatus.Pending
-                    && !existingAttendance.CheckIn.HasValue)
-                {
-                    // cho phép ghi đè checkin
-                }
-                else
-                {
-                    return ServiceResult.Failure("Bạn đã chấm công ngày này rồi.");
-                }
-            }
+            // Không cho check-in nếu không phải ngày làm việc
+            if (attendance.Status == AttendanceStatus.Weekend)
+                return ServiceResult.Failure("Hôm nay là cuối tuần.");
 
+            if (attendance.Status == AttendanceStatus.Holiday)
+                return ServiceResult.Failure("Hôm nay là ngày nghỉ lễ.");
+
+            if (attendance.Status == AttendanceStatus.ApprovedLeave)
+                return ServiceResult.Failure("Ngày này bạn nghỉ có phép.");
+
+            if (attendance.CheckIn.HasValue)
+                return ServiceResult.Failure("Bạn đã Check-in rồi.");
+
+            // ===== LƯU ẢNH =====
             string? imagePath = null;
 
             if (dto.CheckInImage != null && dto.CheckInImage.Length > 0)
@@ -184,26 +193,20 @@ namespace HumanResourcesManager.BLL.Services
                 imagePath = $"/img/employees/{employee.EmployeeId}/attendance/{fileName}";
             }
 
-            var newAttendance = new Attendance
-            {
-                EmployeeId = employee.EmployeeId,
-                WorkDate = today,
-                CheckIn = dto.CheckInTime,
-                CheckInImagePath = imagePath,
-                Status = AttendanceStatus.Pending,
-                MissingMinutes = 0
-            };
+            // ===== UPDATE =====
+            attendance.CheckIn = dto.CheckInTime;
+            attendance.CheckInImagePath = imagePath;
 
-            _attendanceRepository.Add(newAttendance);
+            _attendanceRepository.Update(attendance);
             _attendanceRepository.Save();
 
-            return ServiceResult.Success("Chấm công thành công!");
+            return ServiceResult.Success("Check-in thành công.");
         }
 
         public async Task<ServiceResult> CheckOut(int userId, CheckOutDTO dto)
         {
-            // Ràng buộc thời gian chấm công
-            if (dto.CheckOutTime < Constants.CheckOutFrom || dto.CheckOutTime > Constants.CheckOutTo)
+            if (dto.CheckOutTime < Constants.CheckOutFrom ||
+                dto.CheckOutTime > Constants.CheckOutTo)
             {
                 return ServiceResult.Failure("Không nằm trong khung giờ check-out.");
             }
@@ -217,22 +220,28 @@ namespace HumanResourcesManager.BLL.Services
             var attendance = _attendanceRepository
                 .GetByEmployeeAndWorkDate(employee.EmployeeId, today);
 
-            if (attendance != null
-    && attendance.Status == AttendanceStatus.ApprovedLeave)
-            {
-                return ServiceResult.Failure("Ngày này bạn nghỉ có phép.");
-            }
-
             if (attendance == null)
-                return ServiceResult.Failure("Bạn chưa Check-in hôm nay.");
+                return ServiceResult.Failure("Attendance hôm nay chưa được tạo.");
 
-            if (attendance.CheckIn == null)
-                return ServiceResult.Failure("Thiếu Check-in.");
+            if (attendance.Status == AttendanceStatus.Weekend)
+                return ServiceResult.Failure("Hôm nay là cuối tuần.");
 
-            if (attendance.CheckOut != null)
+            if (attendance.Status == AttendanceStatus.Holiday)
+                return ServiceResult.Failure("Hôm nay là ngày nghỉ lễ.");
+
+            if (attendance.Status == AttendanceStatus.ApprovedLeave)
+                return ServiceResult.Failure("Ngày này bạn nghỉ có phép.");
+
+            if (!attendance.CheckIn.HasValue)
+                return ServiceResult.Failure("Bạn chưa Check-in.");
+
+            if (attendance.CheckOut.HasValue)
                 return ServiceResult.Failure("Bạn đã Check-out rồi.");
 
-            // ===== LƯU ẢNH CHECKOUT =====
+            if (dto.CheckOutTime <= attendance.CheckIn.Value)
+                return ServiceResult.Failure("Check-out phải sau Check-in.");
+
+            // ===== LƯU ẢNH =====
             string? imagePath = null;
 
             if (dto.CheckOutImage != null && dto.CheckOutImage.Length > 0)
@@ -257,40 +266,36 @@ namespace HumanResourcesManager.BLL.Services
                 imagePath = $"/img/employees/{employee.EmployeeId}/attendance/{fileName}";
             }
 
-            // ===== TÍNH THỜI GIAN LÀM VIỆC =====
-            // ===== VALIDATE =====
+            // ===== TÍNH GIỜ LÀM =====
             if (!attendance.CheckIn.HasValue)
-                return ServiceResult.Failure("Chưa check-in.");
+                return ServiceResult.Failure("Bạn chưa Check-in.");
 
             if (!dto.CheckOutTime.HasValue)
                 return ServiceResult.Failure("Chưa nhập check-out time.");
 
-            // ===== TÍNH THỜI GIAN LÀM VIỆC =====
+            var checkInTime = attendance.CheckIn.Value;
+            var checkOutTime = dto.CheckOutTime.Value;
+
+            if (checkOutTime <= checkInTime)
+                return ServiceResult.Failure("Check-out phải sau Check-in.");
+
             var totalMinutes =
-                (int)(dto.CheckOutTime.Value - attendance.CheckIn.Value).TotalMinutes;
+                (int)(checkOutTime - checkInTime).TotalMinutes;
 
-            if (totalMinutes < 0)
-                return ServiceResult.Failure("Check-out phải sau check-in.");
-
-            // Trừ thời gian nghỉ
             var actualWorkMinutes = totalMinutes - Constants.BREAK_MINUTES;
-
             if (actualWorkMinutes < 0)
                 actualWorkMinutes = 0;
 
-            // Tính thiếu giờ
-            var missingMinutes = Constants.STANDARD_WORK_MINUTES - actualWorkMinutes;
+            var missingMinutes =
+                Constants.STANDARD_WORK_MINUTES - actualWorkMinutes;
 
             if (missingMinutes < 0)
                 missingMinutes = 0;
 
-            // ===== SET STATUS =====
-            AttendanceStatus status;
-
-            if (missingMinutes > 0)
-                status = AttendanceStatus.InsufficientWork;
-            else
-                status = AttendanceStatus.CompletedWork;
+            AttendanceStatus status =
+                missingMinutes > 0
+                    ? AttendanceStatus.InsufficientWork
+                    : AttendanceStatus.CompletedWork;
 
             // ===== UPDATE =====
             attendance.CheckOut = dto.CheckOutTime;
@@ -312,19 +317,76 @@ namespace HumanResourcesManager.BLL.Services
             );
         }
 
-        public void FinalizeDailyAttendance()
+        public void GenerateDailyAttendance(DateTime today)
         {
-            var now = DateTime.Now;
+            // Nếu đã tạo rồi thì không tạo lại
+            var existing = _attendanceRepository.GetByDate(today);
+
+            if (existing.Any())
+                return;
+
+            bool isWeekend =
+                today.DayOfWeek == DayOfWeek.Saturday ||
+                today.DayOfWeek == DayOfWeek.Sunday;
+
+            bool isFixedHoliday = Constants.FixedHolidays
+                .Any(h => h.Day == today.Day && h.Month == today.Month);
+
+            var tetDays = LunarHelper.GetTetHolidayDates(today.Year);
+
+            bool isTetHoliday = tetDays
+                .Any(d => d.Date == today.Date);
+
+            bool isHoliday = isFixedHoliday || isTetHoliday;
+
+            var employees = _employeeRepository
+                .GetAll()
+                .Where(e => e.Status == Constants.Active)
+                .ToList();
+
+            foreach (var emp in employees)
+            {
+                AttendanceStatus status;
+
+                if (isHoliday)
+                    status = AttendanceStatus.Holiday;
+                else if (isWeekend)
+                    status = AttendanceStatus.Weekend;
+                else
+                    status = AttendanceStatus.Pending;
+
+                _attendanceRepository.Add(new Attendance
+                {
+                    EmployeeId = emp.EmployeeId,
+                    WorkDate = today,
+                    Status = status,
+                    MissingMinutes = 0
+                });
+            }
+
+            _attendanceRepository.Save();
+        }
+
+        public void FinalizeDailyAttendance(DateTime now)
+        {
             var cutoff = now.Date + Constants.CheckOutTo;
 
             if (now < cutoff)
                 return;
 
-            var attendances = _attendanceRepository
-                .GetPendingByDate(now);
+            var workDate = now.Date;
+
+            // 1️⃣ Lấy tất cả nhân viên
+            var employees = _employeeRepository.GetAll().Where(e => e.Status == Constants.Active);
+
+            // 2️⃣ Lấy tất cả attendance trong ngày
+            var attendances = _attendanceRepository.GetByDate(workDate);
 
             foreach (var attendance in attendances)
             {
+                if (attendance.Status != AttendanceStatus.Pending)
+                    continue;
+
                 if (attendance.CheckIn == null)
                 {
                     attendance.Status = AttendanceStatus.Absent;
@@ -337,9 +399,10 @@ namespace HumanResourcesManager.BLL.Services
                 {
                     var duration = attendance.CheckOut.Value - attendance.CheckIn.Value;
 
-                    attendance.Status = duration.TotalHours >= 8
-                        ? AttendanceStatus.CompletedWork
-                        : AttendanceStatus.InsufficientWork;
+                    attendance.Status =
+                        duration.TotalHours >= 8
+                            ? AttendanceStatus.CompletedWork
+                            : AttendanceStatus.InsufficientWork;
                 }
 
                 _attendanceRepository.Update(attendance);
