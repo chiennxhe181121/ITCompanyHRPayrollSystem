@@ -101,6 +101,8 @@ namespace HumanResourcesManager
             builder.Services.AddScoped<IAllowanceService, AllowanceService>(); // 14/02/2026
             builder.Services.AddScoped<ILeaveRequestService, LeaveRequestService>();
             builder.Services.AddScoped<IAnnualLeaveBalanceService, AnnualLeaveBalanceService>();
+            builder.Services.AddScoped<IContractService, ContractService>();
+            builder.Services.AddScoped<IContractRepository, ContractRepository>();
 
             builder.Services.AddHostedService<DailyAttendanceGenerateJob>(); // cronjob tao record attendance moi ngay cho nhan vien
             builder.Services.AddHostedService<AttendanceFinalizeJob>(); // cronjob cho ket luan attendance 20:10 moi ngay

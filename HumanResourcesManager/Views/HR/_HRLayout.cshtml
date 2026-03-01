@@ -1,6 +1,4 @@
-@{
-    Layout = null;
-}
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -14,15 +12,19 @@
     @await Html.PartialAsync("~/Views/Manager/_Loading.cshtml")
 
     <div class="flex h-screen overflow-hidden">
-        @await Html.PartialAsync("_HRSidebar")
+        @await Html.PartialAsync("~/Views/HR/_HRSidebar.cshtml")
 
         <main class="flex-1 overflow-y-auto bg-slate-50/50">
             @RenderBody()
         </main>
     </div>
 
+   
     <div id="modalContainer"></div>
     <script src="~/js/loading.js"></script>
     <script src="~/js/hr.js"></script>
+
+   @RenderSection("Scripts", required: false)
+
 </body>
 </html>
