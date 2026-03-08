@@ -1,0 +1,243 @@
+﻿@using HumanResourcesManager.BLL.DTOs
+@model List<ContractDTO>
+
+@{
+    ViewData["Title"] = "Quản lý Hợp Đồng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml"; // Dùng layout Admin
+
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int pageSize = 10;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    bool isActive = ViewBag.IsActive ?? true;
+    int stt = (currentPage - 1) * pageSize;
+
+    // Check xem có đang ở chế độ xem riêng 1 nhân viên không
+    bool isViewingSpecificEmployee = ViewBag.EmployeeId != null;
+}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+<div id="notification-area" class="fixed top-5 right-5 z-50 pointer-events-none">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-toast pointer-events-auto bg-emerald-100 border-l-4 border-emerald-500 text-emerald-700 px-4 py-3 rounded shadow-lg flex items-center gap-2 animate__animated animate__fadeInRight">
+            <i class="fa-solid fa-check-circle"></i> @TempData["Success"]
+        </div>
+    }
+</div>
+
+<div class="px-8 py-6 bg-white border-b border-slate-100 shadow-sm flex justify-between items-center">
+    <div class="animate__animated animate__fadeInLeft">
+        <h2 class="text-2xl font-extrabold text-slate-800 flex items-center gap-3">
+            <span class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
+                <i class="fa-solid fa-file-contract"></i>
+            </span>
+            Quản Lý Hợp Đồng
+        </h2>
+        <p class="text-sm text-slate-500 mt-1 ml-14">
+            Tổng số: <strong class="text-blue-600">@ViewBag.TotalRecords</strong> hợp đồng.
+        </p>
+    </div>
+
+    <a href="/HumanResourcesManager/admin/contracts/create@(isViewingSpecificEmployee ? $"?employeeId={ViewBag.EmployeeId}" : "")"
+       class="animate__animated animate__fadeInRight inline-flex items-center gap-2 bg-slate-900 hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md hover:-translate-y-0.5">
+        <i class="fa-solid fa-plus"></i> Tạo Hợp Đồng
+    </a>
+</div>
+
+<div class="p-8 bg-slate-50 min-h-screen">
+
+    @if (isViewingSpecificEmployee)
+    {
+        <div class="mb-6 bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-xl flex items-center justify-between shadow-sm animate__animated animate__fadeInDown">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center text-blue-700"><i class="fa-solid fa-user"></i></div>
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-wider text-blue-500">Đang lọc theo nhân viên</p>
+                    <p class="font-bold">@(ViewBag.EmployeeName ?? "Nhân viên ID: " + ViewBag.EmployeeId)</p>
+                </div>
+            </div>
+            <a href="/HumanResourcesManager/admin/contracts" class="text-xs font-bold bg-white px-3 py-1.5 rounded-lg border border-blue-200 hover:bg-blue-600 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark mr-1"></i> Xóa bộ lọc
+            </a>
+        </div>
+    }
+
+    <div class="flex gap-2 mb-6 bg-white p-1.5 rounded-xl border border-slate-200 inline-flex shadow-sm">
+        <a href="?isActive=true&search=@ViewBag.Search&contractType=@ViewBag.ContractType@(isViewingSpecificEmployee ? $"&employeeId={ViewBag.EmployeeId}" : "")"
+           class="px-4 py-1.5 rounded-lg text-sm font-bold transition-all @(isActive ? "bg-blue-100 text-blue-700" : "text-slate-500 hover:bg-slate-50")">
+            <i class="fa-solid fa-check-circle mr-1"></i> Còn hiệu lực
+        </a>
+        <a href="?isActive=false&search=@ViewBag.Search&contractType=@ViewBag.ContractType@(isViewingSpecificEmployee ? $"&employeeId={ViewBag.EmployeeId}" : "")"
+           class="px-4 py-1.5 rounded-lg text-sm font-bold transition-all @(!isActive ? "bg-slate-800 text-white" : "text-slate-500 hover:bg-slate-50")">
+            <i class="fa-solid fa-box-archive mr-1"></i> Hết hiệu lực / Đã khóa
+        </a>
+    </div>
+
+    <form method="get" class="mb-6 flex flex-wrap gap-3 items-center bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <input type="hidden" name="isActive" value="@isActive.ToString().ToLower()" />
+        @if (isViewingSpecificEmployee)
+        {
+            <input type="hidden" name="employeeId" value="@ViewBag.EmployeeId" />
+        }
+
+        <div class="relative w-full sm:w-64 group">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500"></i>
+            <input type="text" name="search" value="@ViewBag.Search" placeholder="Tìm theo tên nhân viên..."
+                   class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all" />
+        </div>
+
+        <select name="contractType" class="px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer">
+            <option value="">-- Tất cả loại hợp đồng --</option>
+            <option value="Thử việc" selected="@(ViewBag.ContractType == "Thử việc")">Thử việc</option>
+            <option value="Chính thức" selected="@(ViewBag.ContractType == "Chính thức")">Chính thức</option>
+            <option value="Thời vụ" selected="@(ViewBag.ContractType == "Thời vụ")">Thời vụ</option>
+        </select>
+
+        <button type="submit" class="bg-blue-50 hover:bg-blue-100 text-blue-700 px-5 py-2.5 rounded-xl text-sm font-bold transition-colors">
+            <i class="fa-solid fa-filter mr-1"></i> Lọc
+        </button>
+    </form>
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate__animated animate__fadeIn">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+                <thead class="bg-slate-50 text-slate-600 uppercase text-xs font-bold border-b border-slate-200">
+                    <tr>
+                        <th class="px-6 py-4 text-center w-16">STT</th>
+                        <th class="px-6 py-4">Nhân viên</th>
+                        <th class="px-6 py-4">Loại hợp đồng</th>
+                        <th class="px-6 py-4">Thời hạn</th>
+                        <th class="px-6 py-4">Lương cơ bản</th>
+                        <th class="px-6 py-4 text-right">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var c in Model)
+                        {
+                            <tr class="hover:bg-blue-50/30 transition-colors group">
+                                <td class="px-6 py-4 text-center text-slate-400 font-medium">@(++stt)</td>
+                                <td class="px-6 py-4 font-bold text-slate-700">@c.EmployeeName</td>
+                                <td class="px-6 py-4">
+                                    <span class="px-2.5 py-1 rounded border border-slate-200 text-xs font-bold bg-slate-50 text-slate-600">
+                                        @c.ContractType
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-xs font-medium">
+                                    <span class="text-emerald-600">@c.StartDate.ToString("dd/MM/yyyy")</span>
+                                    <i class="fa-solid fa-arrow-right-long text-slate-300 mx-1"></i>
+                                    <span class="text-red-500">@(c.EndDate?.ToString("dd/MM/yyyy") ?? "Vô thời hạn")</span>
+                                </td>
+                                <td class="px-6 py-4 font-mono font-bold text-blue-600">
+                                    @c.BasicSalary.ToString("N0") <span class="text-[10px] text-slate-400">VNĐ</span>
+                                </td>
+
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex items-center justify-end gap-2 opacity-80 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+
+                                        <a href="/HumanResourcesManager/admin/contracts/edit/@c.ContractId"
+                                           class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm" title="Chi tiết / Sửa">
+                                            <i class="fa-solid fa-pen text-xs"></i>
+                                        </a>
+
+                                        <form asp-action="ToggleStatus" asp-route-id="@c.ContractId" method="post" class="contents" onsubmit="return confirmToggle(event, this, @(c.IsActive ? "true" : "false"))">
+
+                                            <input type="hidden" name="page" value="@currentPage" />
+                                            <input type="hidden" name="search" value="@ViewBag.Search" />
+                                            <input type="hidden" name="contractType" value="@ViewBag.ContractType" />
+                                            <input type="hidden" name="isActive" value="@isActive.ToString().ToLower()" />
+                                            @if (isViewingSpecificEmployee)
+                                            {
+                                                <input type="hidden" name="employeeId" value="@ViewBag.EmployeeId" />
+                                            }
+
+                                            @if (c.IsActive)
+                                            {
+                                                <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm" title="Khóa / Kết thúc">
+                                                    <i class="fa-solid fa-lock text-xs"></i>
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all shadow-sm" title="Kích hoạt lại">
+                                                    <i class="fa-solid fa-lock-open text-xs"></i>
+                                                </button>
+                                            }
+                                        </form>
+
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-16">
+                                <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-300"><i class="fa-solid fa-file-contract text-2xl"></i></div>
+                                <p class="text-slate-500 font-medium">Chưa có dữ liệu hợp đồng nào.</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @if (totalPages > 1)
+    {
+        <div class="flex justify-center mt-8 pb-8">
+            <nav class="inline-flex rounded-xl shadow-sm bg-white p-1.5 gap-1 border border-slate-200">
+                @for (int i = 1; i <= totalPages; i++)
+                {
+                    <a href="?page=@i&isActive=@isActive.ToString().ToLower()&search=@ViewBag.Search&contractType=@ViewBag.ContractType@(isViewingSpecificEmployee ? $"&employeeId={ViewBag.EmployeeId}" : "")"
+                       class="w-9 h-9 flex items-center justify-center rounded-lg text-sm font-bold transition-all @(i == currentPage ? "bg-blue-600 text-white shadow-md scale-105" : "text-slate-600 hover:bg-slate-100")">
+                        @i
+                    </a>
+                }
+            </nav>
+        </div>
+    }
+</div>
+
+<script>
+    // Ẩn Toast Message tự động
+    document.addEventListener("DOMContentLoaded", function () {
+        const alerts = document.querySelectorAll(".alert-toast");
+        if (alerts.length > 0) {
+            setTimeout(() => {
+                alerts.forEach(el => {
+                    el.classList.remove("animate__fadeInRight");
+                    el.classList.add("animate__fadeOutRight");
+                    setTimeout(() => el.remove(), 1000);
+                });
+            }, 3000);
+        }
+    });
+
+    // SweetAlert2 confirm
+    function confirmToggle(e, form, isActive) {
+        e.preventDefault();
+        const title = isActive ? "Kết thúc hợp đồng?" : "Mở khóa hợp đồng?";
+        const text = isActive ? "Hợp đồng này sẽ chuyển sang trạng thái hết hiệu lực." : "Hợp đồng này sẽ được tính là đang có hiệu lực.";
+        const color = isActive ? "#ef4444" : "#10b981";
+        const btnText = isActive ? "Xác nhận kết thúc" : "Mở khóa";
+
+        Swal.fire({
+            title: title,
+            text: text,
+            icon: isActive ? 'warning' : 'question',
+            showCancelButton: true,
+            confirmButtonColor: color,
+            cancelButtonColor: '#64748b',
+            confirmButtonText: btnText,
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) form.submit();
+        });
+        return false;
+    }
+</script>
