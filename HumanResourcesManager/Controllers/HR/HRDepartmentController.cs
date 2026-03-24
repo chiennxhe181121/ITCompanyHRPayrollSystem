@@ -3,27 +3,23 @@ using HumanResourcesManager.BLL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-// HoangDH
-namespace HumanResourcesManager.Controllers.Admin
+namespace HumanResourcesManager.Controllers.HR
 {
-
-    [Authorize(Roles = "ADMIN")]
-    [Route("HumanResourcesManager/admin/departments")]
-    public class DepartmentController : Controller
+    [Authorize(Roles = "HR")]
+    [Route("HumanResourcesManager/hr/departments")]
+    public class HRDepartmentController : Controller
     {
-
         private readonly IDepartmentService _service;
 
-        public DepartmentController(IDepartmentService service)
+        public HRDepartmentController(IDepartmentService service)
         {
             _service = service;
         }
 
-
         [HttpGet("")]
         public IActionResult Index(
             string? keyword,
-            int? status,     
+            int? status,
              int page = 1)
         {
             if (page < 1) page = 1;
@@ -37,32 +33,29 @@ namespace HumanResourcesManager.Controllers.Admin
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = (int)Math.Ceiling(result.TotalItems / (double)pageSize);
 
-            return View("~/Views/Admin/Department/Index.cshtml", result.Items);
+            return View("~/Views/HR/Department/Index.cshtml", result.Items);
         }
-
 
         [HttpGet("create")]
         public IActionResult Create()
         {
-            return View("~/Views/Admin/Department/Create.cshtml",
+            return View("~/Views/HR/Department/Create.cshtml",
                 new DepartmentCreateUpdateDTO());
         }
-
-
 
         [HttpPost("create")]
         [ValidateAntiForgeryToken]
         public IActionResult Create(DepartmentCreateUpdateDTO dto)
         {
             if (!ModelState.IsValid)
-                return View("~/Views/Admin/Department/Create.cshtml", dto);
+                return View("~/Views/HR/Department/Create.cshtml", dto);
 
             var success = _service.Create(dto);
 
             if (!success)
             {
                 ModelState.AddModelError("DepartmentName", "Tên phòng ban đã tồn tại.");
-                return View("~/Views/Admin/Department/Create.cshtml", dto);
+                return View("~/Views/HR/Department/Create.cshtml", dto);
             }
 
             int totalItems = _service.Count();
@@ -73,7 +66,6 @@ namespace HumanResourcesManager.Controllers.Admin
             return RedirectToAction(nameof(Index), new { page = lastPage });
         }
 
-
         [HttpGet("edit/{id}")]
         public IActionResult Edit(int id)
         {
@@ -81,9 +73,8 @@ namespace HumanResourcesManager.Controllers.Admin
             if (dto == null)
                 return NotFound();
 
-            return View("~/Views/Admin/Department/Edit.cshtml", dto);
+            return View("~/Views/HR/Department/Edit.cshtml", dto);
         }
-
 
         [HttpPost("edit/{id}")]
         [ValidateAntiForgeryToken]
@@ -97,15 +88,14 @@ namespace HumanResourcesManager.Controllers.Admin
             if (!ModelState.IsValid)
             {
                 dto.DepartmentId = id;
-                return View("~/Views/Admin/Department/Edit.cshtml", dto);
+                return View("~/Views/HR/Department/Edit.cshtml", dto);
             }
 
             if (!_service.Update(dto))
             {
                 ModelState.AddModelError("DepartmentName", "Tên phòng ban đã tồn tại.");
-                return View("~/Views/Admin/Department/Edit.cshtml", dto);
+                return View("~/Views/HR/Department/Edit.cshtml", dto);
             }
-
 
             dto.DepartmentId = id;
             _service.Update(dto);
@@ -119,7 +109,6 @@ namespace HumanResourcesManager.Controllers.Admin
                 status
             });
         }
-
 
         [HttpPost("inactive/{id}")]
         [ValidateAntiForgeryToken]
@@ -148,7 +137,6 @@ namespace HumanResourcesManager.Controllers.Admin
             });
         }
 
-
         [HttpPost("active/{id}")]
         [ValidateAntiForgeryToken]
         public IActionResult Active(
@@ -169,7 +157,6 @@ namespace HumanResourcesManager.Controllers.Admin
             });
         }
 
-
         [HttpGet("list")]
         public IActionResult GetDepartments(
         string? keyword,
@@ -182,6 +169,5 @@ namespace HumanResourcesManager.Controllers.Admin
 
             return Json(result.Items);
         }
-
     }
 }

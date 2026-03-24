@@ -1,4 +1,4 @@
-﻿@using HumanResourcesManager.BLL.DTOs
+@using HumanResourcesManager.BLL.DTOs
 @using HumanResourcesManager.Helpers
 @inject IHttpContextAccessor HttpContextAccessor
 
@@ -7,12 +7,11 @@
     var user = HttpContextAccessor.HttpContext?.Session.GetObject<UserSessionDTO>("USER_SESSION");
 
     var fullName = user?.FullName ?? "Guest";
-    var roleCode = user?.RoleCode ?? "N/A";
+    var roleCode = user?.RoleCode ?? "HR";
 
     // 2. Xử lý Avatar an toàn
     var imgAvatar = user?.ImgAvatar;
 
-    // Nếu có ảnh nhưng đường dẫn ko bắt đầu bằng '/' (đường dẫn tương đối), thêm vào cho chắc
     if (!string.IsNullOrEmpty(imgAvatar) && !imgAvatar.StartsWith("/"))
     {
         imgAvatar = "/" + imgAvatar;
@@ -38,7 +37,7 @@
             <div class="h-16 flex items-center px-6 border-b border-slate-100">
                 <div class="flex items-center gap-2 text-indigo-700 font-extrabold text-xl tracking-tight">
                     <i class="fa-solid fa-layer-group text-2xl"></i>
-                    <span>HRM System</span>
+                    <span>HR Workspace</span>
                 </div>
             </div>
 
@@ -77,44 +76,55 @@
             <nav class="px-4 space-y-6 overflow-y-auto custom-scrollbar" style="max-height: calc(100vh - 220px);">
 
                 <div>
-                    <p class="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Tổng quan</p>
+                    <p class="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Quản lý nhân sự</p>
                     <div class="space-y-1">
-                        <a href="/HumanResourcesManager/admin" class="nav-item @(IsActive("/humanresourcesmanager/admin", true))">
-                            <span class="nav-icon"><i class="fa-solid fa-chart-pie"></i></span>
-                            <span class="font-medium">Dashboard</span>
+
+                        @* xóa hết data-tab="employees" không dùng js *@
+                        <a href="/HumanResourcesManager/hr/employees"
+                           onclick="window.location.href=this.href; return false;"
+                        class="nav-item @(IsActive("/hr/employees"))">
+                            <span class="nav-icon"><i class="fa-solid fa-user-group"></i></span>
+                            <span class="font-medium">Nhân viên</span>
+                        </a>
+
+                        <a href="/HumanResourcesManager/hr/departments"
+                           onclick="window.location.href=this.href; return false;"
+                        class="nav-item @(IsActive("/hr/departments"))">
+                            <span class="nav-icon"><i class="fa-solid fa-building-user"></i></span>
+                            <span class="font-medium">Phòng ban</span>
+                        </a>
+
+                        <a href="/Contracts/Index"
+                           onclick="window.location.href=this.href; return false;"
+                        class="nav-item @(IsActive("/contracts"))">
+                            <span class="nav-icon"><i class="fa-solid fa-file-contract"></i></span>
+                            <span class="font-medium">Hợp đồng</span>
+                        </a>
+
+                        <a href="#" data-tab="leaves"
+                           onclick="window.location.href=this.href; return false;"
+                        class="nav-item @(IsActive("leaves"))">
+                            <span class="nav-icon"><i class="fa-solid fa-calendar-check"></i></span>
+                            <span class="font-medium">Duyệt nghỉ phép</span>
                         </a>
                     </div>
                 </div>
 
                 <div>
-                    <p class="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Quản lý hệ thống</p>
+                    <p class="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Tiền lương & Báo cáo</p>
                     <div class="space-y-1">
-                        <a href="/HumanResourcesManager/admin/useraccounts" class="nav-item @(IsActive("/admin/useraccounts"))">
-                            <span class="nav-icon"><i class="fa-solid fa-users-gear"></i></span>
-                            <span class="font-medium">Tài khoản</span>
-                        </a>
-                        <a href="/HumanResourcesManager/admin/employees" class="nav-item @(IsActive("/admin/employees"))">
-                            <span class="nav-icon"><i class="fa-solid fa-id-card-clip"></i></span>
-                            <span class="font-medium">Nhân viên</span>
+                        <a href="#"
+                           onclick="window.location.href=this.href; return false;"
+                        class="nav-item @(IsActive("payrolls"))">
+                            <span class="nav-icon"><i class="fa-solid fa-money-check-dollar"></i></span>
+                            <span class="font-medium">Bảng lương</span>
                         </a>
 
-                        <a href="/HumanResourcesManager/admin/contracts" class="nav-item @(IsActive("/admin/contracts"))">
-                            <span class="nav-icon"><i class="fa-solid fa-file-contract"></i></span>
-                            <span class="font-medium">Hợp đồng</span>
-                        </a>
-
-                        <a href="/HumanResourcesManager/admin/departments" class="nav-item @(IsActive("/admin/departments"))">
-                            <span class="nav-icon"><i class="fa-solid fa-building-user"></i></span>
-                            <span class="font-medium">Phòng ban</span>
-                        </a>
-                        <a href="/HumanResourcesManager/admin/positions" class="nav-item @(IsActive("/admin/positions"))">
-                            <span class="nav-icon"><i class="fa-solid fa-briefcase"></i></span>
-                            <span class="font-medium">Chức vụ</span>
-                        </a>
-                        <a href="/HumanResourcesManager/admin/allowances"
-                           class="nav-item @(IsActive("/admin/allowances"))">
-                            <span class="nav-icon"><i class="fa-solid fa-coins"></i></span>
-                            <span class="font-medium">Phụ cấp</span>
+                        <a href="#"
+                           onclick="window.location.href=this.href; return false;"
+                        class="nav-item @(IsActive("reports"))">
+                            <span class="nav-icon"><i class="fa-solid fa-chart-line"></i></span>
+                            <span class="font-medium">Báo cáo lương</span>
                         </a>
                     </div>
                 </div>
@@ -122,9 +132,11 @@
                 <div>
                     <p class="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Cá nhân</p>
                     <div class="space-y-1">
-                        <a href="/HumanResourcesManager/admin/myprofile" class="nav-item @(IsActive("/admin/myprofile"))">
-                            <span class="nav-icon"><i class="fa-solid fa-user-pen"></i></span>
-                            <span class="font-medium">Hồ sơ của tôi</span>
+                        <a href="/HumanResourcesManager/hr/myprofile"
+                           onclick="window.location.href=this.href; return false;"
+                        class="nav-item @(IsActive("/hr/myprofile"))">
+                            <span class="nav-icon"><i class="fa-solid fa-id-badge"></i></span>
+                            <span class="font-medium">Hồ sơ cá nhân</span>
                         </a>
                     </div>
                 </div>
@@ -133,7 +145,7 @@
         </div>
 
         <div class="p-4 border-t border-slate-100 bg-slate-50/50">
-            <a href="/HumanResourcesManager/Logout"
+            <a id="logoutBtn" href="@Url.Action("Logout", "Auth")"
                class="group flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all duration-200 shadow-sm">
                 <i class="fa-solid fa-arrow-right-from-bracket transition-transform group-hover:-translate-x-1"></i>
                 <span>Đăng xuất</span>
