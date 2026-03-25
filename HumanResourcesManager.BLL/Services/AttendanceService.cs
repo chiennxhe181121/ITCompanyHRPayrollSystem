@@ -267,31 +267,49 @@ namespace HumanResourcesManager.BLL.Services
             }
 
             // ===== TÍNH GIỜ LÀM =====
-            if (!attendance.CheckIn.HasValue)
+            var workStart = Constants.WorkStart; // 08:00
+            var workEnd = Constants.WorkEnd;     // 17:00
+
+            if (attendance.CheckIn is not TimeSpan checkIn)
                 return ServiceResult.Failure("Bạn chưa Check-in.");
 
-            if (!dto.CheckOutTime.HasValue)
+            if (dto.CheckOutTime is not TimeSpan checkOut)
                 return ServiceResult.Failure("Chưa nhập check-out time.");
 
-            var checkInTime = attendance.CheckIn.Value;
-            var checkOutTime = dto.CheckOutTime.Value;
+            // 🔥 Clamp check-in
+            var effectiveCheckIn =
+                checkIn < workStart
+                    ? workStart
+                    : checkIn;
 
-            if (checkOutTime <= checkInTime)
-                return ServiceResult.Failure("Check-out phải sau Check-in.");
+            // 🔥 Clamp check-out
+            var effectiveCheckOut =
+                checkOut > workEnd
+                    ? workEnd
+                    : checkOut;
 
+            // 🔥 Validate
+            if (effectiveCheckOut <= effectiveCheckIn)
+                return ServiceResult.Failure("Thời gian làm việc không hợp lệ.");
+
+            // 🔥 Tính phút
             var totalMinutes =
-                (int)(checkOutTime - checkInTime).TotalMinutes;
+                (int)(effectiveCheckOut - effectiveCheckIn).TotalMinutes;
 
+            // 🔥 Trừ nghỉ trưa
             var actualWorkMinutes = totalMinutes - Constants.BREAK_MINUTES;
+
             if (actualWorkMinutes < 0)
                 actualWorkMinutes = 0;
 
+            // 🔥 Missing
             var missingMinutes =
                 Constants.STANDARD_WORK_MINUTES - actualWorkMinutes;
 
             if (missingMinutes < 0)
                 missingMinutes = 0;
 
+            // 🔥 Status
             AttendanceStatus status =
                 missingMinutes > 0
                     ? AttendanceStatus.InsufficientWork
