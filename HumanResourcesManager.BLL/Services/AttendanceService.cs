@@ -13,13 +13,16 @@ namespace HumanResourcesManager.BLL.Services
     {
         private readonly IAttendanceRepository _attendanceRepository;
         private readonly IEmployeeRepository _employeeRepository;
+        private readonly ILeaveRequestRepository _leaveRequestRepo;
 
         public AttendanceService(
             IAttendanceRepository attendanceRepository,
-            IEmployeeRepository employeeRepository)
+            IEmployeeRepository employeeRepository,
+            ILeaveRequestRepository leaveRequestRepo)
         {
             _attendanceRepository = attendanceRepository;
             _employeeRepository = employeeRepository;
+            _leaveRequestRepo = leaveRequestRepo;
         }
 
         public EmployeeAttendanceViewDTO GetEmployeeAttendance(
@@ -364,14 +367,33 @@ namespace HumanResourcesManager.BLL.Services
 
             foreach (var emp in employees)
             {
+                var approvedLeave = _leaveRequestRepo
+                    .GetAll()
+                    .FirstOrDefault(l =>
+                        l.EmployeeId == emp.EmployeeId &&
+                        l.Status == RequestStatus.Approved &&
+                        today.Date >= l.FromDate.Date &&
+                        today.Date <= l.ToDate.Date
+                    );
+
                 AttendanceStatus status;
 
-                if (isHoliday)
+                if (approvedLeave != null)
+                {
+                    status = AttendanceStatus.ApprovedLeave;
+                }
+                else if (isHoliday)
+                {
                     status = AttendanceStatus.Holiday;
+                }
                 else if (isWeekend)
+                {
                     status = AttendanceStatus.Weekend;
+                }
                 else
+                {
                     status = AttendanceStatus.Pending;
+                }
 
                 _attendanceRepository.Add(new Attendance
                 {
