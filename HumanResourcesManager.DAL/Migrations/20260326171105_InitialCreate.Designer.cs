@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HumanResourcesManager.DAL.Migrations
 {
     [DbContext(typeof(HumanManagerContext))]
-    [Migration("20260326162958_InitialCreate")]
+    [Migration("20260326171105_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -487,6 +487,9 @@ namespace HumanResourcesManager.DAL.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("PayrollId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
                         .HasColumnType("int");
 
                     b.HasKey("PayrollDetailId");
