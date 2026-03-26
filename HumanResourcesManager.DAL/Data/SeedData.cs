@@ -346,11 +346,11 @@ namespace HumanResourcesManager.DAL.Data
             LeaveName = "Annual Leave",
             IsPaid = true
         },
-        new LeaveType
-        {
-            LeaveName = "Unpaid Leave",
-            IsPaid = false
-        },
+        //new LeaveType
+        //{
+        //    LeaveName = "Unpaid Leave",
+        //    IsPaid = false
+        //},
         new LeaveType
         {
             LeaveName = "Maternity Leave",

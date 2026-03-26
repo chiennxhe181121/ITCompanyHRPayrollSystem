@@ -1,4 +1,5 @@
 ﻿using HumanResourcesManager.BLL.DTOs.Common;
+using HumanResourcesManager.BLL.DTOs.Employee;
 using HumanResourcesManager.DAL.Enum;
 using HumanResourcesManager.DAL.Interfaces;
 using HumanResourcesManager.DAL.Models;
@@ -26,6 +27,105 @@ public class LeaveRequestService : ILeaveRequestService
         _annualLeaveBalanceRepositry = annualLeaveBalanceRepositry;
         _leaveTypeRepository = leaveTypeRepository;
         _employeeRepository = employeeRepository;
+    }
+
+    public EmployeeLeaveViewDTO GetEmployeeLeaves(
+    int currentUserId,
+    int page,
+    int pageSize,
+    int? year,
+    RequestStatus? status)
+    {
+        var employee = _employeeRepository.GetByUserId(currentUserId);
+
+        if (employee == null)
+            throw new Exception("Employee not found.");
+
+        var employeeId = employee.EmployeeId;
+
+        if (pageSize <= 0) pageSize = 10;
+        if (page < 1) page = 1;
+
+        // 🔥 1. Query gốc
+        var query = _leaveRequestRepo
+            .GetQueryableByEmployeeId(employeeId);
+
+        // 🔥 2. Filter year
+        if (year.HasValue)
+            query = query.Where(x => x.FromDate.Year == year.Value);
+
+        // 🔥 3. Filter status
+        if (status.HasValue)
+            query = query.Where(x => x.Status == status.Value);
+
+        // 🔥 4. Sort
+        query = query.OrderByDescending(x => x.CreatedDate);
+
+        // 🔥 5. Count
+        var totalRecords = query.Count();
+
+        var totalPages = totalRecords == 0
+            ? 1
+            : (int)Math.Ceiling((double)totalRecords / pageSize);
+
+        if (page > totalPages)
+            page = totalPages;
+
+        // 🔥 6. Paging
+        var leaves = query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        // 🔥 7. Map DTO
+        var records = leaves.Select(x => new LeaveRowDTO
+        {
+            LeaveRequestId = x.LeaveRequestId,
+            LeaveTypeName = x.LeaveType.LeaveName,
+            FromDate = x.FromDate,
+            ToDate = x.ToDate,
+            Reason = x.Reason,
+            Status = x.Status,
+            TotalDays = CalculateLeaveDays(x.FromDate, x.ToDate)
+        }).ToList();
+
+        return new EmployeeLeaveViewDTO
+        {
+            Records = records,
+            CurrentPage = page,
+            TotalPages = totalPages,
+            PageSize = pageSize,
+            TotalRecords = totalRecords,
+            SelectedYear = year,
+            SelectedStatus = status
+        };
+    }
+
+    public void CancelLeave(int leaveId, int userId)
+    {
+        var leave = _leaveRequestRepo.GetById(leaveId);
+
+        if (leave == null)
+            throw new Exception("Leave not found");
+
+        // 🔥 lấy employee từ userId
+        var employee = _employeeRepository.GetByUserId(userId);
+
+        if (employee == null)
+            throw new Exception("Employee not found");
+
+        // 🔥 check quyền bằng EmployeeId
+        if (leave.EmployeeId != employee.EmployeeId)
+            throw new Exception("Unauthorized");
+
+        // 🔥 chỉ huỷ được khi Pending
+        if (leave.Status != RequestStatus.Pending)
+            throw new Exception("Only pending request can be cancelled");
+
+        leave.Status = RequestStatus.Cancelled;
+
+        _leaveRequestRepo.Update(leave);
+        _leaveRequestRepo.Save(); // ❗ nhớ cái này
     }
 
     public List<LeaveRequestDTO> GetAll()
@@ -83,6 +183,10 @@ public class LeaveRequestService : ILeaveRequestService
 
         for (var date = fromDate.Date; date <= toDate.Date; date = date.AddDays(1))
         {
+            bool isWeekend =
+                date.DayOfWeek == DayOfWeek.Saturday ||
+                date.DayOfWeek == DayOfWeek.Sunday;
+
             bool isFixedHoliday = Constants.FixedHolidays
                 .Any(h => h.Day == date.Day && h.Month == date.Month);
 
@@ -90,7 +194,7 @@ public class LeaveRequestService : ILeaveRequestService
                 .GetTetHolidayDates(date.Year)
                 .Contains(date);
 
-            if (!isFixedHoliday && !isTetHoliday)
+            if (!isWeekend && !isFixedHoliday && !isTetHoliday)
             {
                 totalDays += 1;
             }
@@ -172,11 +276,6 @@ public class LeaveRequestService : ILeaveRequestService
 
     public ServiceResult CreateLeaveRequest(int employeeId, CreateLeaveRequestDTO dto)
     {
-        if (dto.FromDate.Date > dto.ToDate.Date)
-        {
-            return ServiceResult.Failure("Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc.");
-        }
-
         var vietnamNow = GetVietnamNow();
         var deadline = dto.FromDate.Date;
 
@@ -190,6 +289,20 @@ public class LeaveRequestService : ILeaveRequestService
             return ServiceResult.Failure("Bạn chỉ có thể tạo đơn nghỉ trước 0h của ngày bắt đầu nghỉ.");
         }
 
+        // 🔥 Lấy LeaveType
+        var leaveType = _leaveTypeRepository.GetById(dto.LeaveTypeId);
+
+        if (leaveType == null)
+        {
+            return ServiceResult.Failure("Loại nghỉ không tồn tại.");
+        }
+
+        // 🔥 Maternity auto set ToDate
+        if (leaveType.LeaveName == "Maternity Leave")
+        {
+            dto.ToDate = dto.FromDate.AddMonths(Constants.MATERNITY_MONTHS);
+        }
+
         bool exists = _leaveRequestRepo.ExistsActiveRequest(
             employeeId,
             dto.FromDate,
@@ -201,12 +314,28 @@ public class LeaveRequestService : ILeaveRequestService
             return ServiceResult.Failure("Bạn đã có đơn nghỉ đang chờ duyệt hoặc đã được duyệt trong khoảng thời gian này.");
         }
 
-        // 🔥 Lấy LeaveType
-        var leaveType = _leaveTypeRepository.GetById(dto.LeaveTypeId);
-
-        if (leaveType == null)
+        // 👉 giờ mới validate
+        if (dto.FromDate.Date > dto.ToDate.Date)
         {
-            return ServiceResult.Failure("Loại nghỉ không tồn tại.");
+            return ServiceResult.Failure("Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc.");
+        }
+
+        if (leaveType.LeaveName == "Maternity Leave")
+        {
+            var employee = _employeeRepository.GetById(employeeId);
+
+            if (employee == null)
+                return ServiceResult.Failure("Không tìm thấy nhân viên.");
+
+            if (employee.Gender == true) // true = Male
+            {
+                return ServiceResult.Failure("Chỉ nhân viên nữ mới được đăng ký nghỉ thai sản.");
+            }
+        }
+
+        if (leaveType.LeaveName == "Unpaid Leave")
+        {
+            return ServiceResult.Failure("Loại nghỉ này hiện chưa được hỗ trợ.");
         }
 
         // 🔥 Tính số ngày nghỉ thực tế
@@ -269,74 +398,88 @@ public class LeaveRequestService : ILeaveRequestService
             $"Tạo đơn nghỉ thành công. Số ngày yêu cầu: {requestedDays}.");
     }
 
-    //public ServiceResult ApproveLeaveRequest(int leaveRequestId, int approverId)
-    //{
-    //    var leave = _leaveRequestRepo.GetById(leaveRequestId);
+    public ServiceResult ApproveLeaveRequest(int leaveRequestId, int approverId)
+    {
+        var leave = _leaveRequestRepo.GetById(leaveRequestId);
 
-    //    if (leave == null)
-    //        return ServiceResult.Failure("Không tìm thấy đơn nghỉ.");
+        if (leave == null)
+            return ServiceResult.Failure("Không tìm thấy đơn nghỉ.");
 
-    //    if (leave.Status != RequestStatus.Pending)
-    //        return ServiceResult.Failure("Chỉ có thể duyệt đơn đang chờ.");
+        if (leave.Status != RequestStatus.Pending)
+            return ServiceResult.Failure("Chỉ có thể duyệt đơn đang chờ.");
 
-    //    leave.Status = RequestStatus.Approved;
-    //    leave.ApprovedBy = approverId;
-    //    leave.ApprovedDate = GetVietnamNow();
+        var leaveType = _leaveTypeRepository.GetById(leave.LeaveTypeId);
 
-    //    _leaveRequestRepo.Update(leave);
-    //    _leaveRequestRepo.Save();
+        if (leaveType == null)
+            return ServiceResult.Failure("Loại nghỉ không tồn tại.");
 
-    //    // 👉 Tạo / cập nhật Attendance sau khi duyệt
-    //    for (var date = leave.FromDate.Date; date <= leave.ToDate.Date; date = date.AddDays(1))
-    //    {
-    //        var attendance = _attendanceRepository
-    //            .GetByEmployeeAndWorkDate(leave.EmployeeId, date);
+        // 🔥 Tính số ngày nghỉ thực tế
+        double requestedDays = CalculateLeaveDays(leave.FromDate, leave.ToDate);
 
-    //        if (attendance == null)
-    //        {
-    //            var newAttendance = new Attendance
-    //            {
-    //                EmployeeId = leave.EmployeeId,
-    //                WorkDate = date,
-    //                Status = AttendanceStatus.ApprovedLeave,
-    //                MissingMinutes = 0
-    //            };
+        // ======================================================
+        // 🔥 ANNUAL LEAVE → TRỪ QUOTA Ở ĐÂY (QUAN TRỌNG)
+        // ======================================================
+        if (leaveType.LeaveName == "Annual Leave")
+        {
+            int year = leave.FromDate.Year;
 
-    //            _attendanceRepository.Add(newAttendance);
-    //        }
-    //        else
-    //        {
-    //            attendance.Status = AttendanceStatus.ApprovedLeave;
-    //            attendance.MissingMinutes = 0;
-    //            _attendanceRepository.Update(attendance);
-    //        }
-    //    }
+            // ensure balance tồn tại
+            EnsureAnnualLeaveBalance(leave.EmployeeId, year);
 
-    //    _attendanceRepository.Save();
+            var balance = _annualLeaveBalanceRepositry
+                .GetByEmployeeAndYear(leave.EmployeeId, year);
 
-    //    // Cập nhật AnnualLeaveBalance của cronjob tạo sau khi duyệt
-    //    // TODO: Đang thiếu cronjob tạo record 12 nghỉ/ năm, chạy theo ngày rồi tạo hoặc cập nhật thay vì chạy theo năm
+            if (balance == null || balance.IsExpired)
+            {
+                return ServiceResult.Failure("Không tìm thấy số dư phép năm hợp lệ.");
+            }
 
-    //    return ServiceResult.Success("Duyệt đơn nghỉ thành công.");
-    //}
+            if (balance.RemainingDays < requestedDays)
+            {
+                return ServiceResult.Failure(
+                    $"Không đủ ngày phép để duyệt. Còn {balance.RemainingDays} ngày.");
+            }
 
-    //public ServiceResult RejectLeaveRequest(int leaveRequestId, int approverId)
-    //{
-    //    var leave = _leaveRequestRepo.GetById(leaveRequestId);
+            // 🔥 TRỪ PHÉP
+            balance.UsedDays += requestedDays;
+            balance.RemainingDays -= requestedDays;
 
-    //    if (leave == null)
-    //        return ServiceResult.Failure("Không tìm thấy đơn nghỉ.");
+            _annualLeaveBalanceRepositry.Update(balance);
+        }
 
-    //    if (leave.Status != RequestStatus.Pending)
-    //        return ServiceResult.Failure("Chỉ có thể từ chối đơn đang chờ.");
+        // ======================================================
+        // 🔥 UPDATE STATUS
+        // ======================================================
+        leave.Status = RequestStatus.Approved;
+        leave.ApprovedBy = approverId;
+        leave.ApprovedDate = GetVietnamNow();
 
-    //    leave.Status = RequestStatus.Rejected;
-    //    leave.ApprovedBy = approverId;
-    //    leave.ApprovedDate = GetVietnamNow();
+        _leaveRequestRepo.Update(leave);
 
-    //    _leaveRequestRepo.Update(leave);
-    //    _leaveRequestRepo.Save();
+        // 🔥 SAVE 1 LẦN
+        _leaveRequestRepo.Save();
+        _annualLeaveBalanceRepositry.Save();
 
-    //    return ServiceResult.Success("Đã từ chối đơn nghỉ.");
-    //}
+        return ServiceResult.Success("Duyệt đơn nghỉ thành công.");
+    }
+
+    public ServiceResult RejectLeaveRequest(int leaveRequestId, int approverId)
+    {
+        var leave = _leaveRequestRepo.GetById(leaveRequestId);
+
+        if (leave == null)
+            return ServiceResult.Failure("Không tìm thấy đơn nghỉ.");
+
+        if (leave.Status != RequestStatus.Pending)
+            return ServiceResult.Failure("Chỉ có thể từ chối đơn đang chờ.");
+
+        leave.Status = RequestStatus.Rejected;
+        leave.ApprovedBy = approverId;
+        leave.ApprovedDate = GetVietnamNow();
+
+        _leaveRequestRepo.Update(leave);
+        _leaveRequestRepo.Save();
+
+        return ServiceResult.Success("Đã từ chối đơn nghỉ.");
+    }
 }
