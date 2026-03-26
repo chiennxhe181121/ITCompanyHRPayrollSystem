@@ -15,5 +15,7 @@ namespace HumanResourcesManager.DAL.Interfaces
         void Add(Allowance allowance);
         void Update(Allowance allowance);
         void Save();
+
+        Task<List<Allowance>> GetActiveAllowancesByEmployeeAsync(int employeeId);
     }
 }

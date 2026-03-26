@@ -1,0 +1,56 @@
+﻿@model PayrollDTO
+@using HumanResourcesManager.BLL.DTOs
+<h2>Edit Payroll</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="PayrollId" />
+
+    <label>EmployeeId:</label>
+    <input asp-for="EmployeeId" /><br/>
+
+    <label>Month:</label>
+    <input asp-for="Month" /><br/>
+
+    <label>Year:</label>
+    <input asp-for="Year" /><br/>
+
+    <label>Basic Salary:</label>
+    <input asp-for="BasicSalary" /><br/>
+
+    <label>Total OT:</label>
+    <input asp-for="TotalOT" /><br/>
+
+    <label>Total Allowance:</label>
+    <input asp-for="TotalAllowance" /><br/>
+
+    <label>Missing Minutes Penalty:</label>
+    <input asp-for="MissingMinutesPenalty" /><br/>
+
+    <h3>Payroll Details</h3>
+    <div id="details">
+        @for (int i = 0; i < Model.PayrollDetails.Count; i++)
+        {
+                <div>
+                    <input name="PayrollDetails[@i].Description" value="@Model.PayrollDetails[i].Description" />
+                    <input name="PayrollDetails[@i].Amount" value="@Model.PayrollDetails[i].Amount" />
+                </div>
+        }
+    </div>
+
+    <button type="button" onclick="addRow()">Add Detail</button><br/><br/>
+    <button type="submit">Update</button>
+</form>
+
+<script>
+    let index = @Model.PayrollDetails.Count;
+
+    function addRow() {
+        let html = `
+        <div>
+            <input name="PayrollDetails[${index}].Description" placeholder="Description" />
+            <input name="PayrollDetails[${index}].Amount" placeholder="Amount" />
+        </div>`;
+        document.getElementById("details").insertAdjacentHTML('beforeend', html);
+        index++;
+    }
+</script>

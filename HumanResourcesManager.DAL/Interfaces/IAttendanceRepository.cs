@@ -18,5 +18,7 @@ namespace HumanResourcesManager.DAL.Interfaces
         Attendance? GetByEmployeeAndWorkDate(int employeeId, DateTime workDate);
         List<Attendance> GetPendingByDate(DateTime workDate);
         List<Attendance> GetByDate(DateTime workDate);
+
+        Task<List<Attendance>> GetAttendancesAsync(int employeeId, int month, int year);
     }
 }
