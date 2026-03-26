@@ -1,11 +1,12 @@
-﻿using System.Linq;
-using HumanResourcesManager.BLL.DTOs;
+﻿using HumanResourcesManager.BLL.DTOs;
+using HumanResourcesManager.BLL.DTOs.Employee;
 using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.DAL.Enum;
 using HumanResourcesManager.DAL.Interfaces;
 using HumanResourcesManager.DAL.Models;
 using HumanResourcesManager.DAL.Repositories;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace HumanResourcesManager.BLL.Services
 {
@@ -411,5 +412,47 @@ namespace HumanResourcesManager.BLL.Services
         // ================= HELPERS =================
         private decimal HourlyRate(int employeeId) => 50000;
         private decimal MissingPenaltyPerMinute() => 1000;
+
+        public EmployeePayrollViewDTO GetPayrolls(int employeeId, int page, int pageSize, int? month, int? year)
+        {
+            var query = _repo.GetQueryableByEmployee(employeeId);
+
+            if (month.HasValue)
+                query = query.Where(x => x.Month == month);
+
+            if (year.HasValue)
+                query = query.Where(x => x.Year == year);
+
+            int totalRecords = query.Count();
+
+            var data = query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new PayrollRowDTO
+                {
+                    PayrollId = x.PayrollId,
+                    Month = x.Month,
+                    Year = x.Year,
+                    BasicSalary = x.BasicSalary,
+                    TotalOT = x.TotalOT,
+                    TotalAllowance = x.TotalAllowance,
+                    MissingMinutesPenalty = x.MissingMinutesPenalty,
+                    NetSalary = x.NetSalary,
+                    CreatedDate = x.CreatedDate
+                })
+                .ToList();
+
+            return new EmployeePayrollViewDTO
+            {
+                Records = data,
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalRecords = totalRecords,
+                TotalPages = (int)Math.Ceiling((double)totalRecords / pageSize),
+                SelectedMonth = month,
+                SelectedYear = year
+            };
+        }
+
     }
 }

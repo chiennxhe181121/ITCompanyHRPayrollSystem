@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using HumanResourcesManager.BLL.DTOs;
 using HumanResourcesManager.DAL.Models;
+using HumanResourcesManager.BLL.DTOs.Employee;
 
 namespace HumanResourcesManager.BLL.Interfaces
 {
@@ -18,5 +19,6 @@ namespace HumanResourcesManager.BLL.Interfaces
         Task DeleteAsync(int id);
         Task<PayrollDTO> GeneratePayrollForEmployeeAsync(int employeeId, int month, int year);
         Task<List<EmployeeDTO>> GetAllEmployeesWithoutPayrollAsync(int month, int year);
+        EmployeePayrollViewDTO GetPayrolls(int employeeId, int page, int pageSize, int? month, int? year);
     }
 }

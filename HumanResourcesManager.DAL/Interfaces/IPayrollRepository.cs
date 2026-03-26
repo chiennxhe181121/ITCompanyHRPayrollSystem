@@ -17,5 +17,6 @@ namespace HumanResourcesManager.DAL.Interfaces
         Task DeleteAsync(int id);
      
         Task SaveChangesAsync();
+        IQueryable<Payroll> GetQueryableByEmployee(int employeeId);
     }
 }

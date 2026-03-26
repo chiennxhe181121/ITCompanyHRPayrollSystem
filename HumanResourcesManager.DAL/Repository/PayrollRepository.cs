@@ -58,5 +58,13 @@ namespace HumanResourcesManager.DAL.Repository
         {
             await _context.SaveChangesAsync();
         }
+
+        public IQueryable<Payroll> GetQueryableByEmployee(int employeeId)
+        {
+            return _context.Payrolls
+                .Where(x => x.EmployeeId == employeeId)
+                .OrderByDescending(x => x.Year)
+                .ThenByDescending(x => x.Month);
+        }
     }
 }

@@ -84,6 +84,8 @@ namespace HumanResourcesManager
             builder.Services.AddScoped<IAllowanceRepository, AllowanceRepository>(); // 14/02/2026
             builder.Services.AddScoped<IAnnualLeaveBalanceRepositry, AnnualLeaveBalanceRepository>();
             builder.Services.AddScoped<ILeaveTypeRepository, LeaveTypeRepository>();
+            builder.Services.AddScoped<IContractRepository, ContractRepository>();
+            builder.Services.AddScoped<IPayrollRepository, PayrollRepository>();
 
             // Dependency Injection: Business Services (BLL)
             builder.Services.AddScoped<IAuthService, AuthService>();

@@ -486,6 +486,9 @@ namespace HumanResourcesManager.DAL.Migrations
                     b.Property<int>("PayrollId")
                         .HasColumnType("int");
 
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
                     b.HasKey("PayrollDetailId");
 
                     b.HasIndex("PayrollId");
