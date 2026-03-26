@@ -22,6 +22,7 @@ public class EmployeeController : Controller
     private readonly ILeaveRequestService _leaveRequestService;
     private readonly ILeaveTypeRepository _leaveTypeRepository;
     private readonly IAnnualLeaveBalanceService _annualLeaveBalanceService;
+    private readonly IPayrollService _payrollService;
 
     public EmployeeController(
         IEmployeeService employeeService,
@@ -29,7 +30,8 @@ public class EmployeeController : Controller
         IUserAccountService userAccountService,
         ILeaveRequestService leaveRequestService,
         ILeaveTypeRepository leaveTypeRepository,
-        IAnnualLeaveBalanceService annualLeaveBalanceService
+        IAnnualLeaveBalanceService annualLeaveBalanceService,
+        IPayrollService payrollService
         )
     {
         _employeeService = employeeService;
@@ -38,6 +40,7 @@ public class EmployeeController : Controller
         _leaveRequestService = leaveRequestService;
         _leaveTypeRepository = leaveTypeRepository;
         _annualLeaveBalanceService = annualLeaveBalanceService;
+        _payrollService = payrollService;
     }
 
     // Lấy userId từ session
@@ -318,6 +321,8 @@ public class EmployeeController : Controller
 
         if (!ModelState.IsValid)
         {
+            LoadSidebarUserCard();
+
             LoadLeaveTypes();
             return View(dto);
         }
@@ -347,12 +352,18 @@ public class EmployeeController : Controller
     }
 
     [HttpGet("payroll")]
-    public IActionResult Payroll()
+    public IActionResult Payroll(
+    int page = 1,
+    int pageSize = 5,
+    int? month = null,
+    int? year = null)
     {
+        int employeeId = CurrentUserId;
+
         LoadSidebarUserCard();
 
         LoadStats();
-        var employee = _employeeService.GetOwnProfile(CurrentUserId);
-        return View("~/Views/Employee/PayrollTab.cshtml", employee);
+        var model = _payrollService.GetPayrolls(employeeId, page, pageSize, month, year);
+        return View("~/Views/Employee/PayrollTab.cshtml", model);
     }
 }
