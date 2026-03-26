@@ -1,4 +1,5 @@
 ﻿using HumanResourcesManager.BLL.DTOs.Common;
+using HumanResourcesManager.BLL.DTOs.Employee;
 using HumanResourcesManager.DAL.Enum;
 using HumanResourcesManager.DAL.Interfaces;
 using HumanResourcesManager.DAL.Models;
@@ -26,6 +27,105 @@ public class LeaveRequestService : ILeaveRequestService
         _annualLeaveBalanceRepositry = annualLeaveBalanceRepositry;
         _leaveTypeRepository = leaveTypeRepository;
         _employeeRepository = employeeRepository;
+    }
+
+    public EmployeeLeaveViewDTO GetEmployeeLeaves(
+    int currentUserId,
+    int page,
+    int pageSize,
+    int? year,
+    RequestStatus? status)
+    {
+        var employee = _employeeRepository.GetByUserId(currentUserId);
+
+        if (employee == null)
+            throw new Exception("Employee not found.");
+
+        var employeeId = employee.EmployeeId;
+
+        if (pageSize <= 0) pageSize = 10;
+        if (page < 1) page = 1;
+
+        // 🔥 1. Query gốc
+        var query = _leaveRequestRepo
+            .GetQueryableByEmployeeId(employeeId);
+
+        // 🔥 2. Filter year
+        if (year.HasValue)
+            query = query.Where(x => x.FromDate.Year == year.Value);
+
+        // 🔥 3. Filter status
+        if (status.HasValue)
+            query = query.Where(x => x.Status == status.Value);
+
+        // 🔥 4. Sort
+        query = query.OrderByDescending(x => x.CreatedDate);
+
+        // 🔥 5. Count
+        var totalRecords = query.Count();
+
+        var totalPages = totalRecords == 0
+            ? 1
+            : (int)Math.Ceiling((double)totalRecords / pageSize);
+
+        if (page > totalPages)
+            page = totalPages;
+
+        // 🔥 6. Paging
+        var leaves = query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        // 🔥 7. Map DTO
+        var records = leaves.Select(x => new LeaveRowDTO
+        {
+            LeaveRequestId = x.LeaveRequestId,
+            LeaveTypeName = x.LeaveType.LeaveName,
+            FromDate = x.FromDate,
+            ToDate = x.ToDate,
+            Reason = x.Reason,
+            Status = x.Status,
+            TotalDays = CalculateLeaveDays(x.FromDate, x.ToDate)
+        }).ToList();
+
+        return new EmployeeLeaveViewDTO
+        {
+            Records = records,
+            CurrentPage = page,
+            TotalPages = totalPages,
+            PageSize = pageSize,
+            TotalRecords = totalRecords,
+            SelectedYear = year,
+            SelectedStatus = status
+        };
+    }
+
+    public void CancelLeave(int leaveId, int userId)
+    {
+        var leave = _leaveRequestRepo.GetById(leaveId);
+
+        if (leave == null)
+            throw new Exception("Leave not found");
+
+        // 🔥 lấy employee từ userId
+        var employee = _employeeRepository.GetByUserId(userId);
+
+        if (employee == null)
+            throw new Exception("Employee not found");
+
+        // 🔥 check quyền bằng EmployeeId
+        if (leave.EmployeeId != employee.EmployeeId)
+            throw new Exception("Unauthorized");
+
+        // 🔥 chỉ huỷ được khi Pending
+        if (leave.Status != RequestStatus.Pending)
+            throw new Exception("Only pending request can be cancelled");
+
+        leave.Status = RequestStatus.Cancelled;
+
+        _leaveRequestRepo.Update(leave);
+        _leaveRequestRepo.Save(); // ❗ nhớ cái này
     }
 
     public List<LeaveRequestDTO> GetAll()
@@ -83,6 +183,10 @@ public class LeaveRequestService : ILeaveRequestService
 
         for (var date = fromDate.Date; date <= toDate.Date; date = date.AddDays(1))
         {
+            bool isWeekend =
+                date.DayOfWeek == DayOfWeek.Saturday ||
+                date.DayOfWeek == DayOfWeek.Sunday;
+
             bool isFixedHoliday = Constants.FixedHolidays
                 .Any(h => h.Day == date.Day && h.Month == date.Month);
 
@@ -90,7 +194,7 @@ public class LeaveRequestService : ILeaveRequestService
                 .GetTetHolidayDates(date.Year)
                 .Contains(date);
 
-            if (!isFixedHoliday && !isTetHoliday)
+            if (!isWeekend && !isFixedHoliday && !isTetHoliday)
             {
                 totalDays += 1;
             }

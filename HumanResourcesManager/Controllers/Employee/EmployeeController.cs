@@ -66,7 +66,6 @@ public class EmployeeController : Controller
     }
 
     // ===== Sidebar User =====
-    // ===== Sidebar User =====
     private void LoadSidebarUserCard()
     {
         var fullProfile = _employeeService.GetOwnProfile(CurrentUserId);
@@ -263,13 +262,32 @@ public class EmployeeController : Controller
     // ===== Leaves =====
     // view leaves
     [HttpGet("leaves")]
-    public IActionResult Leaves()
+    public IActionResult Leaves(
+    int page = 1,
+    int pageSize = 5,
+    int? year = null,
+    RequestStatus? status = null)
     {
         LoadSidebarUserCard();
 
         LoadStats();
-        var employee = _employeeService.GetOwnProfile(CurrentUserId);
-        return View("~/Views/Employee/LeavesTab.cshtml", employee);
+
+        var model = _leaveRequestService.GetEmployeeLeaves(
+            CurrentUserId,
+            page,
+            pageSize,
+            year,
+            status
+        );
+        return View("~/Views/Employee/LeavesTab.cshtml", model);
+    }
+
+    // cancel leaves
+    [HttpPost]
+    public IActionResult CancelLeave(int id)
+    {
+        _leaveRequestService.CancelLeave(id, CurrentUserId);
+        return RedirectToAction("Leaves");
     }
 
     // GET: hiển thị form

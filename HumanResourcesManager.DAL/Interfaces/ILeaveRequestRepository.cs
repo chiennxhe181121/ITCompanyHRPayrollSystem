@@ -2,6 +2,7 @@
 
 public interface ILeaveRequestRepository
 {
+    IQueryable<LeaveRequest> GetQueryableByEmployeeId(int employeeId);
     List<LeaveRequest> GetAll();
     LeaveRequest? GetById(int id);
     bool ExistsActiveRequest(int employeeId, DateTime fromDate, DateTime toDate);
