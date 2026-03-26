@@ -84,6 +84,8 @@ namespace HumanResourcesManager
             builder.Services.AddScoped<IAllowanceRepository, AllowanceRepository>(); // 14/02/2026
             builder.Services.AddScoped<IAnnualLeaveBalanceRepositry, AnnualLeaveBalanceRepository>();
             builder.Services.AddScoped<ILeaveTypeRepository, LeaveTypeRepository>();
+            builder.Services.AddScoped<IContractRepository, ContractRepository>();
+            builder.Services.AddScoped<IPayrollRepository, PayrollRepository>();
 
             // Dependency Injection: Business Services (BLL)
             builder.Services.AddScoped<IAuthService, AuthService>();
@@ -101,8 +103,11 @@ namespace HumanResourcesManager
             builder.Services.AddScoped<IAllowanceService, AllowanceService>(); // 14/02/2026
             builder.Services.AddScoped<ILeaveRequestService, LeaveRequestService>();
             builder.Services.AddScoped<IAnnualLeaveBalanceService, AnnualLeaveBalanceService>();
+            builder.Services.AddScoped<IOTRepository, OTRepository>();
             builder.Services.AddScoped<IContractService, ContractService>();
             builder.Services.AddScoped<IContractRepository, ContractRepository>();
+            builder.Services.AddScoped<IPayrollRepository, PayrollRepository>();
+            builder.Services.AddScoped<IPayrollService, PayrollService>();
 
             builder.Services.AddHostedService<DailyAttendanceGenerateJob>(); // cronjob tao record attendance moi ngay cho nhan vien
             builder.Services.AddHostedService<AttendanceFinalizeJob>(); // cronjob cho ket luan attendance 20:10 moi ngay

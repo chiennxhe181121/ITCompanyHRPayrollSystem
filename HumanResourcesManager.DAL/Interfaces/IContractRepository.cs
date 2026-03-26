@@ -10,5 +10,6 @@ namespace HumanResourcesManager.DAL.Repositories
         void Update(Contract contract);
         void Delete(int id);
         void Save();
+        Task<Contract?> GetActiveContractByEmployeeAsync(int employeeId);
     }
 }

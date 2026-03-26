@@ -86,5 +86,15 @@ namespace HumanResourcesManager.DAL.Repository
                 .Where(a => a.WorkDate >= start && a.WorkDate < end)
                 .ToList();
         }
+
+        // Lấy danh sách attendance của nhân viên theo tháng/năm
+        public async Task<List<Attendance>> GetAttendancesAsync(int employeeId, int month, int year)
+        {
+            return await _context.Attendances
+                .Where(a => a.EmployeeId == employeeId
+                            && a.WorkDate.Month == month
+                            && a.WorkDate.Year == year)
+                .ToListAsync();
+        }
     }
 }

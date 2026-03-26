@@ -1,0 +1,60 @@
+﻿@using HumanResourcesManager.BLL.DTOs
+@model PayrollDTO
+
+@{
+    ViewData["Title"] = "Payroll Details";
+    Layout = "~/Views/HR/_HRLayout.cshtml";
+}
+
+<div class="px-8 py-6 bg-white border-b border-slate-100 shadow-sm flex justify-between items-center">
+    <h2 class="text-2xl font-extrabold text-slate-800 flex items-center gap-3">
+        <span class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
+            <i class="fa-solid fa-money-bill-wave"></i>
+        </span>
+        Payroll Details
+    </h2>
+</div>
+
+<div class="p-8 bg-slate-100 min-h-screen">
+
+    <div class="mb-6">
+        <p><b>Employee:</b> @Model.EmployeeName</p>
+        <p><b>Month/Year:</b> @Model.Month/@Model.Year</p>
+    </div>
+
+    <!-- SALARY BREAKDOWN -->
+    <h3 class="text-lg font-bold mb-2">Salary Breakdown</h3>
+    <div class="bg-white rounded-xl shadow p-4 mb-6">
+        <table class="w-full text-sm text-left">
+            <tbody>
+                <tr><td>Basic Salary</td><td>@Model.BasicSalary.ToString("N0") VND</td></tr>
+                <tr><td>Total OT</td><td>@Model.TotalOT.ToString("N0") VND</td></tr>
+                <tr><td>Total Allowance</td><td>@Model.TotalAllowance.ToString("N0") VND</td></tr>
+
+                <tr><td class="text-red-600">Absent Deduction</td><td class="text-red-600">-@Model.AbsentDeduction.ToString("N0") VND</td></tr>
+                <tr><td class="text-red-600">Missing Checkout Penalty</td><td class="text-red-600">-@Model.MissingCheckoutPenalty.ToString("N0") VND</td></tr>
+                <tr><td class="text-red-600">Insufficient Work Penalty</td><td class="text-red-600">-@Model.InsufficientWorkPenalty.ToString("N0") VND</td></tr>
+
+                <tr>
+                    <td class="font-bold text-red-700">Total Penalty</td>
+                    <td class="font-bold text-red-700">
+                        -@((Model.AbsentDeduction + Model.MissingCheckoutPenalty + Model.InsufficientWorkPenalty).ToString("N0")) VND
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="font-bold text-green-700">Net Salary</td>
+                    <td class="font-bold text-green-700">@Model.NetSalary.ToString("N0") VND</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <a asp-action="Index" class="bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 transition-all">Back to List</a>
+</div>
+
+<script>
+    function toggle(id) {
+        var el = document.getElementById(id);
+        el.style.display = (el.style.display === "none") ? "table-row" : "none";
+    }
+</script>
