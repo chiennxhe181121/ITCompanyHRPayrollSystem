@@ -7,9 +7,3 @@
 # Build results
 [Bb]in/
 [Oo]bj/
-
-# ASP.NET Core config (IMPORTANT)
-appsettings.json
-appsettings.*.json
-/HumanResourcesManager/appsettings.json
-/HumanResourcesManager/appsettings.json
