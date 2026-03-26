@@ -18,5 +18,9 @@ namespace HumanResourcesManager.DAL.Interfaces
      
         Task SaveChangesAsync();
         IQueryable<Payroll> GetQueryableByEmployee(int employeeId);
+
+        Payroll GetPayrollDetail(int payrollId, int employeeId);
+
+        Payroll? GetLatestPayroll(int employeeId);
     }
 }

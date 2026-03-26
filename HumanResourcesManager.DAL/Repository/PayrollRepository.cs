@@ -66,5 +66,33 @@ namespace HumanResourcesManager.DAL.Repository
                 .OrderByDescending(x => x.Year)
                 .ThenByDescending(x => x.Month);
         }
+
+        public Payroll GetPayrollDetail(int payrollId, int employeeId)
+        {
+            return _context.Payrolls
+                .Where(p => p.PayrollId == payrollId && p.EmployeeId == employeeId)
+                .Select(p => new Payroll
+                {
+                    PayrollId = p.PayrollId,
+                    Month = p.Month,
+                    Year = p.Year,
+                    BasicSalary = p.BasicSalary,
+                    TotalOT = p.TotalOT,
+                    TotalAllowance = p.TotalAllowance,
+                    MissingMinutesPenalty = p.MissingMinutesPenalty,
+                    NetSalary = p.NetSalary,
+                    PayrollDetails = p.PayrollDetails.ToList()
+                })
+                .FirstOrDefault();
+        }
+
+        public Payroll? GetLatestPayroll(int employeeId)
+        {
+            return _context.Payrolls
+                .Where(p => p.EmployeeId == employeeId)
+                .OrderByDescending(p => p.Year)
+                .ThenByDescending(p => p.Month)
+                .FirstOrDefault();
+        }
     }
 }
