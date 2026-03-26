@@ -19,6 +19,7 @@ namespace HumanResourcesManager.BLL.Services
         private readonly IUserAccountRepository _userRepo;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
+
         public ADEmployeeService(IADEmployeeRepository empRepo, 
             IUserAccountRepository userRepo,
             IWebHostEnvironment webHostEnvironment)
@@ -325,6 +326,76 @@ namespace HumanResourcesManager.BLL.Services
             //  Ghép chuỗi: hoang + dh + emp...
             return $"{name}{initials}{empCode.ToLower()}";
         }
+
+
+        // Profile
+        public AdminProfileDTO? GetProfileByUserId(int userId)
+        {
+            var emp = _empRepo.GetByUserId(userId);
+            if (emp == null) return null;
+
+            return new AdminProfileDTO
+            {
+                EmployeeId = emp.EmployeeId,
+                FullName = emp.FullName,
+                Email = emp.Email,
+                Phone = emp.Phone,
+                Address = emp.Address,
+                Gender = emp.Gender,
+                ImgAvatar = emp.ImgAvatar,
+
+                // Chỉ xem
+                EmployeeCode = emp.EmployeeCode,
+                DepartmentName = emp.Department?.DepartmentName ?? "N/A",
+                PositionName = emp.Position?.PositionName ?? "N/A",
+                HireDate = emp.HireDate,
+                RoleName = emp.UserAccount?.Role?.RoleName 
+            };
+        }
+
+        public bool UpdateProfile(AdminProfileDTO dto, out string message)
+        {
+            message = "";
+            var emp = _empRepo.GetById(dto.EmployeeId);
+            if (emp == null) { message = "Không tìm thấy hồ sơ."; return false; }
+
+            if (_empRepo.ExistsEmail(dto.Email, dto.EmployeeId))
+            {
+                message = "Email này đã được sử dụng bởi nhân viên khác.";
+                return false;
+            }
+            if (_empRepo.ExistsPhone(dto.Phone, dto.EmployeeId))
+            {
+                message = "Số điện thoại này đã được sử dụng.";
+                return false;
+            }
+
+            emp.FullName = dto.FullName;
+            emp.Email = dto.Email;
+            emp.Phone = dto.Phone;
+            emp.Address = dto.Address;
+            emp.Gender = dto.Gender;
+
+            if (dto.AvatarFile != null)
+            {
+                string newPath = SaveAvatarImage(dto.AvatarFile, emp.EmployeeId);
+                emp.ImgAvatar = newPath;
+            }
+
+            try
+            {
+                _empRepo.Update(emp);
+                _empRepo.Save();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                message = "Lỗi hệ thống: " + ex.Message;
+                return false;
+            }
+        }
+
+
 
 
     }

@@ -1,0 +1,38 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@(ViewData["Title"] ?? "HR Dashboard - PayFlow Pro")</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="~/css/styles.css">
+</head>
+<body class="bg-slate-50 min-h-screen">
+    @await Html.PartialAsync("~/Views/Manager/_Loading.cshtml")
+
+    <div class="flex h-screen overflow-hidden">
+        @await Html.PartialAsync("~/Views/HR/_HRSidebar.cshtml")
+
+        <main class="flex-1 overflow-y-auto bg-slate-50/50">
+            @RenderBody()
+        </main>
+    </div>
+
+   
+    <div id="modalContainer"></div>
+    <script src="~/js/loading.js"></script>
+    <script src="~/js/hr.js"></script>
+
+    @* Hoàng thêm *@
+    <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @* Hoàng thêm *@
+
+   @RenderSection("Scripts", required: false)
+
+</body>
+</html>

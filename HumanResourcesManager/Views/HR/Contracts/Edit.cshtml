@@ -1,0 +1,109 @@
+﻿@model HumanResourcesManager.BLL.DTOs.ContractDTO
+
+@{
+    ViewData["Title"] = "Chỉnh sửa hợp đồng";
+    Layout = "~/Views/HR/_HRLayout.cshtml";
+}
+
+<div class="p-8 bg-slate-100 min-h-screen">
+    <div class="max-w-xl mx-auto bg-white p-8 rounded-2xl shadow border">
+
+        <h2 class="text-xl font-bold mb-6">Chỉnh sửa hợp đồng</h2>
+
+        <!-- HIỂN THỊ LỖI MODEL -->
+        <div asp-validation-summary="All" class="text-red-500 mb-4"></div>
+
+        <form asp-action="Edit" method="post" class="space-y-4">
+
+            <!-- QUAN TRỌNG: PHẢI CÓ -->
+            <input type="hidden" asp-for="ContractId" />
+
+            <!-- LOẠI HỢP ĐỒNG -->
+            <div>
+                <label class="block text-sm font-semibold mb-1">
+                    Loại hợp đồng
+                </label>
+
+                <select asp-for="ContractType"
+                        class="w-full border rounded-lg px-3 py-2">
+                    <option value="">-- Chọn loại hợp đồng --</option>
+                    <option value="Thử việc">Thử việc</option>
+                    <option value="Chính thức">Chính thức</option>
+                    <option value="Thời vụ">Thời vụ</option>
+                </select>
+
+                <span asp-validation-for="ContractType"
+                      class="text-red-500 text-sm"></span>
+            </div>
+
+            <!-- NGÀY BẮT ĐẦU -->
+            <div>
+                <label class="block text-sm font-semibold mb-1">
+                    Ngày bắt đầu
+                </label>
+
+                <input asp-for="StartDate"
+                       type="date"
+                       class="w-full border rounded-lg px-3 py-2" />
+
+                <span asp-validation-for="StartDate"
+                      class="text-red-500 text-sm"></span>
+            </div>
+
+            <!-- NGÀY KẾT THÚC -->
+            <div>
+                <label class="block text-sm font-semibold mb-1">
+                    Ngày kết thúc
+                </label>
+
+                <input asp-for="EndDate"
+                       type="date"
+                       class="w-full border rounded-lg px-3 py-2" />
+
+                <span asp-validation-for="EndDate"
+                      class="text-red-500 text-sm"></span>
+            </div>
+
+            <!-- LƯƠNG -->
+            <div>
+                <label class="block text-sm font-semibold mb-1">
+                    Lương cơ bản
+                </label>
+
+                <input asp-for="BasicSalary"
+                       type="number"
+                       step="0.01"
+                       class="w-full border rounded-lg px-3 py-2" />
+
+                <span asp-validation-for="BasicSalary"
+                      class="text-red-500 text-sm"></span>
+            </div>
+
+            <!-- TRẠNG THÁI -->
+            <div class="flex items-center gap-2">
+                <input asp-for="IsActive" type="checkbox" />
+                <label>Đang hiệu lực</label>
+            </div>
+
+            <!-- BUTTON -->
+            <div class="flex justify-end gap-3 pt-4">
+
+                <a asp-action="Index"
+                   class="px-4 py-2 bg-slate-200 rounded-lg hover:bg-slate-300">
+                    Hủy
+                </a>
+
+                <button type="submit"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Lưu thay đổi
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

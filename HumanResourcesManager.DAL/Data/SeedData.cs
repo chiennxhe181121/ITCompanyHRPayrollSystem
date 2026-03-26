@@ -9,7 +9,7 @@ namespace HumanResourcesManager.DAL.Data
         public static void Initialize(HumanManagerContext context)
         {
             // ❌ KHÔNG dùng EnsureCreated khi có Migration
-            // context.Database.EnsureCreated();
+             //context.Database.EnsureCreated();
 
             // ===================== ROLE =====================
             if (!context.Roles.Any())
@@ -346,11 +346,11 @@ namespace HumanResourcesManager.DAL.Data
             LeaveName = "Annual Leave",
             IsPaid = true
         },
-        new LeaveType
-        {
-            LeaveName = "Unpaid Leave",
-            IsPaid = false
-        },
+        //new LeaveType
+        //{
+        //    LeaveName = "Unpaid Leave",
+        //    IsPaid = false
+        //},
         new LeaveType
         {
             LeaveName = "Maternity Leave",
@@ -406,7 +406,42 @@ namespace HumanResourcesManager.DAL.Data
                 context.AnnualLeaveBalance.AddRange(balances);
                 context.SaveChanges();
             }
+            // ===================== CONTRACT =====================
+            if (!context.Contracts.Any())
+            {
+                context.Contracts.AddRange(
+                   
+                    new Contract
+                    {
+                        EmployeeId = 2,
+                        ContractType = "Official",
+                        StartDate = DateTime.Today.AddMonths(-6),
+                        EndDate = null,
+                        BasicSalary = 15000000,
+                        IsActive = true
+                    },
+                    new Contract
+                    {
+                        EmployeeId = 3,
+                        ContractType = "Probation",
+                        StartDate = DateTime.Today.AddMonths(-1),
+                        EndDate = DateTime.Today.AddMonths(2),
+                        BasicSalary = 12000000,
+                        IsActive = true
+                    },
+                    new Contract
+                    {
+                        EmployeeId = 4,
+                        ContractType = "Official",
+                        StartDate = DateTime.Today.AddYears(-2),
+                        EndDate = DateTime.Today.AddMonths(-3),
+                        BasicSalary = 13000000,
+                        IsActive = false
+                    }
+                );
 
+                context.SaveChanges();
+            }
         }
     }
 }

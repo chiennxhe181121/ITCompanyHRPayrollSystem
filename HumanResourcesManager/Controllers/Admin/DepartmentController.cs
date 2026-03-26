@@ -170,7 +170,18 @@ namespace HumanResourcesManager.Controllers.Admin
         }
 
 
+        [HttpGet("list")]
+        public IActionResult GetDepartments(
+        string? keyword,
+        int? status,
+        int page = 1)
+        {
+            int pageSize = 100; // tab này thường không cần phân trang
 
+            var result = _service.Search(keyword, status, page, pageSize);
+
+            return Json(result.Items);
+        }
 
     }
 }

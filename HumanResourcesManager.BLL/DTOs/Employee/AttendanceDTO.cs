@@ -65,6 +65,9 @@ namespace HumanResourcesManager.BLL.DTOs.Employee
         public bool IsHoliday =>
             Status == AttendanceStatus.Holiday;
 
+        public bool IsWeekend =>
+            Status == AttendanceStatus.Weekend;
+
         public bool CanCheckIn =>
             Status == AttendanceStatus.Pending
             && !IsHoliday

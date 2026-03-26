@@ -9,35 +9,7 @@ const CHECKIN_TO = "09:00:00";
 const CHECKOUT_FROM = "16:30:00";
 const CHECKOUT_TO = "20:00:00";
 
-// ===== STATS =====
-function loadStatsVisibility() {
-    try {
-        const saved = localStorage.getItem('employeeStatsVisibility');
-        if (saved) Object.assign(statsVisibility, JSON.parse(saved));
-    } catch (e) { }
-}
-
-function updateStatsDisplay() {
-    STAT_IDS.forEach(id => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        const value = el.dataset.value ?? el.textContent;
-        if (el.dataset.value !== undefined) el.dataset.value = value;
-        el.textContent = statsVisibility[id] ? value : '•••';
-    });
-}
-
-function updateStatButtonIcons() {
-    document.querySelectorAll('.stat-toggle').forEach(btn => {
-        const statId = btn.dataset.stat;
-        const visible = statsVisibility[statId];
-        const eye = btn.querySelector('.stat-eye');
-        const eyeOff = btn.querySelector('.stat-eye-off');
-        if (eye) eye.classList.toggle('hidden', !visible);
-        if (eyeOff) eyeOff.classList.toggle('hidden', visible);
-    });
-}
-
+// ===== HEADER =====
 function updateClock() {
     const el = document.getElementById('currentTime');
     if (!el) return;
@@ -58,15 +30,48 @@ function updateCurrentDate() {
     });
 }
 
-function loadStatsUI() {
-    const monthEl = document.getElementById('monthAttendance');
-    if (monthEl) { monthEl.dataset.value = '0'; monthEl.textContent = '0'; }
-    const overtimeEl = document.getElementById('overtimeHours');
-    if (overtimeEl) { overtimeEl.dataset.value = '0h'; overtimeEl.textContent = '0h'; }
-    const salaryEl = document.getElementById('currentSalary');
-    if (salaryEl) { salaryEl.dataset.value = '--'; salaryEl.textContent = '--'; }
-    const leavesEl = document.getElementById('leavesRemaining');
-    if (leavesEl) leavesEl.dataset.value = leavesEl.textContent || '0';
+// ===== STATS =====
+function loadStatsVisibility() {
+    try {
+        const saved = localStorage.getItem('employeeStatsVisibility');
+        if (saved) Object.assign(statsVisibility, JSON.parse(saved));
+    } catch (e) { }
+}
+
+function applyStatsVisibility() {
+    Object.keys(statsVisibility).forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        const realValue = el.getAttribute('data-real');
+
+        if (statsVisibility[id]) {
+            el.textContent = realValue;
+        } else {
+            el.textContent = '•••';
+        }
+    });
+}
+
+function saveRealValues() {
+    Object.keys(statsVisibility).forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        // lưu giá trị server render vào attribute
+        el.setAttribute('data-real', el.textContent.trim());
+    });
+}
+
+function updateStatButtonIcons() {
+    document.querySelectorAll('.stat-toggle').forEach(btn => {
+        const statId = btn.dataset.stat;
+        const visible = statsVisibility[statId];
+        const eye = btn.querySelector('.stat-eye');
+        const eyeOff = btn.querySelector('.stat-eye-off');
+        if (eye) eye.classList.toggle('hidden', !visible);
+        if (eyeOff) eyeOff.classList.toggle('hidden', visible);
+    });
 }
 
 // ===== DOM =====
@@ -85,9 +90,9 @@ document.addEventListener('DOMContentLoaded', function () {
             break;
     }
 
-    loadStatsUI();
     loadStatsVisibility();
-    updateStatsDisplay();
+    saveRealValues();
+    applyStatsVisibility();
     updateStatButtonIcons();
     updateCurrentDate();
     updateClock();
@@ -220,10 +225,48 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!statId) return;
             statsVisibility[statId] = !statsVisibility[statId];
             try { localStorage.setItem('employeeStatsVisibility', JSON.stringify(statsVisibility)); } catch (e) { }
-            updateStatsDisplay();
+            applyStatsVisibility();
             updateStatButtonIcons();
         });
     });
+
+    const infoBtn = document.getElementById('attendanceInfoBtn');
+    const infoBox = document.getElementById('attendanceInfoBox');
+
+    if (infoBtn && infoBox) {
+
+        infoBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            infoBox.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', function () {
+            infoBox.classList.add('hidden');
+        });
+
+        infoBox.addEventListener('click', function (e) {
+            e.stopPropagation();
+        });
+    }
+
+    const leaveInfoBtn = document.getElementById('leaveInfoBtn');
+    const leaveInfoBox = document.getElementById('leaveInfoBox');
+
+    if (leaveInfoBtn && leaveInfoBox) {
+
+        leaveInfoBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            leaveInfoBox.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', function () {
+            leaveInfoBox.classList.add('hidden');
+        });
+
+        leaveInfoBox.addEventListener('click', function (e) {
+            e.stopPropagation();
+        });
+    }
 });
 
 // ===== PROFILE =====
@@ -654,8 +697,11 @@ function updateCheckInUI() {
 
     if (!btn || !badge) return;
 
-    if (window.attendanceState?.isLeave || window.attendanceState?.isHoliday) {
-
+    if (
+        window.attendanceState?.isLeave ||
+        window.attendanceState?.isHoliday ||
+        window.attendanceState?.isWeekend
+    ) {
         btn.disabled = true;
         btn.classList.add("opacity-50", "cursor-not-allowed");
 
@@ -663,7 +709,13 @@ function updateCheckInUI() {
             badge.textContent = "🎉 Nghỉ lễ";
             badge.className =
                 "inline-block px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-700";
-        } else {
+        }
+        else if (window.attendanceState?.isWeekend) {
+            badge.textContent = "🛌 Nghỉ cuối tuần";
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-700";
+        }
+        else if (window.attendanceState?.isLeave) {
             badge.textContent = "📅 Nghỉ có phép";
             badge.className =
                 "inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700";
@@ -728,7 +780,7 @@ function updateCheckInUI() {
         }
         else {
 
-            badge.textContent = "❌ Đã đóng - Chưa check-in";
+            badge.textContent = "⛔ Đã đóng - Chưa check-in";
 
             badge.className =
                 "inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700";
@@ -772,8 +824,11 @@ function updateCheckOutUI() {
 
     if (!btn || !badge) return;
 
-    if (window.attendanceState?.isLeave || window.attendanceState?.isHoliday) {
-
+    if (
+        window.attendanceState?.isLeave ||
+        window.attendanceState?.isHoliday ||
+        window.attendanceState?.isWeekend
+    ) {
         btn.disabled = true;
         btn.classList.add("opacity-50", "cursor-not-allowed");
 
@@ -781,7 +836,13 @@ function updateCheckOutUI() {
             badge.textContent = "🎉 Nghỉ lễ";
             badge.className =
                 "inline-block px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-700";
-        } else {
+        }
+        else if (window.attendanceState?.isWeekend) {
+            badge.textContent = "🛌 Nghỉ cuối tuần";
+            badge.className =
+                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-700";
+        }
+        else if (window.attendanceState?.isLeave) {
             badge.textContent = "📅 Nghỉ có phép";
             badge.className =
                 "inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700";
@@ -803,6 +864,22 @@ function updateCheckOutUI() {
 
         badge.className =
             "inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700";
+
+        countdownEl?.classList.add("hidden");
+        progressWrapper?.classList.add("hidden");
+
+        return;
+    }
+
+    // Chưa check-in thì không cho check-out (bất kể giờ)
+    if (!window.attendanceState?.hasCheckIn) {
+
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+
+        badge.textContent = "⛔ Chưa check-in";
+        badge.className =
+            "inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700";
 
         countdownEl?.classList.add("hidden");
         progressWrapper?.classList.add("hidden");
@@ -844,16 +921,9 @@ function updateCheckOutUI() {
             badge.className =
                 "inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700";
         }
-        else if (window.attendanceState?.hasCheckIn) {
-
-            badge.textContent = "⚠ Đã đóng - Chưa check-out";
-
-            badge.className =
-                "inline-block px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700";
-        }
         else {
 
-            badge.textContent = "❌ Đã đóng - Chưa check-in";
+            badge.textContent = "⛔ Đã đóng - Chưa check-out";
 
             badge.className =
                 "inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700";

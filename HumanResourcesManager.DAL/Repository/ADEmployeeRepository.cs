@@ -93,5 +93,15 @@ namespace HumanResourcesManager.DAL.Repository
             var role = _context.Roles.FirstOrDefault(r => r.RoleCode == roleCode);
             return role != null ? role.RoleId : 0; 
         }
+
+        // Lấy thông tin nhân viên theo UserId để hiển thị profile
+        public Employee? GetByUserId(int userId)
+        {
+            return _context.Employees
+                .Include(e => e.Department)
+                .Include(e => e.Position)
+                .Include(e => e.UserAccount)
+                .FirstOrDefault(e => e.UserId == userId);
+        }
     }
 }

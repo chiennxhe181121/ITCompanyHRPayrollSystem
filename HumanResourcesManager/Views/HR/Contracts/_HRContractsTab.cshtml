@@ -1,0 +1,159 @@
+@using HumanResourcesManager.BLL.DTOs
+@model List<ContractDTO>
+
+<div class="p-8">
+
+    <div class="mb-6">
+        <h2 class="text-2xl font-bold text-slate-800">
+            Danh sách Hợp Đồng
+        </h2>
+        <p class="text-slate-500 mt-1">
+            Tổng số hợp đồng:
+            <strong>@(ViewBag.TotalRecords ?? Model?.Count ?? 0)</strong>
+        </p>
+    </div>
+
+    <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="bg-slate-50 border-b border-slate-200">
+                    <th class="py-3 px-4 text-left">Nhân viên</th>
+                    <th class="py-3 px-4 text-left">Loại</th>
+                    <th class="py-3 px-4 text-left">Từ ngày</th>
+                    <th class="py-3 px-4 text-left">Đến ngày</th>
+                    <th class="py-3 px-4 text-left">Lương</th>
+                    <th class="py-3 px-4 text-left">Trạng thái</th>
+                    <th class="py-3 px-4 text-left">Hành động</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var c in Model)
+                    {
+                        <tr class="border-b border-slate-100 hover:bg-slate-50">
+                            <td class="py-3 px-4">@c.EmployeeName</td>
+                            <td class="py-3 px-4">@c.ContractType</td>
+                            <td class="py-3 px-4">@c.StartDate.ToString("dd/MM/yyyy")</td>
+                            <td class="py-3 px-4">
+                                @(c.EndDate.HasValue
+                                    ? c.EndDate.Value.ToString("dd/MM/yyyy")
+                                    : "-")
+                            </td>
+                            <td class="py-3 px-4">
+                                @String.Format("{0:N0} đ", c.BasicSalary)
+                            </td>
+                            <td class="py-3 px-4">
+                                @if (c.IsActive)
+                                {
+                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-lg">
+                                        Đang hiệu lực
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="px-2 py-1 text-xs bg-red-100 text-red-600 rounded-lg">
+                                        Hết hiệu lực
+                                    </span>
+                                }
+                            </td>
+                            <td class="py-3 px-4">
+                                @if (c.IsActive)
+                                {
+                                    <button class="delete-btn text-red-600 hover:underline"
+                                            data-id="@c.ContractId">
+                                        Xóa
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7"
+                            class="text-center py-6 text-slate-400">
+                            ⚠ Không có dữ liệu hợp đồng
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- DELETE MODAL -->
+<div id="deleteModal"
+     class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center">
+
+    <div class="bg-white rounded-xl p-6 w-96 shadow-lg">
+        <h3 class="text-lg font-semibold mb-4">Xác nhận</h3>
+        <p class="text-sm text-slate-600 mb-6">
+            Bạn có chắc muốn chuyển hợp đồng này sang hết hiệu lực?
+        </p>
+
+        <input type="hidden" id="deleteId" />
+
+        <div class="flex justify-end gap-3">
+            <button id="cancelDelete"
+                    class="px-4 py-2 border rounded-lg">
+                Hủy
+            </button>
+
+            <button id="confirmDelete"
+                    class="px-4 py-2 bg-red-600 text-white rounded-lg">
+                Xác nhận
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    document.addEventListener("click", function (e) {
+
+        // Mở modal
+        if (e.target.classList.contains("delete-btn")) {
+            const id = e.target.getAttribute("data-id");
+            document.getElementById("deleteId").value = id;
+
+            const modal = document.getElementById("deleteModal");
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+        }
+
+        // Hủy
+        if (e.target.id === "cancelDelete") {
+            closeModal();
+        }
+
+        // Xác nhận xóa
+        if (e.target.id === "confirmDelete") {
+            const id = document.getElementById("deleteId").value;
+
+            fetch("/Contracts/Delete", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: "id=" + id
+            })
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById("contractsContainer").innerHTML = html;
+            })
+            .catch(err => console.error("Delete error:", err));
+        }
+
+    });
+
+    function closeModal() {
+        const modal = document.getElementById("deleteModal");
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+    }
+
+</script>

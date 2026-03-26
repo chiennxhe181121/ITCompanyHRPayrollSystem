@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace HumanResourcesManager.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDatabase : Migration
+    public partial class HumanManagerDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -164,7 +164,8 @@ namespace HumanResourcesManager.DAL.Migrations
                     EntitledDays = table.Column<double>(type: "float(5)", precision: 5, scale: 2, nullable: false),
                     UsedDays = table.Column<double>(type: "float(5)", precision: 5, scale: 2, nullable: false),
                     RemainingDays = table.Column<double>(type: "float", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsExpired = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {

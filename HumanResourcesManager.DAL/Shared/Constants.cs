@@ -70,5 +70,14 @@
         // ==================================================
         public const int Success = 200;
         public const int Failed = 500;
+        // ==================================================
+        // 8 AnnualLeaveBalance
+        // ==================================================
+        public const int MonthsInYear = 12;
+        public const double AnnualLeavePerYear = 12;
+        // ==================================================
+        // 9 LeaveType
+        // ==================================================
+        public const int MATERNITY_MONTHS = 6;
     }
 }

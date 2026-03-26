@@ -11,21 +11,30 @@ public class AttendanceFinalizeJob : BackgroundService
         _serviceProvider = serviceProvider;
     }
 
+    private DateTime GetVietnamNow()
+    {
+        return TimeZoneInfo.ConvertTimeFromUtc(
+            DateTime.UtcNow,
+            TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time")
+        );
+    }
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var now = DateTime.Now;
+            var now = GetVietnamNow();
 
-            // 20:10 mỗi ngày
-            if (now.Hour == 20 && now.Minute == 10)
+            // 20:10 - 20: 15 mỗi ngày
+            if (now.TimeOfDay >= new TimeSpan(20, 10, 0) &&
+                now.TimeOfDay < new TimeSpan(20, 15, 0))
             {
                 using (var scope = _serviceProvider.CreateScope())
                 {
                     var service = scope.ServiceProvider
                         .GetRequiredService<IAttendanceService>();
 
-                    service.FinalizeDailyAttendance();
+                    service.FinalizeDailyAttendance(now);
                 }
 
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);

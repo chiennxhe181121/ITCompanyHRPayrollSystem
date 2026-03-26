@@ -1,133 +1,436 @@
-﻿@model IEnumerable<HumanResourcesManager.BLL.DTOs.EmployeeDTO>
+﻿@model IEnumerable<HumanResourcesManager.DAL.Models.Employee>
 
 @{
-    ViewData["Title"] = "Employee Management";
+    ViewData["Title"] = "Quản Lý Nhân Sự";
+    Layout = "~/Views/HR/_HRLayout.cshtml";
+
+    var currentEmail = User.Identity?.Name ?? "";
+
+    // 1. Cấu hình Pagination (PHẢI TRÙNG VỚI CONTROLLER)
+    int pageSize = 10;
+
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    int stt = (currentPage - 1) * pageSize; // Logic tính STT chuẩn
+
+    // 2. Lấy Params Filter
+    string keyword = ViewBag.Keyword as string;
+    int? deptId = ViewBag.DeptId as int?;
+    int? posId = ViewBag.PosId as int?;
+    int? status = ViewBag.Status as int?;
+
+    // 3. Sort Params
+    string sortOrder = ViewBag.SortOrder as string; // "date_asc" hoặc "date_desc"
+    string nextSort = sortOrder == "date_asc" ? "date_desc" : "date_asc";
+    string sortIcon = sortOrder == "date_asc" ? "fa-sort-up" : (sortOrder == "date_desc" ? "fa-sort-down" : "fa-sort");
 }
 
-<h2>Employee Management</h2>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
-<table class="table table-bordered">
-    <thead class="table-dark">
-        <tr>
-            <th>Code</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Department</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var e in Model)
-        {
-            <tr>
-                <td>@e.EmployeeCode</td>
-                <td>@e.FullName</td>
-                <td>@e.Email</td>
-                <td>@e.DepartmentName</td>
-                <td>
-                    <button class="btn btn-info btn-sm"
-                            data-bs-toggle="modal"
-                            data-bs-target="#detailModal"
-                            onclick="showDetail('@e.EmployeeCode','@e.FullName','@e.Email','@e.Phone','@e.Address')">
-                        Detail
-                    </button>
+<div id="notification-area" class="fixed top-5 right-5 z-50 space-y-2 pointer-events-none">
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert-toast pointer-events-auto flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-xl shadow-lg border-l-4 border-red-500 animate__animated animate__fadeInRight">
+            <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-red-500 bg-red-100 rounded-lg"><i class="fa-solid fa-circle-exclamation"></i></div>
+            <div class="ml-3 text-sm font-medium text-red-600">@TempData["Error"]</div>
+        </div>
+    }
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-toast pointer-events-auto flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-xl shadow-lg border-l-4 border-emerald-500 animate__animated animate__fadeInRight">
+            <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-emerald-500 bg-emerald-100 rounded-lg"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="ml-3 text-sm font-medium text-emerald-600">@TempData["Success"]</div>
+        </div>
+    }
+</div>
 
-                    <button class="btn btn-warning btn-sm"
-                            data-bs-toggle="modal"
-                            data-bs-target="#editModal"
-                            onclick="showEdit('@e.EmployeeId','@e.FullName','@e.Email','@e.Phone','@e.Address')">
-                        Edit
-                    </button>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div class="px-8 py-6 bg-white border-b border-slate-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="animate__animated animate__fadeInLeft">
+        <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight flex items-center gap-3">
+            <span class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-emerald-200">
+                <i class="fa-solid fa-id-card-clip"></i>
+            </span>
+            Hồ Sơ Nhân Sự
+        </h2>
+        <p class="text-sm text-slate-500 mt-1 ml-14">Quản lý thông tin nhân viên và hợp đồng lao động.</p>
+    </div>
 
-<!-- ================= DETAIL MODAL ================= -->
-<div class="modal fade" id="detailModal">
-    <div class="modal-dialog">
-        <div class="modal-content">
+    <a asp-action="Create" class="animate__animated animate__fadeInRight group inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-0.5">
+        <i class="fa-solid fa-user-plus transition-transform group-hover:rotate-12"></i> <span>Thêm nhân viên</span>
+    </a>
+</div>
 
-            <div class="modal-header">
-                <h5 class="modal-title">Employee Detail</h5>
-                <button class="btn-close" data-bs-dismiss="modal"></button>
+<div class="px-8 py-5 bg-slate-50 border-b border-slate-200 sticky top-0 z-20 backdrop-blur-sm bg-slate-50/90">
+    <div class="flex flex-col 2xl:flex-row gap-4 justify-between items-end 2xl:items-center">
+
+        <form method="get" class="flex flex-wrap gap-3 items-center w-full 2xl:w-auto">
+
+            <div class="relative group w-full sm:w-60">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors"></i>
+                <input name="keyword" value="@keyword" placeholder="Tìm tên, mã, email..."
+                       class="w-full pl-10 pr-3 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm transition-all" />
             </div>
 
-            <div class="modal-body">
-                <p><b>Code:</b> <span id="d_code"></span></p>
-                <p><b>Name:</b> <span id="d_name"></span></p>
-                <p><b>Email:</b> <span id="d_email"></span></p>
-                <p><b>Phone:</b> <span id="d_phone"></span></p>
-                <p><b>Address:</b> <span id="d_address"></span></p>
+            <div class="w-full sm:w-48">
+                <select name="deptId"
+                        asp-items="@(new SelectList(ViewBag.Departments, "Value", "Text", deptId))"
+                        class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm cursor-pointer">
+                    <option value="">-- Phòng ban --</option>
+                </select>
             </div>
 
+            <div class="w-full sm:w-48">
+                <select name="posId"
+                        asp-items="@(new SelectList(ViewBag.Positions, "Value", "Text", posId))"
+                        class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm cursor-pointer">
+                    <option value="">-- Chức vụ --</option>
+                </select>
+            </div>
+
+            <div class="w-full sm:w-36">
+                <select name="status" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm cursor-pointer">
+                    <option value="">-- Trạng thái --</option>
+                    <option value="1" selected="@(status == 1)">Active</option>
+                    <option value="0" selected="@(status == 0)">Inactive</option>
+                </select>
+            </div>
+
+            <button class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors">
+                <i class="fa-solid fa-filter mr-1"></i> Lọc
+            </button>
+            <a asp-action="Index" class="bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 px-3 py-2.5 rounded-xl text-sm transition-colors" title="Làm mới">
+                <i class="fa-solid fa-rotate-right"></i>
+            </a>
+        </form>
+
+        <div class="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+            <button id="btnGridView" onclick="switchView('grid')" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-500 hover:text-emerald-600">
+                <i class="fa-solid fa-border-all mr-1"></i> Grid
+            </button>
+            <button id="btnListView" onclick="switchView('list')" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-500 hover:text-emerald-600">
+                <i class="fa-solid fa-list mr-1"></i> List
+            </button>
         </div>
     </div>
 </div>
 
-<!-- ================= EDIT MODAL ================= -->
-<div class="modal fade" id="editModal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-
-            <form asp-action="Edit" asp-controller="Employee" method="post">
-                @Html.AntiForgeryToken()
-
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit Employee</h5>
-                    <button class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-
-                <div class="modal-body">
-                    <input type="hidden" name="EmployeeId" id="e_id" />
-
-                    <div class="mb-2">
-                        <label>Name</label>
-                        <input name="FullName" id="e_name" class="form-control" />
-                    </div>
-
-                    <div class="mb-2">
-                        <label>Email</label>
-                        <input name="Email" id="e_email" class="form-control" />
-                    </div>
-
-                    <div class="mb-2">
-                        <label>Phone</label>
-                        <input name="Phone" id="e_phone" class="form-control" />
-                    </div>
-
-                    <div class="mb-2">
-                        <label>Address</label>
-                        <input name="Address" id="e_address" class="form-control" />
-                    </div>
-                </div>
-
-                <div class="modal-footer">
-                    <button class="btn btn-success" type="submit">Save</button>
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                </div>
-
-            </form>
-
+<div class="p-8 bg-slate-100 min-h-screen">
+    @if (Model == null || !Model.Any())
+    {
+        <div class="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-slate-300 animate__animated animate__fadeInUp">
+            <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                <i class="fa-solid fa-user-group text-4xl text-slate-300"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-600">Không tìm thấy dữ liệu</h3>
+            <p class="text-slate-400 text-sm mt-1">Thử thay đổi bộ lọc hoặc thêm hồ sơ nhân sự mới.</p>
         </div>
-    </div>
+    }
+    else
+    {
+        <div id="gridViewContainer" class="animate__animated animate__fadeIn">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
+                @foreach (var item in Model)
+                {
+                    bool isSelf = (item.Email == currentEmail);
+                    bool isActive = (item.Status == 1);
+
+                    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative group flex flex-col h-full">
+                        <div class="absolute top-4 right-4 z-10">
+                            @if (isActive)
+                            {
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-50 text-green-600 border border-green-100"><span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5 animate-pulse"></span> Active</span>
+                            }
+                            else
+                            {
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200">Inactive</span>
+                            }
+                        </div>
+
+                        <div class="flex flex-col items-center mb-4">
+                            <a href="#" class="relative block mb-3 group-hover:scale-105 transition-transform duration-300">
+                                @if (!string.IsNullOrEmpty(item.ImgAvatar))
+                                {
+                                    var imgSrc = item.ImgAvatar.StartsWith("/") ? item.ImgAvatar : "/" + item.ImgAvatar;
+                                    <img src="@imgSrc" class="w-24 h-24 rounded-full object-cover border-4 border-slate-50 shadow-md" />
+                                }
+                                else
+                                {
+                                    <div class="w-24 h-24 rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 text-white flex items-center justify-center font-bold text-3xl shadow-md border-4 border-slate-50">@(item.FullName?.Substring(0, 1) ?? "U")</div>
+                                }
+                                @if (item.UserId != null)
+                                {
+                                    <div class="absolute bottom-0 right-0 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow border border-slate-100 text-emerald-500 text-xs" title="Đã có tài khoản"><i class="fa-solid fa-user-check"></i></div>
+                                }
+                            </a>
+                            <h3 class="text-lg font-bold text-slate-800 text-center line-clamp-1" title="@item.FullName">@item.FullName</h3>
+                            <p class="text-xs text-emerald-600 font-bold uppercase tracking-wide mt-1">@item.Position?.PositionName</p>
+                            <span class="mt-2 px-2 py-1 bg-slate-50 border border-slate-100 rounded text-[10px] text-slate-500 font-mono font-bold">@item.EmployeeCode</span>
+                        </div>
+
+                        <div class="flex justify-center mb-4">
+                            <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-semibold border border-emerald-100">
+                                <i class="fa-regular fa-calendar-check"></i>
+                                <span>Vào làm: @item.HireDate.ToString("dd/MM/yyyy")</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2 mb-6 text-sm text-slate-500 flex-grow border-t border-slate-100 pt-4">
+                            <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 flex-shrink-0"><i class="fa-regular fa-building"></i></div><span class="truncate">@item.Department?.DepartmentName</span></div>
+                            <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 flex-shrink-0"><i class="fa-regular fa-envelope"></i></div><span class="truncate" title="@item.Email">@item.Email</span></div>
+                            <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 flex-shrink-0"><i class="fa-solid fa-phone"></i></div><span>@item.Phone</span></div>
+                        </div>
+
+                        <div class="grid grid-cols-4 gap-2 pt-4 border-t border-slate-100">
+                            @* <a href="/HumanResourcesManager/contracts?employeeId=@item.EmployeeId"
+                               class="col-span-2 py-2 flex items-center justify-center gap-2 rounded-lg bg-emerald-50 text-emerald-600 text-xs font-bold hover:bg-emerald-600 hover:text-white transition-colors"
+                               title="Xem danh sách hợp đồng">
+                                <i class="fa-solid fa-file-contract"></i> Hợp đồng
+                            </a> *@
+                            <a href="/Contracts/Index?employeeId=@item.EmployeeId"
+                               class="col-span-2 py-2 flex items-center justify-center gap-2 rounded-lg bg-emerald-50 text-emerald-600 text-xs font-bold hover:bg-emerald-600 hover:text-white transition-colors"
+                               title="Xem danh sách hợp đồng">
+                                <i class="fa-solid fa-file-contract"></i> Hợp đồng
+                            </a>
+
+                            @if (isActive)
+                            {
+                                <a asp-action="Edit" asp-route-id="@item.EmployeeId" asp-route-page="@currentPage" asp-route-keyword="@keyword" asp-route-deptId="@deptId" asp-route-posId="@posId" asp-route-status="@status" asp-route-sortOrder="@sortOrder" class="py-2 flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:border-emerald-500 hover:text-emerald-500 transition-colors"><i class="fa-solid fa-pen"></i></a>
+                            }
+                            else
+                            {
+                                <button disabled class="py-2 flex items-center justify-center rounded-lg border border-slate-100 text-slate-300 cursor-not-allowed"><i class="fa-solid fa-pen"></i></button>
+                            }
+                            @if (isActive)
+                            {
+                                if (isSelf)
+                                {
+                                    <button disabled class="py-2 flex items-center justify-center rounded-lg border border-slate-100 text-slate-300 cursor-not-allowed"><i class="fa-solid fa-trash"></i></button>
+                                }
+                                else
+                                {
+                                    <button onclick="confirmAction(@item.EmployeeId, 'Inactive')" class="py-2 flex items-center justify-center rounded-lg border border-slate-200 text-red-500 hover:bg-red-500 hover:text-white transition-colors"><i class="fa-solid fa-user-xmark"></i></button>
+                                    <form id="action-form-inactive-@item.EmployeeId" asp-action="Inactive" asp-route-id="@item.EmployeeId" asp-route-page="@currentPage" asp-route-keyword="@keyword" asp-route-deptId="@deptId" asp-route-posId="@posId" asp-route-status="@status" asp-route-sortOrder="@sortOrder" method="post" class="hidden"></form>
+                                }
+                            }
+                            else
+                            {
+                                <button onclick="confirmAction(@item.EmployeeId, 'Active')" class="py-2 flex items-center justify-center rounded-lg border border-slate-200 text-green-600 hover:bg-green-600 hover:text-white transition-colors"><i class="fa-solid fa-rotate-left"></i></button>
+                                <form id="action-form-active-@item.EmployeeId" asp-action="Active" asp-route-id="@item.EmployeeId" asp-route-page="@currentPage" asp-route-keyword="@keyword" asp-route-deptId="@deptId" asp-route-posId="@posId" asp-route-status="@status" asp-route-sortOrder="@sortOrder" method="post" class="hidden"></form>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div id="listViewContainer" class="animate__animated animate__fadeIn hidden">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-slate-50/50 text-slate-600 font-bold uppercase text-xs tracking-wider border-b border-slate-200">
+                            <tr>
+                                <th class="px-6 py-4 w-12 text-center">STT</th>
+                                <th class="px-6 py-4">Nhân viên</th>
+                                <th class="px-6 py-4">Mã NV</th>
+                                <th class="px-6 py-4">Chức vụ / Phòng ban</th>
+
+                                <th class="px-6 py-4 cursor-pointer hover:bg-slate-100 transition-colors group/sort"
+                                    onclick="window.location.href='?sortOrder=@nextSort&keyword=@keyword&deptId=@deptId&posId=@posId&status=@status&page=@currentPage'">
+                                    <div class="flex items-center gap-2 select-none">
+                                        Ngày vào làm
+                                        <i class="fa-solid @sortIcon text-slate-400 group-hover/sort:text-emerald-600"></i>
+                                    </div>
+                                </th>
+
+                                <th class="px-6 py-4 text-center">Trạng thái</th>
+                                <th class="px-6 py-4 text-right">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @foreach (var item in Model)
+                            {
+                                bool isSelf = (item.Email == currentEmail);
+                                bool isActive = (item.Status == 1);
+
+                                <tr class="hover:bg-emerald-50/30 transition-colors group">
+                                    <td class="px-6 py-4 text-center text-slate-400 font-medium">@(++stt)</td>
+
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            @if (!string.IsNullOrEmpty(item.ImgAvatar))
+                                            {
+                                                var imgSrc = item.ImgAvatar.StartsWith("/") ? item.ImgAvatar : "/" + item.ImgAvatar;
+                                                <img src="@imgSrc" class="w-9 h-9 rounded-full object-cover border border-slate-200" />
+                                            }
+                                            else
+                                            {
+
+                                                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 text-white flex items-center justify-center font-bold text-xs">@(item.FullName?.Substring(0, 1) ?? "U")</div>
+                                            }
+                                            <div><div class="font-bold text-slate-700 text-sm">@item.FullName</div><div class="text-xs text-slate-400">@item.Email</div></div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4"><span class="font-mono text-xs font-bold bg-slate-100 px-2 py-1 rounded text-slate-600">@item.EmployeeCode</span></td>
+                                    <td class="px-6 py-4"><div class="text-emerald-600 font-bold text-xs uppercase">@item.Position?.PositionName</div><div class="text-slate-500 text-xs">@item.Department?.DepartmentName</div></td>
+
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-col items-start justify-center">
+                                            <div class="flex items-center gap-1.5 text-slate-700 font-bold text-xs bg-slate-100 px-2 py-1 rounded-md border border-slate-200">
+                                                <i class="fa-regular fa-calendar text-slate-400"></i> @item.HireDate.ToString("dd/MM/yyyy")
+                                            </div>
+                                            <span class="text-[10px] text-slate-400 mt-0.5 ml-1 capitalize">@item.HireDate.ToString("dddd", new System.Globalization.CultureInfo("vi-VN"))</span>
+                                        </div>
+                                    </td>
+
+                                    <td class="px-6 py-4 text-center">
+                                        @if (isActive)
+                                        {
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200">Active</span>
+                                        }
+                                        else
+                                        {
+
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200">Inactive</span>
+                                        }
+                                    </td>
+
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="flex items-center justify-end gap-2 opacity-80 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+
+                                            @* <a href="/HumanResourcesManager/contracts?employeeId=@item.EmployeeId"
+                                               class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
+                                               title="Xem danh sách hợp đồng">
+                                                <i class="fa-solid fa-file-contract text-xs"></i>
+                                            </a> *@
+
+                                            <a href="/Contracts/Index?employeeId=@item.EmployeeId"
+                                               class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
+                                               title="Xem danh sách hợp đồng">
+                                                <i class="fa-solid fa-file-contract text-xs"></i>
+                                            </a>
+
+
+                                            @if (isActive)
+                                            {
+                                                <a asp-action="Edit" asp-route-id="@item.EmployeeId" asp-route-page="@currentPage" asp-route-keyword="@keyword" asp-route-deptId="@deptId" asp-route-posId="@posId" asp-route-status="@status" asp-route-sortOrder="@sortOrder" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"><i class="fa-solid fa-pen text-xs"></i></a>
+                                            }
+                                            @if (isActive)
+                                            {
+                                                if (isSelf)
+                                                {
+                                                    <button disabled class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-300 cursor-not-allowed"><i class="fa-solid fa-trash text-xs"></i></button>
+                                                }
+                                                else
+                                                {
+                                                    <button onclick="confirmAction(@item.EmployeeId, 'Inactive')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm"><i class="fa-solid fa-user-xmark text-xs"></i></button>
+                                                    <form id="action-form-inactive-@item.EmployeeId" asp-action="Inactive" asp-route-id="@item.EmployeeId" asp-route-page="@currentPage" asp-route-keyword="@keyword" asp-route-deptId="@deptId" asp-route-posId="@posId" asp-route-status="@status" asp-route-sortOrder="@sortOrder" method="post" class="hidden"></form>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <button onclick="confirmAction(@item.EmployeeId, 'Active')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-green-600 hover:bg-green-600 hover:text-white transition-all shadow-sm"><i class="fa-solid fa-rotate-left text-xs"></i></button>
+                                                <form id="action-form-active-@item.EmployeeId" asp-action="Active" asp-route-id="@item.EmployeeId" asp-route-page="@currentPage" asp-route-keyword="@keyword" asp-route-deptId="@deptId" asp-route-posId="@posId" asp-route-status="@status" asp-route-sortOrder="@sortOrder" method="post" class="hidden"></form>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        @if (totalPages > 1)
+        {
+            <div class="mt-8 flex justify-center pb-8">
+                <nav class="inline-flex rounded-xl shadow-sm bg-white p-1.5 gap-1 border border-slate-200">
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        <a href="?page=@i&keyword=@keyword&status=@status&deptId=@deptId&posId=@posId&sortOrder=@sortOrder"
+                           class="w-9 h-9 flex items-center justify-center rounded-lg text-sm font-bold transition-all @(i == currentPage ? "bg-emerald-600 text-white shadow-md scale-105" : "text-slate-600 hover:bg-slate-100")">
+                            @i
+                        </a>
+                    }
+                </nav>
+            </div>
+        }
+    }
 </div>
 
 <script>
-    function showDetail(code, name, email, phone, address) {
-        document.getElementById("d_code").innerText = code;
-        document.getElementById("d_name").innerText = name;
-        document.getElementById("d_email").innerText = email;
-        document.getElementById("d_phone").innerText = phone;
-        document.getElementById("d_address").innerText = address;
+    document.addEventListener("DOMContentLoaded", function () {
+        const alerts = document.querySelectorAll(".alert-toast");
+        if (alerts.length > 0) {
+            setTimeout(() => {
+                alerts.forEach(el => {
+                    el.classList.remove("animate__fadeInRight");
+                    el.classList.add("animate__fadeOutRight");
+                    el.addEventListener('animationend', () => el.remove());
+                });
+            }, 3000);
+        }
+        const savedMode = localStorage.getItem('empViewMode') || 'grid';
+        switchView(savedMode);
+    });
+
+    function switchView(mode) {
+        const listContainer = document.getElementById('listViewContainer');
+        const gridContainer = document.getElementById('gridViewContainer');
+        const btnList = document.getElementById('btnListView');
+        const btnGrid = document.getElementById('btnGridView');
+
+        if (mode === 'grid') {
+            listContainer.classList.add('hidden');
+            gridContainer.classList.remove('hidden');
+            btnGrid.classList.add('bg-emerald-100', 'text-emerald-700');
+            btnList.classList.remove('bg-emerald-100', 'text-emerald-700');
+        } else {
+            gridContainer.classList.add('hidden');
+            listContainer.classList.remove('hidden');
+            btnList.classList.add('bg-emerald-100', 'text-emerald-700');
+            btnGrid.classList.remove('bg-emerald-100', 'text-emerald-700');
+        }
+        localStorage.setItem('empViewMode', mode);
     }
 
-    function showEdit(id, name, email, phone, address) {
-        document.getElementById("e_id").value = id;
-        document.getElementById("e_name").value = name;
-        document.getElementById("e_email").value = email;
-        document.getElementById("e_phone").value = phone;
-        document.getElementById("e_address").value = address;
+    function confirmAction(id, actionType) {
+        let title, text, btnColor, btnText, icon;
+        if (actionType === 'Inactive') {
+            title = 'Xác nhận thôi việc?';
+            text = "Hồ sơ nhân viên này sẽ bị vô hiệu hóa và tài khoản đăng nhập (nếu có) sẽ bị khóa.";
+            btnColor = '#ef4444';
+            btnText = 'Xác nhận thôi việc';
+            icon = 'warning';
+        } else {
+            title = 'Kích hoạt lại?';
+            text = "Khôi phục hồ sơ nhân viên và mở khóa tài khoản.";
+            btnColor = '#10b981';
+            btnText = 'Kích hoạt';
+            icon = 'question';
+        }
+
+        Swal.fire({
+            title: title,
+            text: text,
+            icon: icon,
+            showCancelButton: true,
+            confirmButtonColor: btnColor,
+            cancelButtonColor: '#64748b',
+            confirmButtonText: btnText,
+            cancelButtonText: 'Hủy',
+            background: '#fff',
+            customClass: {
+                popup: 'rounded-2xl shadow-xl',
+                confirmButton: 'rounded-lg px-4 py-2 font-bold',
+                cancelButton: 'rounded-lg px-4 py-2 font-medium'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const formId = actionType === 'Inactive' ? 'action-form-inactive-' + id : 'action-form-active-' + id;
+                document.getElementById(formId).submit();
+            }
+        });
     }
 </script>

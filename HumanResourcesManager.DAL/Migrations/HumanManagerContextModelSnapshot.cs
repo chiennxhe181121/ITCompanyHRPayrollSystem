@@ -64,6 +64,9 @@ namespace HumanResourcesManager.DAL.Migrations
                         .HasPrecision(5, 2)
                         .HasColumnType("float(5)");
 
+                    b.Property<bool>("IsExpired")
+                        .HasColumnType("bit");
+
                     b.Property<double>("RemainingDays")
                         .HasColumnType("float");
 

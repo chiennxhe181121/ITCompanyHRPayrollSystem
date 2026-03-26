@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HumanResourcesManager.DAL.Migrations
 {
     [DbContext(typeof(HumanManagerContext))]
-    [Migration("20260215154452_InitDatabase")]
-    partial class InitDatabase
+    [Migration("20260225094230_HumanManagerDB")]
+    partial class HumanManagerDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -66,6 +66,9 @@ namespace HumanResourcesManager.DAL.Migrations
                     b.Property<double>("EntitledDays")
                         .HasPrecision(5, 2)
                         .HasColumnType("float(5)");
+
+                    b.Property<bool>("IsExpired")
+                        .HasColumnType("bit");
 
                     b.Property<double>("RemainingDays")
                         .HasColumnType("float");

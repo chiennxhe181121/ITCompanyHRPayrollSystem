@@ -12,6 +12,13 @@ public class LeaveRequestRepository : ILeaveRequestRepository
         _context = context;
     }
 
+    public IQueryable<LeaveRequest> GetQueryableByEmployeeId(int employeeId)
+    {
+        return _context.LeaveRequests
+            .Include(x => x.LeaveType)
+            .Where(x => x.EmployeeId == employeeId);
+    }
+
     public List<LeaveRequest> GetAll()
         => _context.LeaveRequests
             .Include(x => x.Employee)

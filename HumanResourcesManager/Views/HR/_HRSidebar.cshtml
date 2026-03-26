@@ -1,0 +1,211 @@
+@using HumanResourcesManager.BLL.DTOs
+@using HumanResourcesManager.Helpers
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    // 1. Lấy User từ Session
+    var user = HttpContextAccessor.HttpContext?.Session.GetObject<UserSessionDTO>("USER_SESSION");
+
+    var fullName = user?.FullName ?? "Guest";
+    var roleCode = user?.RoleCode ?? "HR";
+
+    // 2. Xử lý Avatar an toàn
+    var imgAvatar = user?.ImgAvatar;
+
+    if (!string.IsNullOrEmpty(imgAvatar) && !imgAvatar.StartsWith("/"))
+    {
+        imgAvatar = "/" + imgAvatar;
+    }
+
+    // Chữ cái đầu tên (Fallback)
+    var firstLetter = !string.IsNullOrEmpty(fullName) ? fullName.Substring(0, 1).ToUpper() : "G";
+
+    // Đường dẫn hiện tại để Active menu
+    var path = HttpContextAccessor.HttpContext?.Request.Path.Value?.ToLower() ?? "";
+
+    string IsActive(string checkPath, bool exact = false)
+    {
+        if (exact) return path == checkPath ? "active" : "";
+        return path.Contains(checkPath) ? "active" : "";
+    }
+}
+
+<aside class="w-72 bg-white border-r border-slate-200 flex-shrink-0 h-screen sticky top-0 font-sans z-30 hidden lg:block shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+    <div class="h-full flex flex-col justify-between">
+
+        <div>
+            <div class="h-16 flex items-center px-6 border-b border-slate-100">
+                <div class="flex items-center gap-2 text-indigo-700 font-extrabold text-xl tracking-tight">
+                    <i class="fa-solid fa-layer-group text-2xl"></i>
+                    <span>HR Workspace</span>
+                </div>
+            </div>
+
+            <div class="p-5">
+                <div class="flex items-center gap-4 p-3 rounded-2xl bg-slate-50 border border-slate-100">
+
+                    <div class="relative flex-shrink-0">
+                        @if (!string.IsNullOrEmpty(imgAvatar))
+                        {
+                            <img src="@imgAvatar"
+                                 alt="Avatar"
+                                 class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md shadow-indigo-200"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white items-center justify-center font-bold shadow-md shadow-indigo-200 border-2 border-white hidden">
+                                @firstLetter
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold shadow-md shadow-indigo-200 border-2 border-white">
+                                @firstLetter
+                            </div>
+                        }
+
+                        <span class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></span>
+                    </div>
+
+                    <div class="overflow-hidden">
+                        <p class="font-bold text-slate-800 text-sm truncate" title="@fullName">@fullName</p>
+                        <p class="text-xs text-slate-500 font-medium truncate mt-0.5">@roleCode</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="px-4 space-y-6 overflow-y-auto custom-scrollbar" style="max-height: calc(100vh - 220px);">
+
+                <div>
+                    <p class="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Quản lý nhân sự</p>
+                    <div class="space-y-1">
+
+                        @* xóa hết data-tab="employees" không dùng js *@
+                        <a href="/HumanResourcesManager/hr/employees"
+                           onclick="window.location.href=this.href; return false;"
+                        class="nav-item @(IsActive("/hr/employees"))">
+                            <span class="nav-icon"><i class="fa-solid fa-user-group"></i></span>
+                            <span class="font-medium">Nhân viên</span>
+                        </a>
+
+                        <a href="/HumanResourcesManager/hr/departments"
+                           onclick="window.location.href=this.href; return false;"
+                        class="nav-item @(IsActive("/hr/departments"))">
+                            <span class="nav-icon"><i class="fa-solid fa-building-user"></i></span>
+                            <span class="font-medium">Phòng ban</span>
+                        </a>
+
+                        <a href="/Contracts/Index"
+                           onclick="window.location.href=this.href; return false;"
+                        class="nav-item @(IsActive("/contracts"))">
+                            <span class="nav-icon"><i class="fa-solid fa-file-contract"></i></span>
+                            <span class="font-medium">Hợp đồng</span>
+                        </a>
+
+                        <a href="#" data-tab="leaves"
+                           onclick="window.location.href=this.href; return false;"
+                        class="nav-item @(IsActive("leaves"))">
+                            <span class="nav-icon"><i class="fa-solid fa-calendar-check"></i></span>
+                            <span class="font-medium">Duyệt nghỉ phép</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Tiền lương & Báo cáo</p>
+                    <div class="space-y-1">
+                        <a href="#"
+                           onclick="window.location.href=this.href; return false;"
+                        class="nav-item @(IsActive("payrolls"))">
+                            <span class="nav-icon"><i class="fa-solid fa-money-check-dollar"></i></span>
+                            <span class="font-medium">Bảng lương</span>
+                        </a>
+
+                        <a href="#"
+                           onclick="window.location.href=this.href; return false;"
+                        class="nav-item @(IsActive("reports"))">
+                            <span class="nav-icon"><i class="fa-solid fa-chart-line"></i></span>
+                            <span class="font-medium">Báo cáo lương</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Cá nhân</p>
+                    <div class="space-y-1">
+                        <a href="/HumanResourcesManager/hr/myprofile"
+                           onclick="window.location.href=this.href; return false;"
+                        class="nav-item @(IsActive("/hr/myprofile"))">
+                            <span class="nav-icon"><i class="fa-solid fa-id-badge"></i></span>
+                            <span class="font-medium">Hồ sơ cá nhân</span>
+                        </a>
+                    </div>
+                </div>
+
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+            <a id="logoutBtn" href="@Url.Action("Logout", "Auth")"
+               class="group flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all duration-200 shadow-sm">
+                <i class="fa-solid fa-arrow-right-from-bracket transition-transform group-hover:-translate-x-1"></i>
+                <span>Đăng xuất</span>
+            </a>
+        </div>
+    </div>
+</aside>
+
+<style>
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 16px;
+        border-radius: 12px;
+        color: #64748b;
+        transition: all 0.2s ease-in-out;
+        font-size: 0.875rem;
+    }
+
+        .nav-item .nav-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            font-size: 1.1rem;
+            transition: transform 0.2s;
+        }
+
+        .nav-item:hover {
+            background-color: #f1f5f9;
+            color: #4f46e5;
+        }
+
+            .nav-item:hover .nav-icon {
+                transform: translateX(3px);
+            }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            font-weight: 600;
+        }
+
+            .nav-item.active .nav-icon {
+                color: rgba(255,255,255,0.9);
+            }
+
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1;
+        border-radius: 20px;
+    }
+</style>
