@@ -1,0 +1,172 @@
+﻿@using HumanResourcesManager.BLL.DTOs
+@model PayrollDTO
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 14px;
+            margin: 30px;
+            color: #333;
+        }
+
+        /* HEADER */
+        .header {
+            font-size: 28px;
+            font-weight: bold;
+            color: #0ea5e9; /* xanh nước biển */
+            margin-bottom: 10px;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .info {
+            margin-bottom: 6px;
+        }
+
+        /* TABLE */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        td, th {
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+
+        th {
+            background-color: #f8fafc;
+            font-weight: bold;
+        }
+
+        .right {
+            text-align: right;
+        }
+
+        .red {
+            color: #dc2626;
+        }
+
+        .green {
+            color: #16a34a;
+        }
+
+        .total {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        /* SIGN */
+        .sign-table {
+            width: 100%;
+            margin-top: 50px;
+        }
+
+            .sign-table td {
+                border: none;
+                text-align: center;
+            }
+
+        /* FOOTER */
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <div class="header">HRM System</div>
+
+    <!-- TITLE -->
+    <div class="title">BẢNG LƯƠNG</div>
+
+    <!-- INFO -->
+    <div class="info"><b>Nhân viên:</b> @(Model?.EmployeeName ?? "N/A")</div>
+    <div class="info"><b>Tháng/Năm:</b> @(Model?.Month)/@(Model?.Year)</div>
+
+    <!-- TABLE -->
+    <table>
+        <thead>
+            <tr>
+                <th>Mô tả</th>
+                <th class="right">Số tiền</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            @if (Model?.PayrollDetails != null && Model.PayrollDetails.Any())
+            {
+                foreach (var item in Model.PayrollDetails)
+                {
+                    var isDeduction = item.Type.ToString() == "Deduction";
+
+                    <tr>
+                        <td>@item.Description</td>
+                        <td class="right @(isDeduction ? "red" : "green")">
+                            @(isDeduction ? "-" : "+")@item.Amount.ToString("N0") VND
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="2" style="text-align:center;">
+                        Không có dữ liệu chi tiết
+                    </td>
+                </tr>
+            }
+
+            <!-- TOTAL -->
+            <tr>
+                <td class="total">Lương thực nhận</td>
+                <td class="right green total">
+                    @(Model?.NetSalary.ToString("N0") ?? "0") VND
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+
+    <!-- SIGNATURE -->
+    <table class="sign-table">
+        <tr>
+            <td>
+                <p><b>Nhân viên</b></p>
+                <br /><br /><br />
+                <p>(Ký tên)</p>
+            </td>
+
+            <td>
+                <p><b>Phòng Nhân sự</b></p>
+                <br /><br /><br />
+                <p>(Ký tên)</p>
+            </td>
+        </tr>
+    </table>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        2026 HumanResourcesManager · Built with ❤
+    </div>
+
+</body>
+</html>

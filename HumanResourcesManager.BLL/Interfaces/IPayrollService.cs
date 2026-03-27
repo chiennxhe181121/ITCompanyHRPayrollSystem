@@ -24,5 +24,6 @@ namespace HumanResourcesManager.BLL.Interfaces
         EmployeePayrollDetailDTO GetPayrollDetail(int payrollId, int employeeId);
 
         decimal GetCurrentSalary(int employeeId);
+        Task<List<PayrollAuditSimpleDTO>> AuditPayrollSimpleAsync(int id);
     }
 }
