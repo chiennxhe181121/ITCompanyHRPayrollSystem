@@ -18,6 +18,17 @@ namespace HumanResourcesManager.DAL.Repositories
             _context = context;
         }
 
+        // Tính tại C# (sau khi materialize) để tránh EF dịch sai .Date / AddDays lên SQL.
+        private static DateTime GetScheduleStartDateTime(OTSchedule s)
+            => s.StartDate.Date.Add(s.StartTime);
+
+        private static DateTime GetEffectiveEndDateTime(OTSchedule s)
+        {
+            if (s.StartDate.Date == s.EndDate.Date && s.EndTime <= s.StartTime)
+                return s.StartDate.Date.AddDays(1).Add(s.EndTime);
+            return s.EndDate.Date.Add(s.EndTime);
+        }
+
         public void Add(OTSchedule schedule)
         {
             _context.OTSchedules.Add(schedule);
@@ -68,53 +79,52 @@ namespace HumanResourcesManager.DAL.Repositories
 
         public IEnumerable<OTSchedule> GetExpiredOpenSchedules(DateTime now)
         {
-            var today = now.Date;
-            var currentTime = now.TimeOfDay;
-
-            return _context.OTSchedules
+            var open = _context.OTSchedules
                 .Include(s => s.Registrations)
-                .Where(s => (s.Status == 0 || s.Status == 5) &&
-                       // EndDate là end-inclusive => OT chạy tới hết ngày EndDate
-                       (s.EndDate < today || (s.EndDate == today && s.EndTime <= currentTime)))
+                .Where(s => s.Status == 0 || s.Status == 5)
                 .ToList();
+            return open.Where(s => now >= GetEffectiveEndDateTime(s));
         }
 
         public IEnumerable<OTSchedule> GetStartedOpenSchedules(DateTime now)
         {
-            var today = now.Date;
-            var currentTime = now.TimeOfDay;
-
-            return _context.OTSchedules
+            var open = _context.OTSchedules
                 .Include(s => s.Registrations)
-                .Where(s => (s.Status == 0 || s.Status == 5) &&
-                            // đã tới thời gian bắt đầu
-                            (s.StartDate < today || (s.StartDate == today && s.StartTime <= currentTime)) &&
-                            // chưa tới thời gian kết thúc (end-inclusive => hết hạn khi endTime <= currentTime)
-                            (s.EndDate > today || (s.EndDate == today && s.EndTime > currentTime)))
+                .Where(s => s.Status == 0 || s.Status == 5)
                 .ToList();
+            return open.Where(s =>
+                now >= GetScheduleStartDateTime(s) &&
+                now < GetEffectiveEndDateTime(s));
         }
 
         public IEnumerable<OTSchedule> GetUpcomingToActivateSchedules(DateTime now)
         {
-            var today = now.Date;
-            var currentTime = now.TimeOfDay;
-
-            return _context.OTSchedules
+            var upcoming = _context.OTSchedules
                 .Include(s => s.Registrations)
-                .Where(s => s.Status == 5 &&
-                       (s.StartDate < today || (s.StartDate == today && s.StartTime <= currentTime)))
+                .Where(s => s.Status == 5)
                 .ToList();
+            return upcoming.Where(s =>
+                s.StartDate.Date < now.Date ||
+                (s.StartDate.Date == now.Date && s.StartTime <= now.TimeOfDay));
         }
 
         public IEnumerable<OTSchedule> GetSchedulesToDeactivate(DateTime now)
         {
-            var today = now.Date;
-            var currentTime = now.TimeOfDay;
-
-            return _context.OTSchedules
-                .Where(s => s.Status == 0 &&
-                       (s.StartDate > today || (s.StartDate == today && s.StartTime > currentTime)))
+            var active = _context.OTSchedules
+                .Where(s => s.Status == 0)
                 .ToList();
+            return active.Where(s =>
+                s.StartDate.Date > now.Date ||
+                (s.StartDate.Date == now.Date && s.StartTime > now.TimeOfDay));
+        }
+
+        public IEnumerable<OTSchedule> GetSchedulesExpiredInDbBeforeOvertimeStart(DateTime now)
+        {
+            var candidates = _context.OTSchedules
+                .Include(s => s.Registrations)
+                .Where(s => s.Status == 3 || s.Status == 1)
+                .ToList();
+            return candidates.Where(s => now < GetScheduleStartDateTime(s));
         }
 
         public IEnumerable<OverTimeRequest> GetEmployeeOverTimeRequestsInRange(int employeeId, DateTime fromDate, DateTime toDate)
