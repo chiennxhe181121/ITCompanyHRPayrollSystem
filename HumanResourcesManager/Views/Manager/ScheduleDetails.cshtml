@@ -45,7 +45,7 @@
                         </button>
                     </form>
                 }
-                @if (Model.Status == 2 && Model.EndDate.Add(Model.EndTime) > DateTime.Now)
+                @if (Model.Status == 2 && OtScheduleDisplayHelper.GetEffectiveEndDateTime(Model.StartDate, Model.StartTime, Model.EndDate, Model.EndTime) > VietnamClock.Now)
                 {
                     <form asp-action="ReopenSchedule" asp-controller="Manager" asp-route-id="@Model.Id" method="post">
                         @Html.AntiForgeryToken()
@@ -149,11 +149,7 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
                         <div>
-                            @{
-                                var fromTimeStr = DateTime.Today.Add(Model.StartTime).ToString("h:mm tt");
-                                var toTimeStr = DateTime.Today.Add(Model.EndTime).ToString("h:mm tt");
-                            }
-                            <div class="text-sm font-bold text-slate-700">@fromTimeStr - @toTimeStr</div>
+                            <div class="text-sm font-bold text-slate-700">@OtScheduleDisplayHelper.FormatScheduleTimeRange12h(Model.StartDate, Model.StartTime, Model.EndDate, Model.EndTime)</div>
                             <div class="text-[10px] text-slate-400 mt-0.5 font-medium">Mỗi ngày trong lịch</div>
                         </div>
                     </div>
