@@ -35,4 +35,4 @@ jobs:
 
       # 5. Chạy unit tests
       - name: Run unit tests
-        run: dotnet test HumanResourcesManager.Tests/HumanResourcesManager.Tests.csproj --no-build --configuration Release --verbosity quiet --logger "console;verbosity=minimal"
+        run: dotnet test HumanResourcesManager.Tests/HumanResourcesManager.Tests.csproj --no-build --configuration Release --verbosity quiet --logger "console;verbosity=normal"
