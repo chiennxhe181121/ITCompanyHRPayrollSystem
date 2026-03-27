@@ -1,4 +1,4 @@
-﻿using HumanResourcesManager.BLL.DTOs;
+using HumanResourcesManager.BLL.DTOs;
 using HumanResourcesManager.BLL.DTOs.Employee;
 using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.DAL.Interfaces;
@@ -109,6 +109,158 @@ namespace HumanResourcesManager.BLL.Services
             _repo.SoftDelete(id);
             _repo.Save();
         }
+
+        public IEnumerable<EmployeeDTO> GetTeamMembers(int managerUserId)
+        {
+            var manager = _repo.GetByUserId(managerUserId);
+            if (manager == null)
+            {
+                return Enumerable.Empty<EmployeeDTO>();
+            }
+
+            return _repo.GetByDepartment(manager.DepartmentId, manager.EmployeeId)
+                .Select(e => new EmployeeDTO
+                {
+                    EmployeeId = e.EmployeeId,
+                    EmployeeCode = e.EmployeeCode,
+                    FullName = e.FullName,
+                    Gender = e.Gender,
+                    DateOfBirth = e.DateOfBirth,
+                    Email = e.Email,
+                    Phone = e.Phone,
+                    Address = e.Address,
+                    ImgAvatar = e.ImgAvatar,
+                    HireDate = e.HireDate,
+                    Status = e.Status,
+                    DepartmentId = e.DepartmentId,
+                    DepartmentName = e.Department?.DepartmentName,
+                    PositionId = e.PositionId,
+                    PositionName = e.Position?.PositionName
+                });
+        }
+
+        public int CountManagedEmployees(int managerUserId)
+        {
+            var manager = _repo.GetByUserId(managerUserId);
+            if (manager == null)
+            {
+                return 0;
+            }
+
+            return _repo.CountByDepartment(manager.DepartmentId, manager.EmployeeId);
+        }
+
+        public int CountPendingOvertimeRequests(int managerUserId)
+        {
+            var manager = _repo.GetByUserId(managerUserId);
+            if (manager == null)
+            {
+                return 0;
+            }
+
+            return _repo.CountPendingOvertimeRequestsForManager(manager.EmployeeId);
+        }
+
+        public int CountOvertimeSchedules(int managerUserId)
+        {
+            var manager = _repo.GetByUserId(managerUserId);
+            if (manager == null)
+            {
+                return 0;
+            }
+
+            return _repo.CountOvertimeSchedulesForManager(manager.EmployeeId);
+        }
+
+        public int CountCompletedOTSchedules(int managerUserId)
+        {
+            var manager = _repo.GetByUserId(managerUserId);
+            if (manager == null)
+            {
+                return 0;
+            }
+
+            return _repo.CountCompletedOTSchedulesForManager(manager.EmployeeId);
+        }
+
+        public IEnumerable<EmployeeDTO> GetEmployeesWithoutDepartment()
+        {
+            return _repo.GetEmployeesWithoutDepartment()
+                .Select(e => new EmployeeDTO
+                {
+                    EmployeeId = e.EmployeeId,
+                    EmployeeCode = e.EmployeeCode,
+                    FullName = e.FullName,
+                    Email = e.Email,
+                    Phone = e.Phone,
+                    PositionId = e.PositionId,
+                    PositionName = e.Position?.PositionName,
+                    Status = e.Status
+                });
+        }
+
+        public bool AddEmployeeToManagerTeam(int managerUserId, int employeeId, out string message)
+        {
+            message = string.Empty;
+
+            var manager = _repo.GetByUserId(managerUserId);
+            if (manager == null)
+            {
+                message = "Không tìm thấy thông tin quản lý.";
+                return false;
+            }
+
+            var success = _repo.AssignEmployeeToDepartment(employeeId, manager.DepartmentId);
+            if (!success)
+            {
+                message = "Chỉ có thể thêm nhân viên chưa thuộc phòng ban nào.";
+                return false;
+            }
+
+            message = "Thêm nhân viên vào phòng ban thành công.";
+            return true;
+        }
+
+        public bool ChangeTeamMemberStatus(int managerUserId, int employeeId, int status, out string message)
+        {
+            message = string.Empty;
+
+            if (status != 0 && status != 1)
+            {
+                message = "Trạng thái không hợp lệ.";
+                return false;
+            }
+
+            var manager = _repo.GetByUserId(managerUserId);
+            if (manager == null)
+            {
+                message = "Không tìm thấy thông tin quản lý.";
+                return false;
+            }
+
+            var teamMember = _repo.GetByDepartment(manager.DepartmentId, manager.EmployeeId)
+                .FirstOrDefault(e => e.EmployeeId == employeeId);
+
+            if (teamMember == null)
+            {
+                message = "Nhân viên không thuộc nhóm quản lý của bạn.";
+                return false;
+            }
+
+            var ok = _repo.SetStatus(employeeId, status);
+            if (!ok)
+            {
+                message = "Không thể cập nhật trạng thái nhân viên.";
+                return false;
+            }
+
+            message = status == 1
+                ? "Đã kích hoạt nhân viên thành công."
+                : "Đã chuyển nhân viên sang trạng thái ngừng hoạt động.";
+
+            return true;
+        }
+
 
         public EmployeeOwnerProfileDTO? GetOwnProfile(int userId)
         {

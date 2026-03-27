@@ -1,0 +1,84 @@
+@using HumanResourcesManager.DAL.Models
+@model List<OverTimeRequest>
+
+@{
+    Layout = "~/Views/Employee/_EmployeeLayout.cshtml";
+    ViewData["Title"] = "Chấm công OT";
+}
+
+<main class="flex-1 overflow-y-auto bg-slate-50/50">
+    @await Html.PartialAsync("_EmployeeHeader")
+
+    <div class="p-5 lg:p-8">
+        @await Html.PartialAsync("_EmployeeStats")
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
+            <div class="px-6 py-6 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800 tracking-tight">Chấm công OT hôm nay</h2>
+                        <p class="text-sm text-slate-500 mt-1">Check-in và check-out trong khung giờ OT của bạn.</p>
+                    </div>
+                    <a href="/HumanResourcesManager/employee/overtime"
+                       class="inline-flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-all">
+                        Quay lại Tăng ca
+                    </a>
+                </div>
+            </div>
+
+            <div class="p-6">
+                @if (TempData["Success"] != null)
+                {
+                    <div class="mb-4 p-4 text-sm text-green-700 bg-green-100 rounded-lg">@TempData["Success"]</div>
+                }
+                @if (TempData["Error"] != null)
+                {
+                    <div class="mb-4 p-4 text-sm text-red-700 bg-red-100 rounded-lg">@TempData["Error"]</div>
+                }
+
+                @if (Model == null || !Model.Any())
+                {
+                    <div class="py-10 text-center text-slate-500">
+                        Hôm nay bạn không có OT nào để chấm công.
+                    </div>
+                }
+                else
+                {
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        @foreach (var ot in Model)
+                        {
+                            var hasAttendance = ot.OTAttendance != null;
+                            var hasCheckIn = hasAttendance && ot.OTAttendance!.CheckIn != default;
+                            var hasCheckOut = hasAttendance && ot.OTAttendance!.CheckOut != default;
+
+                            <div class="rounded-2xl border border-slate-200 p-5 bg-white shadow-sm">
+                                <div class="flex items-start justify-between gap-4">
+                                    <div>
+                                        <div class="text-sm font-bold text-slate-800">OT #@ot.Id</div>
+                                        <div class="text-xs text-slate-500 mt-1">
+                                            @ot.WorkDate.ToString("dd/MM/yyyy") · @ot.StartTime.ToString(@"hh\:mm") - @ot.EndTime.ToString(@"hh\:mm")
+                                        </div>
+                                        <div class="text-xs text-slate-400 mt-2 line-clamp-2">@ot.Reason</div>
+                                    </div>
+
+                                    <div class="text-right text-xs text-slate-500">
+                                        <div>@(hasCheckIn ? $"Check-in: {ot.OTAttendance!.CheckIn:hh\\:mm\\:ss}" : "Chưa check-in")</div>
+                                        <div class="mt-1">@(hasCheckOut ? $"Check-out: {ot.OTAttendance!.CheckOut:hh\\:mm\\:ss}" : "Chưa check-out")</div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <a href="/HumanResourcesManager/employee/overtime/ot-attendance/today?id=@ot.Id"
+                                       class="w-full md:col-span-2 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition">
+                                        Mở chấm công OT (camera)
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</main>
+

@@ -1,0 +1,187 @@
+@using HumanResourcesManager.BLL.DTOs.Employee
+@model OTTodayAttendanceViewDTO
+
+@{
+	Layout = "~/Views/Employee/_EmployeeLayout.cshtml";
+	ViewData["Title"] = "Chấm công OT hôm nay";
+}
+
+<main class="flex-1 overflow-y-auto bg-slate-50/50">
+	@await Html.PartialAsync("_EmployeeHeader")
+
+	<div class="p-5 lg:p-8">
+		@await Html.PartialAsync("_EmployeeStats")
+
+		<div class="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
+			<div class="px-6 py-6 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white">
+				<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+					<div>
+						<h2 class="text-xl font-bold text-slate-800 tracking-tight">Chấm công OT hôm nay</h2>
+						<p class="text-sm text-slate-500 mt-1">
+							OT #@Model.OverTimeRequestId · @Model.WorkDate.ToString("dd/MM/yyyy") · @Model.StartTime.ToString(@"hh\:mm") - @Model.EndTime.ToString(@"hh\:mm")
+						</p>
+					</div>
+
+					<div class="flex gap-3">
+						<a href="/HumanResourcesManager/employee/overtime/ot-attendance/history"
+						   class="inline-flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-all">
+							Lịch sử OT
+						</a>
+						<a href="/HumanResourcesManager/employee/overtime/ot-attendance"
+						   class="inline-flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-all">
+							Danh sách OT hôm nay
+						</a>
+					</div>
+				</div>
+			</div>
+
+			<div class="p-6">
+				<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+					<!-- OT Check In -->
+					<div class="bg-gradient-to-br from-blue-50 to-indigo-50/80 rounded-2xl p-6 border border-blue-100">
+						<h3 class="text-base font-semibold text-slate-800 mb-4">📸 Check-in OT</h3>
+
+						<form id="otCheckInForm"
+							  method="post"
+							  enctype="multipart/form-data"
+							  action="/HumanResourcesManager/employee/overtime/ot-attendance/check-in">
+							@Html.AntiForgeryToken()
+
+							<input type="hidden" name="OverTimeRequestId" id="otCheckInRequestId" value="@Model.OverTimeRequestId" />
+							<input type="hidden" name="CheckInTime" id="otCheckInTime" />
+							<input type="file" name="CheckInImage" id="otCheckInFileInput" hidden />
+
+							<div id="otCheckInArea">
+								<video id="otCheckInVideo" class="w-full rounded-lg mb-4 hidden" autoplay></video>
+								<canvas id="otCheckInCanvas" class="hidden"></canvas>
+
+								<div id="otCheckInPhotoPreview" class="hidden mb-4">
+									<img id="otCheckInPhotoImg" class="w-full rounded-lg">
+								</div>
+
+								<button type="button"
+										id="otStartCheckInCameraBtn"
+										class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-colors mb-2 shadow-sm">
+									📷 Bật Camera
+								</button>
+
+								<button type="button"
+										id="otCaptureCheckInBtn"
+										class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 rounded-xl transition-colors hidden">
+									✓ Chụp Ảnh
+								</button>
+
+								<button type="button"
+										id="otSubmitCheckInBtn"
+										class="w-full bg-violet-600 hover:bg-violet-700 text-white font-medium py-3 rounded-xl transition-colors hidden">
+									✓ Xác Nhận Check In OT
+								</button>
+							</div>
+
+							<div id="otCheckInStatusWrapper" class="mt-4">
+								<div id="otCheckInBadge"
+									 class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-gray-200 text-gray-700">
+									--
+								</div>
+								<div id="otCheckInCountdown"
+									 class="text-lg font-bold mt-2 text-slate-700 hidden">00:00:00</div>
+								<div class="w-full bg-gray-200 rounded-full h-2 mt-2 overflow-hidden hidden"
+									 id="otCheckInProgressWrapper">
+									<div id="otCheckInProgress"
+										 class="h-2 bg-blue-500 transition-all duration-1000 ease-linear"
+										 style="width:0%"></div>
+								</div>
+							</div>
+						</form>
+					</div>
+
+					<!-- OT Check Out -->
+					<div class="bg-gradient-to-br from-amber-50 to-orange-50/80 rounded-2xl p-6 border border-amber-100">
+						<h3 class="text-base font-semibold text-slate-800 mb-4">📸 Check-out OT</h3>
+
+						<form id="otCheckOutForm"
+							  method="post"
+							  enctype="multipart/form-data"
+							  action="/HumanResourcesManager/employee/overtime/ot-attendance/check-out">
+							@Html.AntiForgeryToken()
+
+							<input type="hidden" name="OverTimeRequestId" id="otCheckOutRequestId" value="@Model.OverTimeRequestId" />
+							<input type="hidden" name="CheckOutTime" id="otCheckOutTime" />
+							<input type="file" name="CheckOutImage" id="otCheckOutFileInput" hidden />
+
+							<div id="otCheckOutArea">
+								<video id="otCheckOutVideo" class="w-full rounded-lg mb-4 hidden" autoplay></video>
+								<canvas id="otCheckOutCanvas" class="hidden"></canvas>
+
+								<div id="otCheckOutPhotoPreview" class="hidden mb-4">
+									<img id="otCheckOutPhotoImg" class="w-full rounded-lg">
+								</div>
+
+								<button type="button"
+										id="otStartCheckOutCameraBtn"
+										class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-3 rounded-xl transition-colors mb-2 shadow-sm">
+									📷 Bật Camera
+								</button>
+
+								<button type="button"
+										id="otCaptureCheckOutBtn"
+										class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 rounded-xl transition-colors hidden">
+									✓ Chụp Ảnh
+								</button>
+
+								<button type="button"
+										id="otSubmitCheckOutBtn"
+										class="w-full bg-violet-600 hover:bg-violet-700 text-white font-medium py-3 rounded-xl transition-colors hidden">
+									✓ Xác Nhận Check Out OT
+								</button>
+							</div>
+
+							<div id="otCheckOutStatusWrapper" class="mt-4">
+								<div id="otCheckOutBadge"
+									 class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-gray-200 text-gray-700">
+									--
+								</div>
+								<div id="otCheckOutCountdown"
+									 class="text-lg font-bold mt-2 text-slate-700 hidden">00:00:00</div>
+								<div class="w-full bg-gray-200 rounded-full h-2 mt-2 overflow-hidden hidden"
+									 id="otCheckOutProgressWrapper">
+									<div id="otCheckOutProgress"
+										 class="h-2 bg-amber-500 transition-all duration-1000 ease-linear"
+										 style="width:0%"></div>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</main>
+
+@section Scripts {
+	@if (TempData["Success"] != null)
+	{
+		<script>
+			Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: @Html.Raw(Json.Serialize(TempData["Success"])), showConfirmButton: false, timer: 2500, timerProgressBar: true });
+		</script>
+	}
+	@if (TempData["Error"] != null)
+	{
+		<script>
+			Swal.fire({ toast: true, position: 'top-end', icon: 'error', title: @Html.Raw(Json.Serialize(TempData["Error"])), showConfirmButton: false, timer: 3500, timerProgressBar: true });
+		</script>
+	}
+
+	<script>
+		window.otAttendanceState = {
+			otId: @Model.OverTimeRequestId,
+			startTime: '@Model.StartTime.ToString(@"hh\:mm\:ss")',
+			endTime: '@Model.EndTime.ToString(@"hh\:mm\:ss")',
+			hasCheckIn: @(Model.HasCheckIn ? "true" : "false"),
+			hasCheckOut: @(Model.HasCheckOut ? "true" : "false"),
+			checkInTime: '@(Model.CheckInTime?.ToString(@"hh\:mm\:ss") ?? "")',
+			checkOutTime: '@(Model.CheckOutTime?.ToString(@"hh\:mm\:ss") ?? "")'
+		};
+	</script>
+}
+

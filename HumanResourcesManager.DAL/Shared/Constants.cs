@@ -1,4 +1,4 @@
-﻿namespace HumanResourcesManager.DAL.Shared
+namespace HumanResourcesManager.DAL.Shared
 {
     /// <summary>
     /// Common status constants used across the whole system
@@ -34,6 +34,15 @@
 
         public static readonly TimeSpan CheckOutFrom = new(16, 30, 0);
         public static readonly TimeSpan CheckOutTo = new(20, 0, 0);
+
+        // ==================================================
+        // OT schedule creation rules
+        // ==================================================
+        public static readonly TimeSpan OTWeekdayStart = new(19, 30, 0); // Mon-Fri from 07:30 PM
+        public static readonly TimeSpan OTWeekendStart = new(8, 0, 0);   // Sat-Sun from 08:00 AM
+        public static readonly TimeSpan OTNextDayCutoff = new(2, 0, 0);  // Must end by 02:00 AM next day
+        public const int OTWeekdayMaxHours = 4;
+        public const int OTWeekendMaxHours = 8;
 
         public static readonly List<(int Day, int Month)> FixedHolidays =
             new()

@@ -1,4 +1,4 @@
-﻿using HumanResourcesManager.DAL.Models;
+using HumanResourcesManager.DAL.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace HumanResourcesManager.DAL.Data
@@ -38,6 +38,7 @@ namespace HumanResourcesManager.DAL.Data
         public DbSet<PayrollDetail> PayrollDetails { get; set; }
         public DbSet<UserAccount> UserAccounts { get; set; }
         public DbSet<OverTimeRequest> OverTimeRequests { get; set; }
+        public DbSet<OTSchedule> OTSchedules { get; set; }
         public DbSet<OTAttendance> OTAttendances { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<AnnualLeaveBalance> AnnualLeaveBalance { get; set; }
@@ -276,8 +277,36 @@ namespace HumanResourcesManager.DAL.Data
                       .WithOne(a => a.OverTimeRequest)
                       .HasForeignKey<OTAttendance>(a => a.OverTimeRequestId)
                       .OnDelete(DeleteBehavior.Restrict);
+
+                // Quan hệ với OTSchedule (có thể null nếu được tạo trực tiếp)
+                entity.HasOne(ot => ot.OTSchedule)
+                      .WithMany(s => s.Registrations)
+                      .HasForeignKey(ot => ot.OTScheduleId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
+            // ===================== OTSchedule =====================
+            modelBuilder.Entity<OTSchedule>(entity =>
+            {
+                entity.HasKey(s => s.Id);
+
+                entity.Property(s => s.Name)
+                      .IsRequired()
+                      .HasMaxLength(200);
+
+                entity.Property(s => s.Description)
+                      .HasMaxLength(500);
+
+                entity.HasOne(s => s.Department)
+                      .WithMany()
+                      .HasForeignKey(s => s.DepartmentId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(s => s.Manager)
+                      .WithMany()
+                      .HasForeignKey(s => s.ManagerId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
 
         }
 

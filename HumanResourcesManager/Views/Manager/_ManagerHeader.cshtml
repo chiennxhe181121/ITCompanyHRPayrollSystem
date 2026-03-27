@@ -1,0 +1,17 @@
+@{
+    var pageTitle = ViewData["PageTitle"]?.ToString() ?? "Manager Dashboard";
+    var pageSubtitle = ViewData["PageSubtitle"]?.ToString() ?? "Quản lý nhóm và duyệt yêu cầu";
+}
+
+<header class="employee-header px-6 lg:px-8 py-5">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-semibold text-slate-800">@pageTitle</h1>
+            <p class="text-slate-500 text-sm mt-0.5">@pageSubtitle</p>
+        </div>
+        <div class="clock-box transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
+            <p class="clock-date-value" id="currentDate"></p>
+            <p class="clock-time" id="currentTime"></p>
+        </div>
+    </div>
+</header>

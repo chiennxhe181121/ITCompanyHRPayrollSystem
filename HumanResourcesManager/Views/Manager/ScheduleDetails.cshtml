@@ -1,0 +1,312 @@
+@model HumanResourcesManager.BLL.DTOs.Manager.OTScheduleDetailDTO
+@{
+    ViewData["Title"] = "Chi Tiết Lịch Tăng Ca";
+    ViewData["PageTitle"] = "Chi Tiết Lịch Tăng Ca";
+    ViewData["PageSubtitle"] = "Theo dõi thông tin và danh sách nhân sự tham gia OT";
+    Layout = "~/Views/Manager/_ManagerLayout.cshtml";
+}
+
+@await Html.PartialAsync("_ManagerHeader")
+
+<div class="p-5 lg:p-8 bg-slate-50/50 min-h-screen">
+    <div class="max-w-4xl mx-auto space-y-6">
+        
+        <!-- Header Actions -->
+        <div class="flex items-center justify-between">
+            <a href="/HumanResourcesManager/manager/schedule" class="group flex items-center text-sm font-semibold text-slate-500 hover:text-blue-600 transition-all">
+                <div class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center mr-3 group-hover:border-blue-200 group-hover:bg-blue-50 transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                </div>
+                Quay lại danh sách
+            </a>
+
+            <div class="flex items-center gap-3">
+                @if (Model.Status == 0 || Model.Status == 5)
+                {
+                    <form asp-action="CancelSchedule" asp-controller="Manager" asp-route-id="@Model.Id" method="post" class="inline">
+                        @Html.AntiForgeryToken()
+                        <button type="button"
+                                onclick="confirmManagerAction(this.form, 'Hủy lịch OT', 'Bạn có chắc chắn muốn hủy lịch OT này?')"
+                                class="px-4 py-2 bg-white text-red-600 hover:bg-red-50 font-bold text-sm rounded-xl transition-all border border-red-100 shadow-sm flex items-center gap-2">
+                            <svg class="w-4 h-4 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Hủy lịch
+                        </button>
+                    </form>
+                }
+                @if (Model.Status == 0 || Model.Status == 5 || Model.Status == 3 || Model.Status == 1)
+                {
+                    <form asp-action="MarkCompleted" asp-controller="Manager" asp-route-id="@Model.Id" method="post" class="inline">
+                        @Html.AntiForgeryToken()
+                        <button type="button"
+                                onclick="confirmManagerAction(this.form, 'Hoàn thành lịch OT', 'Xác nhận hoàn thành lịch OT này?')"
+                                class="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 font-bold text-sm rounded-xl transition-all shadow-lg shadow-blue-500/25 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            Hoàn thành
+                        </button>
+                    </form>
+                }
+                @if (Model.Status == 2 && Model.EndDate.Add(Model.EndTime) > DateTime.Now)
+                {
+                    <form asp-action="ReopenSchedule" asp-controller="Manager" asp-route-id="@Model.Id" method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="button"
+                                onclick="confirmManagerAction(this.form, 'Mở lại lịch OT', 'Mở lại lịch OT này?')"
+                                class="px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 font-bold text-sm rounded-xl transition-all shadow-lg shadow-indigo-500/25 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            Mở Lại
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="p-4 text-sm text-green-700 bg-green-100 rounded-xl" role="alert">
+                @TempData["Success"]
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="p-4 text-sm text-red-700 bg-red-100 rounded-xl" role="alert">
+                @TempData["Error"]
+            </div>
+        }
+
+        <!-- Info Card -->
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-200/60 overflow-hidden">
+            <div class="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                <div>
+                    <div class="flex items-center gap-3">
+                        <div class="px-2 py-1 bg-blue-100 text-blue-700 text-[10px] font-bold uppercase rounded-md">ID: #@Model.Id</div>
+                        <h2 class="text-2xl font-black text-slate-800">@Model.Name</h2>
+                    </div>
+                    <p class="text-sm text-slate-500 mt-1 font-medium">@Model.ManagerName • Quản lý lịch OT</p>
+                </div>
+                <div>
+                    @if (Model.Status == 5)
+                    {
+                        <span class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold bg-indigo-50 text-indigo-600 border border-indigo-100 italic">
+                            <span class="w-2 h-2 rounded-full bg-indigo-500 mr-2 animate-pulse"></span>
+                            Sắp tới
+                        </span>
+                    }
+                    else if (Model.Status == 0)
+                    {
+                        <span class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 italic">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
+                            Đang hoạt động
+                        </span>
+                    }
+                    else if (Model.Status == 3 || Model.Status == 1)
+                    {
+                        <span class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold bg-amber-50 text-amber-600 border border-amber-100">
+                            Đã hết hạn
+                        </span>
+                    }
+                    else if (Model.Status == 2)
+                    {
+                        <span class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold bg-slate-100 text-slate-500 border border-slate-200">
+                            Đã hủy
+                        </span>
+                    }
+                    else if (Model.Status == 4)
+                    {
+                        <span class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold bg-blue-50 text-blue-600 border border-blue-100">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            Hoàn thành
+                        </span>
+                    }
+                </div>
+            </div>
+
+            <div class="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <span class="block text-[10px] font-bold uppercase text-slate-400 mb-2 tracking-widest">Ngày thực hiện</span>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-blue-600 shadow-sm">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <div>
+                            @if (Model.StartDate.Date == Model.EndDate.Date)
+                            {
+                                <div class="text-sm font-bold text-slate-700">@Model.StartDate.ToString("dd/MM/yyyy")</div>
+                                <div class="text-[10px] text-slate-400 mt-0.5 font-medium">Duy nhất 1 ngày</div>
+                            }
+                            else
+                            {
+                                <div class="text-sm font-bold text-slate-700">@Model.StartDate.ToString("dd/MM/yyyy")</div>
+                                <div class="text-[10px] text-slate-400 mt-0.5 font-medium">Đến @Model.EndDate.ToString("dd/MM/yyyy")</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <span class="block text-[10px] font-bold uppercase text-slate-400 mb-2 tracking-widest">Thời gian OT</span>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-600 shadow-sm">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <div>
+                            @{
+                                var fromTimeStr = DateTime.Today.Add(Model.StartTime).ToString("h:mm tt");
+                                var toTimeStr = DateTime.Today.Add(Model.EndTime).ToString("h:mm tt");
+                            }
+                            <div class="text-sm font-bold text-slate-700">@fromTimeStr - @toTimeStr</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5 font-medium">Mỗi ngày trong lịch</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <span class="block text-[10px] font-bold uppercase text-slate-400 mb-2 tracking-widest">Tỉ lệ tham gia</span>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-amber-600 shadow-sm">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V4H2v16h5m10 0v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5m10 0H7"></path></svg>
+                        </div>
+                        <div>
+                            <div class="text-sm font-bold @(Model.RegisteredCount >= Model.Quantity ? "text-green-600" : "text-amber-600")">
+                                @Model.RegisteredCount / @Model.Quantity người
+                            </div>
+                            <div class="text-[10px] text-slate-400 mt-0.5 font-medium">Tối đa: @Model.Quantity nhân sự</div>
+                        </div>
+                    </div>
+                </div>
+                
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <div class="md:col-span-3">
+                        <span class="block text-[10px] font-bold uppercase text-slate-400 mb-2 tracking-widest">Mô tả công việc</span>
+                        <p class="text-sm text-slate-600 leading-relaxed bg-white p-4 rounded-2xl border border-slate-200/60 font-medium">@Model.Description</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Participants List -->
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-200/60 overflow-hidden">
+            <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/50">
+                <h3 class="font-bold text-slate-800">Danh Sách Nhân Sự Tham Gia</h3>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200">
+                            <th class="py-4 px-8 text-xs font-bold text-slate-500 uppercase tracking-widest">Nhân Sự</th>
+                            <th class="py-4 px-8 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">Vị Trí</th>
+                            <th class="py-4 px-8 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">Trạng Thái OT</th>
+                            <th class="py-4 px-8 text-xs font-bold text-slate-500 uppercase tracking-widest text-right whitespace-nowrap">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @if (Model.Registrations != null && Model.Registrations.Any())
+                        {
+                            foreach (var reg in Model.Registrations)
+                            {
+                                <tr class="group hover:bg-slate-50 transition-all duration-200">
+                                    <td class="py-4 px-8">
+                                        <div class="flex items-center gap-3">
+                                            @if (!string.IsNullOrEmpty(reg.Avatar))
+                                            {
+                                                <img src="@reg.Avatar" alt="@reg.EmployeeName" class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm transition-transform group-hover:scale-105">
+                                            }
+                                            else
+                                            {
+                                                <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center ring-2 ring-white shadow-sm text-xs transition-transform group-hover:scale-105">
+                                                    @(string.IsNullOrEmpty(reg.EmployeeName) ? "?" : reg.EmployeeName.Substring(0, 1).ToUpper())
+                                                </div>
+                                            }
+                                            <div>
+                                                <span class="text-sm font-bold text-slate-800 block group-hover:text-blue-600 transition-colors">@reg.EmployeeName</span>
+                                                <span class="text-[10px] text-slate-400 font-medium">Nhân viên chính thức</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-8 text-center">
+                                        <span class="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600 shadow-sm">
+                                            @reg.Position
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-8 text-center">
+                                        @if (reg.Status == 3)
+                                        {
+                                            <span class="inline-flex py-1 px-3 rounded-full text-[10px] font-bold bg-red-50 text-red-600 border border-red-100 uppercase tracking-tighter">Đã Hủy</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="inline-flex py-1 px-3 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 uppercase tracking-tighter animate-pulse">Tham Gia</span>
+                                        }
+                                    </td>
+                                    <td class="py-4 px-8 text-right">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <a href="/HumanResourcesManager/manager/team/detail/@reg.EmployeeId"
+                                               class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                               title="Xem chi tiết nhân viên">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                            </a>
+
+                                            @if (reg.Status != 3)
+                                            {
+                                                <form method="post"
+                                                      action="/HumanResourcesManager/manager/schedule/@Model.Id/participants/remove/@reg.EmployeeId"
+                                                      class="inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="button"
+                                                            onclick="confirmManagerAction(this.form, 'Xóa khỏi OT', 'Xóa nhân viên này khỏi danh sách OT?')"
+                                                            class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                                            title="Xóa khỏi OT">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                    </button>
+                                                </form>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="py-12 text-center">
+                                    <div class="flex flex-col items-center">
+                                        <div class="p-3 bg-slate-50 rounded-full mb-3 text-slate-300">
+                                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V4H2v16h5m10 0v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5m10 0H7"></path></svg>
+                                        </div>
+                                        <p class="text-slate-400 font-medium">Chưa có ai đăng ký tham gia lịch này</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmManagerAction(form, title, text) {
+            if (!form) return;
+            if (typeof Swal === "undefined") {
+                form.submit();
+                return;
+            }
+            Swal.fire({
+                title: title || "Xác nhận",
+                text: text || "Bạn có chắc chắn muốn thực hiện thao tác này?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonColor: "#2563eb",
+                cancelButtonColor: "#64748b",
+                confirmButtonText: "Xác nhận",
+                cancelButtonText: "Hủy"
+            }).then((result) => {
+                if (result.isConfirmed) form.submit();
+            });
+        }
+    </script>
+}
