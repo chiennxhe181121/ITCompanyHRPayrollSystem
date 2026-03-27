@@ -1,4 +1,4 @@
-﻿using HumanResourcesManager.Auth;
+using HumanResourcesManager.Auth;
 using HumanResourcesManager.BLL.DTOs;
 using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.BLL.Services;
@@ -85,6 +85,8 @@ namespace HumanResourcesManager
             builder.Services.AddScoped<IAnnualLeaveBalanceRepositry, AnnualLeaveBalanceRepository>();
             builder.Services.AddScoped<ILeaveTypeRepository, LeaveTypeRepository>();
             builder.Services.AddScoped<IContractRepository, ContractRepository>();
+            builder.Services.AddScoped<IOTRepository, OTRepository>();
+            builder.Services.AddScoped<IOTAttendanceRepository, OTAttendanceRepository>();
             builder.Services.AddScoped<IPayrollRepository, PayrollRepository>();
 
             // Dependency Injection: Business Services (BLL)
@@ -103,15 +105,16 @@ namespace HumanResourcesManager
             builder.Services.AddScoped<IAllowanceService, AllowanceService>(); // 14/02/2026
             builder.Services.AddScoped<ILeaveRequestService, LeaveRequestService>();
             builder.Services.AddScoped<IAnnualLeaveBalanceService, AnnualLeaveBalanceService>();
-            builder.Services.AddScoped<IOTRepository, OTRepository>();
             builder.Services.AddScoped<IContractService, ContractService>();
-            builder.Services.AddScoped<IContractRepository, ContractRepository>();
-            builder.Services.AddScoped<IPayrollRepository, PayrollRepository>();
+            builder.Services.AddScoped<IOTScheduleRepository, OTScheduleRepository>();
+            builder.Services.AddScoped<IOTScheduleService, OTScheduleService>();
+            builder.Services.AddScoped<IOTAttendanceService, OTAttendanceService>();
             builder.Services.AddScoped<IPayrollService, PayrollService>();
 
             builder.Services.AddHostedService<DailyAttendanceGenerateJob>(); // cronjob tao record attendance moi ngay cho nhan vien
             builder.Services.AddHostedService<AttendanceFinalizeJob>(); // cronjob cho ket luan attendance 20:10 moi ngay
             builder.Services.AddHostedService<AnnualLeaveGenerateJob>(); // cronjob reset so ngay nghi phep hang nam
+            builder.Services.AddHostedService<HumanResourcesManager.BLL.BackgroundService.OTScheduleCleanupJob>();
 
             // Session configuration
             builder.Services.AddDistributedMemoryCache();

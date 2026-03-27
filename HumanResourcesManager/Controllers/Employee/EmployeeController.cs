@@ -1,6 +1,8 @@
-﻿using HumanResourcesManager.BLL.DTOs.Employee;
+using HumanResourcesManager.BLL.DTOs.Employee;
 using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.BLL.Services;
+using HumanResourcesManager.Helpers;
+using HumanResourcesManager.Models.Employee;
 using HumanResourcesManager.DAL.Enum;
 using HumanResourcesManager.DAL.Interfaces;
 using HumanResourcesManager.DAL.Models;
@@ -23,6 +25,8 @@ public class EmployeeController : Controller
     private readonly ILeaveRequestService _leaveRequestService;
     private readonly ILeaveTypeRepository _leaveTypeRepository;
     private readonly IAnnualLeaveBalanceService _annualLeaveBalanceService;
+    private readonly IOTScheduleService _scheduleService;
+    private readonly IOTAttendanceService _otAttendanceService;
     private readonly IPayrollService _payrollService;
 
     public EmployeeController(
@@ -32,6 +36,8 @@ public class EmployeeController : Controller
         ILeaveRequestService leaveRequestService,
         ILeaveTypeRepository leaveTypeRepository,
         IAnnualLeaveBalanceService annualLeaveBalanceService,
+        IOTScheduleService scheduleService,
+        IOTAttendanceService otAttendanceService,
         IPayrollService payrollService
         )
     {
@@ -41,6 +47,8 @@ public class EmployeeController : Controller
         _leaveRequestService = leaveRequestService;
         _leaveTypeRepository = leaveTypeRepository;
         _annualLeaveBalanceService = annualLeaveBalanceService;
+        _scheduleService = scheduleService;
+        _otAttendanceService = otAttendanceService;
         _payrollService = payrollService;
     }
 
@@ -324,8 +332,6 @@ public class EmployeeController : Controller
 
         if (!ModelState.IsValid)
         {
-            LoadSidebarUserCard();
-
             LoadLeaveTypes();
             return View(dto);
         }
@@ -345,38 +351,117 @@ public class EmployeeController : Controller
 
 
     [HttpGet("overtime")]
-    public IActionResult Overtime()
+    public async Task<IActionResult> Overtime(int historyPage = 1, int historyPageSize = 5, int? historyMonth = null, int? historyYear = null)
+    {
+        _scheduleService.CancelExpiredSchedules();
+        LoadSidebarUserCard();
+        LoadStats();
+        
+        // Pass Open Schedules to view
+        var employee = _employeeService.GetOwnProfile(CurrentUserId);
+        var schedules = _scheduleService.GetDepartmentOpenSchedules(CurrentUserId);
+        
+        ViewBag.EmployeeInfo = employee;
+
+        var history = await _otAttendanceService.GetHistory(CurrentUserId, historyPage, historyPageSize, historyMonth, historyYear);
+
+        var vm = new EmployeeOvertimeIndexViewModel
+        {
+            AvailableSchedules = schedules,
+            History = history
+        };
+
+        return View("~/Views/Employee/OvertimeTab.cshtml", vm);
+    }
+
+    [HttpGet("overtime/ot-attendance")]
+    public async Task<IActionResult> OTAttendance()
     {
         LoadSidebarUserCard();
-
         LoadStats();
-        var employee = _employeeService.GetOwnProfile(CurrentUserId);
-        return View("~/Views/Employee/OvertimeTab.cshtml", employee);
+
+        var list = await _otAttendanceService.GetTodayOTs(CurrentUserId);
+        return View("~/Views/Employee/OTAttendance.cshtml", list);
+    }
+
+    [HttpGet("overtime/ot-attendance/today")]
+    public async Task<IActionResult> OTAttendanceToday(int id)
+    {
+        LoadSidebarUserCard();
+        LoadStats();
+
+        var model = await _otAttendanceService.GetTodayOTAttendance(CurrentUserId, id);
+        if (model == null)
+        {
+            TempData["Error"] = "Không tìm thấy OT hôm nay để chấm công.";
+            return RedirectToAction(nameof(OTAttendance));
+        }
+
+        return View("~/Views/Employee/OTAttendanceToday.cshtml", model);
+    }
+
+    [HttpGet("overtime/ot-attendance/history")]
+    public async Task<IActionResult> OTAttendanceHistory(int page = 1, int pageSize = 5, int? month = null, int? year = null)
+    {
+        LoadSidebarUserCard();
+        LoadStats();
+
+        var model = await _otAttendanceService.GetHistory(CurrentUserId, page, pageSize, month, year);
+        return View("~/Views/Employee/OTAttendanceHistory.cshtml", model);
+    }
+
+        // (removed) overtime/history-json: history is rendered server-side in Overtime view
+
+    [HttpPost("overtime/ot-attendance/check-in")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> OTCheckIn(HumanResourcesManager.BLL.DTOs.Employee.OTCheckInDTO dto)
+    {
+        var result = await _otAttendanceService.CheckIn(CurrentUserId, dto);
+        TempData[result.IsSuccess ? "Success" : "Error"] = result.Message;
+        return RedirectToAction(nameof(OTAttendance));
+    }
+
+    [HttpPost("overtime/ot-attendance/check-out")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> OTCheckOut(HumanResourcesManager.BLL.DTOs.Employee.OTCheckOutDTO dto)
+    {
+        var result = await _otAttendanceService.CheckOut(CurrentUserId, dto);
+        TempData[result.IsSuccess ? "Success" : "Error"] = result.Message;
+        return RedirectToAction(nameof(OTAttendance));
+    }
+
+    [HttpPost("overtime/register/{id:int}")]
+    [ValidateAntiForgeryToken]
+    public IActionResult RegisterOT(int id)
+    {
+        var ok = _scheduleService.RegisterOT(CurrentUserId, id, out string message);
+        TempData[ok ? "Success" : "Error"] = message;
+        return RedirectToAction(nameof(Overtime));
+    }
+
+    [HttpPost("overtime/cancel/{id:int}")]
+    [ValidateAntiForgeryToken]
+    public IActionResult CancelOT(int id)
+    {
+        var ok = _scheduleService.CancelRegistration(CurrentUserId, id, out string message);
+        TempData[ok ? "Success" : "Error"] = message;
+        return RedirectToAction(nameof(Overtime));
     }
 
     [HttpGet("payroll")]
-    public IActionResult Payroll(
-    int page = 1,
-    int pageSize = 5,
-    int? month = null,
-    int? year = null)
+    public IActionResult Payroll()
     {
-        int employeeId = CurrentUserId;
-
         LoadSidebarUserCard();
 
         LoadStats();
-        var model = _payrollService.GetPayrolls(employeeId, page, pageSize, month, year);
+        var model = _payrollService.GetPayrolls(CurrentUserId, page: 1, pageSize: 5, month: null, year: null);
         return View("~/Views/Employee/PayrollTab.cshtml", model);
     }
 
     [HttpGet("payroll/detail")]
     public IActionResult PayrollDetail(int id)
     {
-        int employeeId = CurrentUserId;
-
-        var model = _payrollService.GetPayrollDetail(id, employeeId);
-
+        var model = _payrollService.GetPayrollDetail(id, CurrentUserId);
         if (model == null)
         {
             TempData["Error"] = "Không tìm thấy bảng lương";
@@ -385,7 +470,6 @@ public class EmployeeController : Controller
 
         LoadSidebarUserCard();
         LoadStats();
-
         return View("~/Views/Employee/PayrollDetail.cshtml", model);
     }
 }

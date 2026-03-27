@@ -73,6 +73,12 @@
                             <span class="font-medium">Nghỉ Phép</span>
                         </a>
 
+                        <a asp-controller="Employee" asp-action="Overtime"
+                           class="nav-item @IsActive("Overtime")">
+                            <span class="nav-icon"><i class="fa-solid fa-clock"></i></span>
+                            <span class="font-medium">Tăng Ca</span>
+                        </a>
+
                         <a asp-controller="Employee" asp-action="Payroll"
                            class="nav-item @IsActive("Payroll", "PayrollDetail")">
                             <span class="nav-icon"><i class="fa-solid fa-file-invoice-dollar"></i></span>

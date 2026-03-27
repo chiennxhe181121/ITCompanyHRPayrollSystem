@@ -1,4 +1,4 @@
-﻿namespace HumanResourcesManager.DAL.Models
+namespace HumanResourcesManager.DAL.Models
 {
     public class Employee
     {

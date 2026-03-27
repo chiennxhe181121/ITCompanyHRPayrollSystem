@@ -1,13 +1,16 @@
-<div id="teamTab" class="tab-content">
+@using HumanResourcesManager.BLL.DTOs
+@model IEnumerable<EmployeeDTO>
+
+<div class="tab-content">
     <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h2 class="text-lg font-semibold text-slate-800">Nhân Viên Của Tôi</h2>
                 <p class="text-sm text-slate-500 mt-0.5">Danh sách nhân viên thuộc quyền quản lý</p>
             </div>
-            <button type="button" id="addStaffBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2.5 rounded-xl shadow-sm transition-colors text-sm">
-                + Thêm nhân sự
-            </button>
+            <span class="inline-flex items-center bg-blue-50 text-blue-700 font-medium px-3 py-2 rounded-xl text-sm">
+                Tổng: @(Model?.Count() ?? 0) nhân sự
+            </span>
         </div>
     </div>
     <div class="p-6">
@@ -24,10 +27,60 @@
                         <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Hành động</th>
                     </tr>
                 </thead>
-                <tbody id="teamTableBody"></tbody>
+                <tbody id="teamTableBody">
+                    @if (Model == null || !Model.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="py-8 px-4 text-center text-slate-500">
+                                Chưa có nhân sự nào trong nhóm của bạn.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var employee in Model)
+                        {
+                            var statusLabel = employee.Status == 1 ? "Đang làm việc" : "Ngừng hoạt động";
+                            var statusClass = employee.Status == 1
+                                ? "bg-emerald-100 text-emerald-700"
+                                : "bg-slate-200 text-slate-600";
+
+                            <tr class="border-b border-slate-100 hover:bg-slate-50/70 transition-colors">
+                                <td class="py-3 px-4 text-sm text-slate-700 font-medium">@employee.EmployeeCode</td>
+                                <td class="py-3 px-4 text-sm text-slate-700">@employee.FullName</td>
+                                <td class="py-3 px-4 text-sm text-slate-700">@employee.PositionName</td>
+                                <td class="py-3 px-4 text-sm text-slate-700">@employee.Email</td>
+                                <td class="py-3 px-4 text-sm text-slate-700">@employee.Phone</td>
+                                <td class="py-3 px-4 text-sm">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium @statusClass">
+                                        @statusLabel
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4 text-sm">
+                                    <div class="flex items-center gap-2">
+                                        <a href="/HumanResourcesManager/manager/team-management/detail/@employee.EmployeeId"
+                                           class="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-medium text-xs transition-colors">
+                                            Chi tiết
+                                        </a>
+
+                                        <form method="post"
+                                              action="/HumanResourcesManager/manager/team-management/delete/@employee.EmployeeId"
+                                              class="inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit"
+                                                    class="px-3 py-1.5 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 font-medium text-xs transition-colors"
+                                                    onclick="return confirm('Bạn có chắc muốn xóa nhân sự này không?');">
+                                                Xóa
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
             </table>
         </div>
-        <div id="teamPagination" class="pagination mt-6"></div>
     </div>
 </div>
 

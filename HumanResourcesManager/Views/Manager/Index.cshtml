@@ -3,18 +3,15 @@
     Layout = "~/Views/Manager/_ManagerLayout.cshtml";
 }
 
-<header class="bg-white/90 backdrop-blur-sm border-b border-slate-200/80 px-6 lg:px-8 py-5">
+<header class="employee-header px-6 lg:px-8 py-5">
     <div class="flex flex-wrap items-center justify-between gap-4">
         <div>
             <h1 class="text-2xl font-semibold text-slate-800">Manager Dashboard</h1>
             <p class="text-slate-500 text-sm mt-0.5">Quản lý nhóm và duyệt yêu cầu</p>
         </div>
-        <div class="flex items-center gap-4 rounded-xl bg-slate-50 px-4 py-2.5 border border-slate-200/80">
-            <div class="text-right">
-                <p class="text-xs text-slate-500 uppercase tracking-wide">Hôm nay</p>
-                <p class="text-sm font-medium text-slate-800" id="currentDate"></p>
-            </div>
-            <p class="text-lg font-semibold text-blue-600 tabular-nums" id="currentTime"></p>
+        <div class="clock-box transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
+            <p class="clock-date-value" id="currentDate"></p>
+            <p class="clock-time" id="currentTime"></p>
         </div>
     </div>
 </header>
@@ -39,12 +36,12 @@
         <div class="relative bg-white rounded-2xl shadow-sm border border-slate-200/60 p-5 hover:shadow-md transition-shadow">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-slate-500 text-xs font-medium uppercase tracking-wide">Yêu Cầu Chờ Duyệt</p>
-                    <p class="text-2xl font-bold text-slate-800 mt-1.5" id="pendingRequests">0</p>
+                    <p class="text-slate-500 text-xs font-medium uppercase tracking-wide">OT đã Hoàn Thành Trong Tháng</p>
+                    <p class="text-2xl font-bold text-slate-800 mt-1.5" id="completedOT">0</p>
                 </div>
-                <div class="w-11 h-11 bg-amber-100 rounded-xl flex items-center justify-center">
-                    <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                <div class="w-11 h-11 bg-emerald-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
             </div>
@@ -53,7 +50,7 @@
         <div class="relative bg-white rounded-2xl shadow-sm border border-slate-200/60 p-5 hover:shadow-md transition-shadow">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-slate-500 text-xs font-medium uppercase tracking-wide">Lịch Tăng Ca</p>
+                    <p class="text-slate-500 text-xs font-medium uppercase tracking-wide">Lịch OT Trong Tháng</p>
                     <p class="text-2xl font-bold text-slate-800 mt-1.5" id="scheduleCount">0</p>
                 </div>
                 <div class="w-11 h-11 bg-emerald-100 rounded-xl flex items-center justify-center">
@@ -65,11 +62,9 @@
         </div>
     </div>
 
-    <!-- Tabs Content -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
         @await Html.PartialAsync("_ProfileTab")
         @await Html.PartialAsync("_TeamTab")
-        @await Html.PartialAsync("_OvertimeTab")
         @await Html.PartialAsync("_ScheduleTab")
     </div>
 </div>

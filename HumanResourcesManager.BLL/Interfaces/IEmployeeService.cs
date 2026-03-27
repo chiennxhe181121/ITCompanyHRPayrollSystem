@@ -1,4 +1,4 @@
-﻿using HumanResourcesManager.BLL.DTOs;
+using HumanResourcesManager.BLL.DTOs;
 using HumanResourcesManager.BLL.DTOs.Employee;
 using HumanResourcesManager.DAL.Models;
 using Microsoft.AspNetCore.Http;
@@ -17,6 +17,14 @@ namespace HumanResourcesManager.BLL.Interfaces
         void Create(EmployeeDTO dto);
         void Update(EmployeeDTO dto);
         void Delete(int id);
+        IEnumerable<EmployeeDTO> GetTeamMembers(int managerUserId);
+        int CountManagedEmployees(int managerUserId);
+        int CountPendingOvertimeRequests(int managerUserId);
+        int CountOvertimeSchedules(int managerUserId);
+        int CountCompletedOTSchedules(int managerUserId);
+        IEnumerable<EmployeeDTO> GetEmployeesWithoutDepartment();
+        bool AddEmployeeToManagerTeam(int managerUserId, int employeeId, out string message);
+        bool ChangeTeamMemberStatus(int managerUserId, int employeeId, int status, out string message);
         EmployeeOwnerProfileDTO? GetOwnProfile(int userId);
         Task<Employee?> UpdateOwnProfile(
                int userId,
