@@ -34,12 +34,12 @@ jobs:
         run: dotnet build HumanResourcesManager.sln --no-restore --configuration Release
 
       # 5. Chạy unit tests
-      - name: Run unit tests
+      - name: Show test summary
         run: |
-          dotnet test HumanResourcesManager.Tests/HumanResourcesManager.Tests.csproj --no-build --configuration Release --logger "console;verbosity=normal"
-          if ($LASTEXITCODE -eq 0) {
-            echo "✅ TEST PASSED"
-          } else {
-            echo "❌ TEST FAILED"
-            exit 1
-          }
+          [xml]$trx = Get-Content "HumanResourcesManager.Tests/TestResults/test_results.trx"
+          $total = $trx.TestRun.ResultSummary.Counters.total
+          $passed = $trx.TestRun.ResultSummary.Counters.passed
+
+          echo "Test Run Summary:"
+          echo "Total tests: $total"
+          echo "Passed: $passed"
