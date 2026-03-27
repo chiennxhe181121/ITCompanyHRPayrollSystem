@@ -133,14 +133,7 @@
                             <span asp-validation-for="StartDate" class="text-[10px] text-red-500 font-bold uppercase tracking-tight"></span>
                         </div>
 
-                        <div class="space-y-2">
-                            <label asp-for="EndDate" class="flex items-center text-sm font-bold text-slate-700">
-                                <svg class="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                Ngày kết thúc <span class="text-red-500 ml-1">*</span>
-                            </label>
-                            <input asp-for="EndDate" type="date" class="w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all text-sm font-bold bg-white" />
-                            <span asp-validation-for="EndDate" class="text-[10px] text-red-500 font-bold uppercase tracking-tight"></span>
-                        </div>
+                        <input asp-for="EndDate" type="hidden" id="EndDate" />
 
                         <div class="space-y-2">
                             <label asp-for="StartTime" class="flex items-center text-sm font-bold text-slate-700">
@@ -159,31 +152,55 @@
                             }
                             else
                             {
-                                <input asp-for="StartTime" type="time" class="w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all text-sm font-bold bg-slate-50/30" />
+                                <input asp-for="StartTime" type="time" step="1800" class="w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all text-sm font-bold bg-slate-50/30" />
                             }
                             <span asp-validation-for="StartTime" class="text-[10px] text-red-500 font-bold uppercase tracking-tight"></span>
+                            <p class="text-xs text-slate-500">Ngày thường từ 19:30, Thứ 7/CN từ 08:00, ca OT kết thúc không quá 02:00 sáng hôm sau.</p>
                         </div>
 
                         <div class="space-y-2">
-                            <label asp-for="EndTime" class="flex items-center text-sm font-bold text-slate-700">
+                            <label asp-for="DurationHours" class="flex items-center text-sm font-bold text-slate-700">
                                 <svg class="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                Giờ kết thúc <span class="text-red-500 ml-1">*</span>
+                                Số giờ OT <span class="text-red-500 ml-1">*</span>
                             </label>
                             @if (isLockTime)
                             {
                                 <div class="relative group">
-                                    <input asp-for="EndTime" type="time" class="w-full px-5 py-3.5 rounded-2xl border border-slate-100 bg-slate-100 text-slate-400 cursor-not-allowed outline-none text-sm font-bold shadow-inner" readonly />
+                                    <select asp-for="DurationHours" id="otDurationHours" class="w-full px-5 py-3.5 rounded-2xl border border-slate-100 bg-slate-100 text-slate-400 cursor-not-allowed outline-none text-sm font-bold shadow-inner" disabled>
+                                        <option value="1">1 tiếng</option>
+                                        <option value="2">2 tiếng</option>
+                                        <option value="3">3 tiếng</option>
+                                        <option value="4">4 tiếng</option>
+                                        <option value="5">5 tiếng</option>
+                                        <option value="6">6 tiếng</option>
+                                        <option value="7">7 tiếng</option>
+                                        <option value="8">8 tiếng</option>
+                                    </select>
                                     <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
                                         <svg class="w-4 h-4 text-slate-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>
                                     </div>
                                 </div>
-                                <input type="hidden" asp-for="EndTime" />
+                                <input type="hidden" asp-for="DurationHours" />
                             }
                             else
                             {
-                                <input asp-for="EndTime" type="time" class="w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all text-sm font-bold bg-white" />
+                                <select asp-for="DurationHours" id="otDurationHours" class="w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all text-sm font-bold bg-white">
+                                    <option value="1">1 tiếng</option>
+                                    <option value="2">2 tiếng</option>
+                                    <option value="3">3 tiếng</option>
+                                    <option value="4">4 tiếng</option>
+                                    <option value="5">5 tiếng</option>
+                                    <option value="6">6 tiếng</option>
+                                    <option value="7">7 tiếng</option>
+                                    <option value="8">8 tiếng</option>
+                                </select>
                             }
-                            <span asp-validation-for="EndTime" class="text-[10px] text-red-500 font-bold uppercase tracking-tight"></span>
+                            <span asp-validation-for="DurationHours" class="text-[10px] text-red-500 font-bold uppercase tracking-tight"></span>
+                            <input asp-for="EndTime" type="hidden" id="otEndTimeHidden" />
+                            <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                <p class="text-xs text-slate-500">Giờ kết thúc dự kiến</p>
+                                <p id="otComputedEndDisplay" class="text-sm font-semibold text-slate-700 mt-0.5">--:--</p>
+                            </div>
                         </div>
                     </div>
 
@@ -204,4 +221,72 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            const startDateInput = document.getElementById("StartDate");
+            const startTimeInput = document.getElementById("StartTime");
+            const endDateInput = document.getElementById("EndDate");
+            const durationSelect = document.getElementById("otDurationHours");
+            const endTimeHidden = document.getElementById("otEndTimeHidden");
+            const endDisplay = document.getElementById("otComputedEndDisplay");
+
+            if (!startDateInput || !startTimeInput || !durationSelect || !endTimeHidden || !endDisplay) return;
+
+            function isWeekend(date) {
+                const day = date.getDay();
+                return day === 0 || day === 6;
+            }
+
+            function pad2(v) {
+                return String(v).padStart(2, "0");
+            }
+
+            function syncEndDate() {
+                if (!startDateInput.value || !endDateInput) return;
+                endDateInput.value = startDateInput.value;
+            }
+
+            function updateDurationOptions() {
+                if (!startDateInput.value) return;
+                const selectedDate = new Date(`${startDateInput.value}T00:00:00`);
+                const maxHours = isWeekend(selectedDate) ? 8 : 4;
+                for (const opt of durationSelect.options) {
+                    const h = Number(opt.value);
+                    opt.disabled = h > maxHours;
+                }
+                if (Number(durationSelect.value) > maxHours) {
+                    durationSelect.value = String(maxHours);
+                }
+            }
+
+            function updateComputedEnd() {
+                if (!startDateInput.value || !startTimeInput.value) {
+                    endDisplay.textContent = "--:--";
+                    return;
+                }
+
+                const [h, m] = startTimeInput.value.split(":").map(Number);
+                const duration = Number(durationSelect.value || "1");
+                const startDate = new Date(`${startDateInput.value}T00:00:00`);
+                const endDate = new Date(startDate);
+                endDate.setHours(h, m, 0, 0);
+                endDate.setHours(endDate.getHours() + duration);
+
+                const isNextDay = endDate.getDate() !== startDate.getDate();
+                endTimeHidden.value = `${pad2(endDate.getHours())}:${pad2(endDate.getMinutes())}:00`;
+                endDisplay.textContent = `${pad2(endDate.getHours())}:${pad2(endDate.getMinutes())}${isNextDay ? " (ngày hôm sau)" : ""}`;
+            }
+
+            startDateInput.addEventListener("change", () => {
+                syncEndDate();
+                updateDurationOptions();
+                updateComputedEnd();
+            });
+            startTimeInput.addEventListener("change", updateComputedEnd);
+            durationSelect.addEventListener("change", updateComputedEnd);
+
+            updateDurationOptions();
+            updateComputedEnd();
+        })();
+    </script>
 }

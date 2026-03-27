@@ -15,7 +15,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using Volo.Abp;
 
-[Authorize(Policy = "EMP")]
+[Authorize(Roles = "EMP,MANAGER,HR")]
 [Route("HumanResourcesManager/employee")]
 public class EmployeeController : Controller
 {
@@ -65,7 +65,7 @@ public class EmployeeController : Controller
     }
 
     // ===== Stats =====
-    private void LoadStats()
+    private async Task LoadStatsAsync()
     {
         var now = GetVietnamNow();
         Console.WriteLine($"NOW = {now.Month}/{now.Year}");
@@ -77,6 +77,9 @@ public class EmployeeController : Controller
             _annualLeaveBalanceService.GetRemainingDays(CurrentUserId, now.Year);
 
         ViewBag.CurrentSalary = _payrollService.GetCurrentSalary(CurrentUserId);
+
+        ViewBag.MonthOvertimeHours =
+            await _otAttendanceService.GetMonthActualOTHoursAsync(CurrentUserId, now.Month, now.Year);
     }
 
     // ===== Sidebar User =====
@@ -110,11 +113,11 @@ public class EmployeeController : Controller
     // ===== Attendance =====
     // view attendance
     [HttpGet("attendance")]
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
         LoadSidebarUserCard();
 
-        LoadStats();
+        await LoadStatsAsync();
 
         var model = _attendanceService.GetTodayAttendance(CurrentUserId);
 
@@ -276,7 +279,7 @@ public class EmployeeController : Controller
     // ===== Leaves =====
     // view leaves
     [HttpGet("leaves")]
-    public IActionResult Leaves(
+    public async Task<IActionResult> Leaves(
     int page = 1,
     int pageSize = 5,
     int? year = null,
@@ -284,7 +287,7 @@ public class EmployeeController : Controller
     {
         LoadSidebarUserCard();
 
-        LoadStats();
+        await LoadStatsAsync();
 
         var model = _leaveRequestService.GetEmployeeLeaves(
             CurrentUserId,
@@ -355,7 +358,7 @@ public class EmployeeController : Controller
     {
         _scheduleService.CancelExpiredSchedules();
         LoadSidebarUserCard();
-        LoadStats();
+        await LoadStatsAsync();
         
         // Pass Open Schedules to view
         var employee = _employeeService.GetOwnProfile(CurrentUserId);
@@ -378,7 +381,7 @@ public class EmployeeController : Controller
     public async Task<IActionResult> OTAttendance()
     {
         LoadSidebarUserCard();
-        LoadStats();
+        await LoadStatsAsync();
 
         var list = await _otAttendanceService.GetTodayOTs(CurrentUserId);
         return View("~/Views/Employee/OTAttendance.cshtml", list);
@@ -388,7 +391,7 @@ public class EmployeeController : Controller
     public async Task<IActionResult> OTAttendanceToday(int id)
     {
         LoadSidebarUserCard();
-        LoadStats();
+        await LoadStatsAsync();
 
         var model = await _otAttendanceService.GetTodayOTAttendance(CurrentUserId, id);
         if (model == null)
@@ -404,7 +407,7 @@ public class EmployeeController : Controller
     public async Task<IActionResult> OTAttendanceHistory(int page = 1, int pageSize = 5, int? month = null, int? year = null)
     {
         LoadSidebarUserCard();
-        LoadStats();
+        await LoadStatsAsync();
 
         var model = await _otAttendanceService.GetHistory(CurrentUserId, page, pageSize, month, year);
         return View("~/Views/Employee/OTAttendanceHistory.cshtml", model);
@@ -449,17 +452,17 @@ public class EmployeeController : Controller
     }
 
     [HttpGet("payroll")]
-    public IActionResult Payroll()
+    public async Task<IActionResult> Payroll()
     {
         LoadSidebarUserCard();
 
-        LoadStats();
+        await LoadStatsAsync();
         var model = _payrollService.GetPayrolls(CurrentUserId, page: 1, pageSize: 5, month: null, year: null);
         return View("~/Views/Employee/PayrollTab.cshtml", model);
     }
 
     [HttpGet("payroll/detail")]
-    public IActionResult PayrollDetail(int id)
+    public async Task<IActionResult> PayrollDetail(int id)
     {
         var model = _payrollService.GetPayrollDetail(id, CurrentUserId);
         if (model == null)
@@ -469,7 +472,7 @@ public class EmployeeController : Controller
         }
 
         LoadSidebarUserCard();
-        LoadStats();
+        await LoadStatsAsync();
         return View("~/Views/Employee/PayrollDetail.cshtml", model);
     }
 }

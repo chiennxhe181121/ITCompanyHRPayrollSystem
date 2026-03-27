@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using HumanResourcesManager.DAL.Data;
+using HumanResourcesManager.DAL.Shared;
 using System;
 using System.Linq;
 using System.Security.Claims;
@@ -302,7 +303,18 @@ namespace HumanResourcesManager.Controllers.Manager
         {
             LoadSidebarUserCard();
             LoadManagerStats();
-            return View("~/Views/Manager/CreateSchedule.cshtml", new OTScheduleCreateDTO { StartDate = DateTime.Today, EndDate = DateTime.Today });
+            var today = DateTime.Today;
+            var isWeekend = today.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+            var defaultStart = isWeekend ? Constants.OTWeekendStart : Constants.OTWeekdayStart;
+
+            return View("~/Views/Manager/CreateSchedule.cshtml", new OTScheduleCreateDTO
+            {
+                StartDate = today,
+                EndDate = today,
+                StartTime = defaultStart,
+                DurationHours = 1,
+                EndTime = defaultStart.Add(TimeSpan.FromHours(1))
+            });
         }
 
         [HttpPost("schedule/create")]
@@ -313,14 +325,6 @@ namespace HumanResourcesManager.Controllers.Manager
             {
                 ModelState.AddModelError(string.Empty,
                     $"Ngày kết thúc phải từ {model.StartDate:dd/MM/yyyy} trở đi.");
-            }
-
-            if (model.EndTime <= model.StartTime)
-            {
-                var start = DateTime.Today.Add(model.StartTime).ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
-                var end = DateTime.Today.Add(model.EndTime).ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
-                ModelState.AddModelError(string.Empty,
-                    $"Giờ kết thúc phải sau giờ bắt đầu. Bạn đang chọn {start} → {end}.");
             }
 
             if (!ModelState.IsValid)
@@ -369,14 +373,6 @@ namespace HumanResourcesManager.Controllers.Manager
             {
                 ModelState.AddModelError(string.Empty,
                     $"Ngày kết thúc phải từ {model.StartDate:dd/MM/yyyy} trở đi.");
-            }
-
-            if (model.EndTime <= model.StartTime)
-            {
-                var start = DateTime.Today.Add(model.StartTime).ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
-                var end = DateTime.Today.Add(model.EndTime).ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
-                ModelState.AddModelError(string.Empty,
-                    $"Giờ kết thúc phải sau giờ bắt đầu. Bạn đang chọn {start} → {end}.");
             }
 
             if (!ModelState.IsValid)

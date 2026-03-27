@@ -28,7 +28,8 @@ namespace HumanResourcesManager.DAL.Repository
                 .Include(o => o.OTAttendance)
                 .Where(o => o.EmployeeId == employeeId
                             && o.EmployeeAccepted == true
-                            && o.Status == 2 // Approved
+                            // Legacy dữ liệu có thể dùng 1/2 cho approved, constants mới dùng 11
+                            && (o.Status == 1 || o.Status == 2 || o.Status == Constants.Approved)
                             && o.WorkDate.Month == month
                             && o.WorkDate.Year == year)
                 .ToListAsync();

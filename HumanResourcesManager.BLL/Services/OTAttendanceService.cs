@@ -1,3 +1,4 @@
+using System.Linq;
 using HumanResourcesManager.BLL.DTOs.Common;
 using HumanResourcesManager.BLL.DTOs.Employee;
 using HumanResourcesManager.BLL.Interfaces;
@@ -127,6 +128,35 @@ namespace HumanResourcesManager.BLL.Services
                 SelectedMonth = month,
                 SelectedYear = year
             };
+        }
+
+        public async Task<double> GetMonthActualOTHoursAsync(int userId, int month, int year)
+        {
+            var employee = _employeeRepository.GetByUserId(userId);
+            if (employee == null) return 0;
+
+            var ots = await _otRepository.GetApprovedOTsAsync(employee.EmployeeId, month, year);
+            return ots.Sum(ResolveActualOtHours);
+        }
+
+        /// <summary>
+        /// Giờ OT thực tế: dùng ActualOTHours nếu đã lưu; nếu chưa, tính từ check-in/out trong khung OT (giống logic payroll khi có đủ dữ liệu).
+        /// </summary>
+        private static double ResolveActualOtHours(OverTimeRequest ot)
+        {
+            if (ot.OTAttendance == null) return 0;
+
+            var a = ot.OTAttendance;
+            if (a.ActualOTHours > 0) return a.ActualOTHours;
+
+            if (a.CheckIn == default || a.CheckOut == default || a.CheckOut <= a.CheckIn)
+                return 0;
+
+            var effectiveIn = a.CheckIn < ot.StartTime ? ot.StartTime : a.CheckIn;
+            var effectiveOut = a.CheckOut > ot.EndTime ? ot.EndTime : a.CheckOut;
+            if (effectiveOut <= effectiveIn) return 0;
+
+            return Math.Max(0, (effectiveOut - effectiveIn).TotalHours);
         }
 
         public async Task<ServiceResult> CheckIn(int userId, OTCheckInDTO dto)

@@ -23,9 +23,11 @@
 
         @{
             var currentAction = (ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty).ToLowerInvariant();
+            var currentPath = (ViewContext.HttpContext?.Request.Path.Value ?? string.Empty).ToLowerInvariant();
             var isProfile = currentAction == "profile";
             var isTeam = currentAction == "team" || currentAction == "index";
             var isSchedule = currentAction == "schedule";
+            var isAttendance = currentPath.Contains("/employee/attendance");
         }
 
         <nav class="flex-1 p-3 overflow-y-auto">
@@ -48,6 +50,13 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
                     <span>Lịch Tăng Ca</span>
+                </a>
+
+                <a href="/HumanResourcesManager/employee/attendance" class="nav-item @(isAttendance ? "active bg-slate-50 text-slate-800" : "text-slate-600") flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 hover:text-slate-800 transition-colors text-sm font-medium">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <span>Chấm công</span>
                 </a>
             </div>
         </nav>

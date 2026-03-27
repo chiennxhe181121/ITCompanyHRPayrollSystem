@@ -30,6 +30,59 @@ namespace HumanResourcesManager.BLL.Services
         private static bool IsTimeOverlap(TimeSpan aStart, TimeSpan aEnd, TimeSpan bStart, TimeSpan bEnd)
             => aStart < bEnd && bStart < aEnd;
 
+        private static bool IsWeekend(DateTime date)
+            => date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+
+        private static bool TryApplyAndValidateOtTimeWindow(OTScheduleCreateDTO dto, out string message)
+        {
+            message = string.Empty;
+
+            var isWeekend = IsWeekend(dto.StartDate.Date);
+            var minStart = isWeekend ? Constants.OTWeekendStart : Constants.OTWeekdayStart;
+            var maxHours = isWeekend ? Constants.OTWeekendMaxHours : Constants.OTWeekdayMaxHours;
+
+            if (dto.DurationHours < 1 || dto.DurationHours > maxHours)
+            {
+                message = isWeekend
+                    ? $"Thứ 7/Chủ nhật chỉ được tạo OT tối đa {Constants.OTWeekendMaxHours} tiếng."
+                    : $"Ngày trong tuần chỉ được tạo OT tối đa {Constants.OTWeekdayMaxHours} tiếng.";
+                return false;
+            }
+
+            if (dto.StartTime < minStart)
+            {
+                message = isWeekend
+                    ? $"Thứ 7/Chủ nhật chỉ được bắt đầu từ {Constants.OTWeekendStart:hh\\:mm}."
+                    : $"Ngày trong tuần chỉ được bắt đầu từ {Constants.OTWeekdayStart:hh\\:mm}.";
+                return false;
+            }
+
+            var startDateTime = dto.StartDate.Date.Add(dto.StartTime);
+            var calculatedEndDateTime = startDateTime.AddHours(dto.DurationHours);
+            var cutoffDateTime = dto.StartDate.Date.AddDays(1).Add(Constants.OTNextDayCutoff);
+
+            if (calculatedEndDateTime > cutoffDateTime)
+            {
+                message = $"Ca OT chỉ được kéo dài đến {Constants.OTNextDayCutoff:hh\\:mm} sáng ngày hôm sau.";
+                return false;
+            }
+
+            dto.EndTime = calculatedEndDateTime.TimeOfDay;
+            return true;
+        }
+
+        private static int CalculateDurationHours(TimeSpan startTime, TimeSpan endTime)
+        {
+            var duration = endTime - startTime;
+            if (duration <= TimeSpan.Zero)
+            {
+                duration = duration.Add(TimeSpan.FromHours(24));
+            }
+
+            var hours = (int)Math.Round(duration.TotalHours, MidpointRounding.AwayFromZero);
+            return Math.Clamp(hours, 1, Constants.OTWeekendMaxHours);
+        }
+
         // Runtime status for OT schedule:
         // 5 = Upcoming, 0 = Active, 3 = Expired
         private static int ResolveRuntimeStatus(DateTime now, DateTime startDate, TimeSpan startTime, DateTime endDate, TimeSpan endTime)
@@ -88,18 +141,18 @@ namespace HumanResourcesManager.BLL.Services
                 return false;
             }
 
-            if (dto.StartTime >= dto.EndTime)
-            {
-                var start = DateTime.Today.Add(dto.StartTime).ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
-                var end = DateTime.Today.Add(dto.EndTime).ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
-                message = $"Giờ kết thúc phải sau giờ bắt đầu. Bạn đang chọn {start} → {end}.";
-                return false;
-            }
+            // Chỉ cho phép tạo OT theo từng ngày: EndDate = StartDate
+            dto.EndDate = dto.StartDate.Date;
 
             // EndDate là end-inclusive => cho phép EndDate == StartDate (OT 1 ngày)
             if (dto.EndDate.Date < dto.StartDate.Date)
             {
                 message = $"Ngày kết thúc phải từ {dto.StartDate:dd/MM/yyyy} trở đi.";
+                return false;
+            }
+
+            if (!TryApplyAndValidateOtTimeWindow(dto, out message))
+            {
                 return false;
             }
 
@@ -640,6 +693,7 @@ namespace HumanResourcesManager.BLL.Services
                 StartDate = schedule.StartDate,
                 EndDate = schedule.EndDate,
                 StartTime = schedule.StartTime,
+                DurationHours = CalculateDurationHours(schedule.StartTime, schedule.EndTime),
                 EndTime = schedule.EndTime,
                 Status = schedule.Status
             };
@@ -650,18 +704,18 @@ namespace HumanResourcesManager.BLL.Services
             message = string.Empty;
             notifyList = new List<(string Email, string Name)>();
 
-            if (dto.StartTime >= dto.EndTime)
-            {
-                var start = DateTime.Today.Add(dto.StartTime).ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
-                var end = DateTime.Today.Add(dto.EndTime).ToString("h:mm tt", System.Globalization.CultureInfo.InvariantCulture);
-                message = $"Giờ kết thúc phải sau giờ bắt đầu. Bạn đang chọn {start} → {end}.";
-                return false;
-            }
+            // Chỉ cho phép OT theo từng ngày: EndDate luôn bằng StartDate
+            dto.EndDate = dto.StartDate.Date;
 
             // EndDate là end-inclusive => cho phép EndDate == StartDate (OT 1 ngày)
             if (dto.EndDate.Date < dto.StartDate.Date)
             {
                 message = $"Ngày kết thúc phải từ {dto.StartDate:dd/MM/yyyy} trở đi.";
+                return false;
+            }
+
+            if (!TryApplyAndValidateOtTimeWindow(dto, out message))
+            {
                 return false;
             }
 

@@ -11,6 +11,9 @@ namespace HumanResourcesManager.BLL.Interfaces
         Task<List<OverTimeRequest>> GetTodayOTs(int userId);
         Task<OTTodayAttendanceViewDTO?> GetTodayOTAttendance(int userId, int overTimeRequestId);
         Task<EmployeeOTAttendanceHistoryViewDTO> GetHistory(int userId, int page, int pageSize, int? month, int? year);
+
+        /// <summary>Tổng giờ OT thực tế trong tháng (đơn đã duyệt, có chấm công OT).</summary>
+        Task<double> GetMonthActualOTHoursAsync(int userId, int month, int year);
     }
 }
 

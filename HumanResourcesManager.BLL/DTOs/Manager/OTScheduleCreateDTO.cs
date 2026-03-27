@@ -24,7 +24,10 @@ namespace HumanResourcesManager.BLL.DTOs.Manager
  
         [Required(ErrorMessage = "Vui lòng Chọn giờ bắt đầu")]
         public TimeSpan StartTime { get; set; }
- 
+
+        [Range(1, 8, ErrorMessage = "Số giờ OT phải từ 1 đến 8 tiếng")]
+        public int DurationHours { get; set; } = 1;
+
         [Required(ErrorMessage = "Vui lòng chọn giờ kết thúc")]
         public TimeSpan EndTime { get; set; }
 
