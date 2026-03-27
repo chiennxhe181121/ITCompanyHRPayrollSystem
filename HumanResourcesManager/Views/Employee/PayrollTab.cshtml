@@ -124,7 +124,7 @@
                                     <th class="text-center py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Phạt</th>
                                     <th class="text-center py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Thực Lĩnh</th>
                                     <th class="text-center py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Trạng Thái</th>
-                                    <th class="text-center py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Hành động</th>
+                                    <th class="text-center py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Chi Tiết</th>
 								</tr>
 							</thead>
                             <tbody>
@@ -177,11 +177,33 @@
 
                                             <!-- Action -->
                                             <td class="text-center px-4 py-3">
-                                                <button class="text-indigo-600 hover:text-indigo-800">
-                                                    👁
-                                                </button>
-                                            </td>
+                                                <a asp-action="PayrollDetail"
+                                                   asp-route-id="@item.PayrollId"
+                                                   asp-route-month="@item.Month"
+                                                   asp-route-year="@item.Year"
+                                                   class="w-9 h-9 inline-flex items-center justify-center rounded-lg
+                      bg-indigo-100 text-indigo-600 hover:bg-indigo-200 transition">
 
+                                                    <!-- icon eye -->
+                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                         class="w-4 h-4"
+                                                         fill="none"
+                                                         viewBox="0 0 24 24"
+                                                         stroke="currentColor">
+                                                        <path stroke-linecap="round"
+                                                              stroke-linejoin="round"
+                                                              stroke-width="2"
+                                                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        <path stroke-linecap="round"
+                                                              stroke-linejoin="round"
+                                                              stroke-width="2"
+                                                              d="M2.458 12C3.732 7.943 7.523 5 12 5
+                             c4.477 0 8.268 2.943 9.542 7
+                             -1.274 4.057-5.065 7-9.542 7
+                             -4.477 0-8.268-2.943-9.542-7z" />
+                                                    </svg>
+                                                </a>
+                                            </td>
                                         </tr>
                                     }
                                 }

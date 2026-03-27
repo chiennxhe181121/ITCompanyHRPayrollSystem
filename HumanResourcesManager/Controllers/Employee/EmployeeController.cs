@@ -3,6 +3,7 @@ using HumanResourcesManager.BLL.Interfaces;
 using HumanResourcesManager.BLL.Services;
 using HumanResourcesManager.DAL.Enum;
 using HumanResourcesManager.DAL.Interfaces;
+using HumanResourcesManager.DAL.Models;
 using HumanResourcesManager.DAL.Shared;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -66,6 +67,8 @@ public class EmployeeController : Controller
 
         ViewBag.RemainingLeaveDays =
             _annualLeaveBalanceService.GetRemainingDays(CurrentUserId, now.Year);
+
+        ViewBag.CurrentSalary = _payrollService.GetCurrentSalary(CurrentUserId);
     }
 
     // ===== Sidebar User =====
@@ -365,5 +368,24 @@ public class EmployeeController : Controller
         LoadStats();
         var model = _payrollService.GetPayrolls(employeeId, page, pageSize, month, year);
         return View("~/Views/Employee/PayrollTab.cshtml", model);
+    }
+
+    [HttpGet("payroll/detail")]
+    public IActionResult PayrollDetail(int id)
+    {
+        int employeeId = CurrentUserId;
+
+        var model = _payrollService.GetPayrollDetail(id, employeeId);
+
+        if (model == null)
+        {
+            TempData["Error"] = "Không tìm thấy bảng lương";
+            return RedirectToAction("Payroll");
+        }
+
+        LoadSidebarUserCard();
+        LoadStats();
+
+        return View("~/Views/Employee/PayrollDetail.cshtml", model);
     }
 }
