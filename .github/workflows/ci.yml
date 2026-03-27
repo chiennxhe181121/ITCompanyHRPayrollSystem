@@ -35,7 +35,7 @@ jobs:
 
       # 5. Chạy unit tests
       - name: Run unit tests
-        run: dotnet test HumanResourcesManager.Tests/HumanResourcesManager.Tests.csproj --no-build --configuration Release --logger "trx;LogFileName=test_results.trx" --results-directory ./TestResults
+        run: dotnet test HumanResourcesManager.Tests/HumanResourcesManager.Tests.csproj --configuration Release --logger "trx;LogFileName=test_results.trx" --results-directory ./TestResults
       # 6. show unit tests
       - name: Show test summary
         run: |
