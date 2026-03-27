@@ -2,279 +2,165 @@
 @model EmployeeOwnerProfileDTO
 
 @{
-	Layout = "~/Views/Employee/_EmployeeLayout.cshtml";
+    Layout = "~/Views/Employee/_EmployeeLayout.cshtml";
 }
 
-<!-- Main Content -->
-<main class="flex-1 overflow-y-auto bg-slate-50/50">
-	@await Html.PartialAsync("_EmployeeHeader")
+<main class="flex-1 overflow-y-auto bg-[#f8fafc]">
+    @await Html.PartialAsync("_EmployeeHeader")
 
-	<div class="p-5 lg:p-8">
-		@* @await Html.PartialAsync("_EmployeeStats") *@
+    <div class="p-5 lg:p-8 max-w-6xl mx-auto space-y-6">
+        <form id="profileForm" method="post" action="/HumanResourcesManager/employee/update-profile" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="profileAvatarData" name="ImgAvatar" value="">
+            <input type="hidden" name="RemoveAvatar" id="removeAvatarFlag" value="false" />
 
-		<!-- Tabs Content -->
-		<div class="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
-			<!-- Profile Tab -->
-			<div id="profileTab" class="tab-content">
-				<div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
-					<h2 class="text-xl font-bold text-slate-800 tracking-tight">
-						Hồ Sơ
-					</h2>
-					<p class="text-sm text-slate-500 mt-1">Xem và chỉnh sửa thông tin của bạn</p>
-				</div>
-				<div class="p-6">
-					<form id="profileForm"
-						  method="post"
-						  action="/HumanResourcesManager/employee/update-profile"
-						  enctype="multipart/form-data"
-						  class="w-full space-y-6">
+            <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200/60 p-6 md:p-8 mb-6">
+                <div class="flex flex-col md:flex-row items-center gap-8">
+                    <div class="relative group">
+                        <div id="profileAvatarPreview" class="w-32 h-32 md:w-36 md:h-36 rounded-[2.5rem] overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-5xl font-black text-white shadow-xl ring-4 ring-white">
+                            @{
+                                var avatarPath = Model.ImgAvatar;
+                                var hasAvatar = !string.IsNullOrEmpty(avatarPath);
+                                var initial = string.IsNullOrEmpty(Model.FullName) ? "U" : Model.FullName.Substring(0, 1).ToUpper();
+                            }
+                            <img id="profileAvatarImg" src="@(hasAvatar ? $"{avatarPath}?v={DateTime.Now.Ticks}" : "")"
+                                 class="w-full h-full object-cover @(hasAvatar ? "" : "hidden")" alt="Avatar" />
+                            <span id="profileAvatarInitial" class="@(hasAvatar ? "hidden" : "")">@initial</span>
+                        </div>
+                        <div id="profileAvatarActions" class="absolute inset-0 bg-black/40 backdrop-blur-sm rounded-[2.5rem] flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all hidden">
+                            <button type="button" id="profileAvatarBtn" class="w-10 h-10 bg-white text-indigo-600 rounded-xl flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-camera"></i>
+                            </button>
+                            <button type="button" id="profileAvatarRemoveBtn" class="w-10 h-10 bg-white text-red-500 rounded-xl flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                            <input type="file" id="profileAvatarInput" name="avatarFile" accept="image/*" class="hidden">
+                        </div>
+                    </div>
 
-						@Html.AntiForgeryToken()
+                    <div class="flex-1 text-center md:text-left">
+                        <h2 class="text-3xl font-black text-slate-800 tracking-tight">@Model.FullName</h2>
+                        <div class="flex flex-wrap justify-center md:justify-start gap-2 mt-2">
+                            <span class="px-3 py-1 bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase rounded-lg border border-indigo-100/50">@Model.PositionName</span>
+                            <span class="px-3 py-1 bg-slate-50 text-slate-500 text-[10px] font-black uppercase rounded-lg border border-slate-200/50">@Model.EmployeeCode</span>
+                        </div>
 
-						<input type="hidden" id="profileAvatarData" name="ImgAvatar" value="">
-						<input type="hidden" name="RemoveAvatar" id="removeAvatarFlag" value="false" />
-						<!-- PROFILE HEADER -->
-						<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-6 border-b border-slate-100">
+                        <div class="flex flex-wrap justify-center md:justify-start items-center gap-3 mt-6">
+                            <button type="button" id="profileEditSaveBtn" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-100 transition-all active:scale-95 flex items-center gap-2">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                                <span>Chỉnh sửa thông tin</span>
+                            </button>
+                            <button type="button" id="profileCancelBtn" class="hidden px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-bold rounded-xl transition-all">
+                                Hủy
+                            </button>
+                            <a asp-action="ChangePassword" asp-controller="Employee" id="profileChangePasswordBtn" class="px-6 py-2.5 border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-bold rounded-xl transition-all">
+                                <i class="fa-solid fa-key mr-2"></i>Đổi mật khẩu
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-							<!-- LEFT: AVATAR -->
-							<div class="flex items-center gap-4">
-								<div class="flex flex-col items-center gap-4 p-6
-            bg-white rounded-2xl shadow-sm border border-slate-100">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
 
-									<!-- LABEL -->
-									<h3 class="text-base font-semibold text-slate-700">
-									Ảnh đại diện
-									</h3>
-									@{
-										var avatarPath = Model.ImgAvatar;
-										var hasAvatar = !string.IsNullOrEmpty(avatarPath);
-										var initial = string.IsNullOrEmpty(Model.FullName)
-										? "U"
-										: Model.FullName.Substring(0, 1).ToUpper();
-									}
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-200/60 h-full">
+                        <h3 class="text-[11px] font-black text-indigo-500 uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
+                            <span class="w-6 h-[2px] bg-indigo-500"></span>
+                            Thông tin cá nhân
+                        </h3>
 
-									<!-- AVATAR -->
-									<div id="profileAvatarPreview"
-										 class="relative w-32 h-32 rounded-full overflow-hidden
-                bg-gradient-to-br from-indigo-500 via-blue-500 to-cyan-400
-                flex items-center justify-center
-                text-4xl font-semibold text-white
-                ring-4 ring-white shadow-xl
-                transition-all duration-300
-                hover:scale-105 hover:ring-indigo-200">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">Họ và tên</label>
+                                <input type="text" id="profileFullName" name="FullName" value="@Model.FullName" class="custom-input" readonly>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">Email cá nhân</label>
+                                <input type="email" id="profileEmail" name="Email" value="@Model.Email" class="custom-input" readonly>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">Giới tính</label>
+                                <select id="profileGender" name="Gender" asp-for="Gender" class="custom-input" disabled>
+                                    <option value="true">Nam</option>
+                                    <option value="false">Nữ</option>
+                                </select>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">Ngày sinh</label>
+                                <input type="date" id="profileDob" name="DateOfBirth" value="@Model.DateOfBirth.ToString("yyyy-MM-dd")" class="custom-input" readonly>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">Số điện thoại</label>
+                                <input type="tel" id="profilePhone" name="Phone" value="@Model.Phone" class="custom-input" readonly>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">Nơi ở hiện nay</label>
+                                <input type="text" id="profileAddress" name="Address" value="@Model.Address" class="custom-input" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-										<img id="profileAvatarImg"
-											 src="@(hasAvatar ? $"{avatarPath}?v={DateTime.Now.Ticks}" : "")"
-											 class="w-full h-full object-cover @(hasAvatar ? "" : "hidden")"
-											 alt="Avatar" />
+                <div class="h-full">
+                    <div class="bg-slate-900 rounded-[2rem] p-8 text-white shadow-xl h-full flex flex-col justify-between overflow-hidden relative group">
+                        <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl"></div>
 
-										<span id="profileAvatarInitial"
-											  class="@(hasAvatar ? "hidden" : "")">
-											@initial
-										</span>
-									</div>
+                        <div>
+                            <h3 class="text-[11px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-8">Công việc</h3>
+                            <div class="space-y-8">
+                                <div class="relative pl-4 border-l-2 border-indigo-500/30">
+                                    <p class="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Phòng ban</p>
+                                    <p class="text-lg font-black text-white mt-1">@Model.DepartmentName</p>
+                                </div>
+                                <div class="relative pl-4 border-l-2 border-indigo-500/30">
+                                    <p class="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Chức vụ</p>
+                                    <p class="text-lg font-black text-white mt-1">@Model.PositionName</p>
+                                </div>
+                                <div class="relative pl-4 border-l-2 border-indigo-500/30">
+                                    <p class="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Ngày vào làm</p>
+                                    <p class="text-lg font-black text-white mt-1">@Model.HireDate.ToString("dd/MM/yyyy")</p>
+                                </div>
+                            </div>
+                        </div>
 
-								</div>
+                        <div class="mt-8 p-4 bg-white/5 rounded-2xl border border-white/10 text-[10px] text-slate-400 leading-relaxed italic">
+                            Dữ liệu nhân sự được bảo mật. Liên hệ Admin nếu cần điều chỉnh thông tin công việc.
+                        </div>
+                    </div>
+                </div>
 
-								<div id="profileAvatarActions" class="flex flex-col gap-2 hidden">
-									<input type="file"
-										   id="profileAvatarInput"
-										   name="avatarFile"
-										   accept="image/*"
-										   class="hidden">
-									<button type="button" id="profileAvatarBtn"
-											class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition-colors">
-										Chọn ảnh
-									</button>
-									<button type="button" id="profileAvatarRemoveBtn"
-											class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-sm font-medium transition-colors">
-										Xóa ảnh
-									</button>
-								</div>
-							</div>
-
-							<!-- RIGHT: ACTION BUTTONS -->
-							<div class="flex flex-col sm:flex-row gap-3">
-								<button type="button"
-										id="profileEditSaveBtn"
-										class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-sm transition-colors">
-
-									<i class="bi bi-pencil"></i>
-									<span>Chỉnh sửa thông tin</span>
-								</button>
-
-								<button type="button"
-										id="profileCancelBtn"
-										class="hidden px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl shadow-sm transition-colors">
-									Huỷ thay đổi
-								</button>
-
-								<a asp-action="ChangePassword"
-								   asp-controller="Employee"
-								   id="profileChangePasswordBtn"
-								   class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-700 hover:bg-slate-800 text-white font-medium rounded-xl shadow-sm transition-colors">
-
-									<i class="bi bi-shield-lock"></i>
-									<span>Đổi mật khẩu</span>
-								</a>
-							</div>
-
-							<div></div>
-						</div>
-						<div class="grid grid-cols-1 xl:grid-cols-2 gap-10 pt-6">
-
-							<!-- ================= LEFT: Editable ================= -->
-							<div>
-								<h3 class="text-base font-semibold text-slate-700 mb-5">
-									Thông tin cá nhân:
-								</h3>
-
-								<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-									<!-- HỌ TÊN -->
-									<div>
-										<label class="block text-sm font-medium text-slate-600 mb-1.5">Họ và tên</label>
-										<input type="text" id="profileFullName" name="FullName"
-											   value="@Model.FullName"
-											   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
-											   readonly>
-									</div>
-
-									<!-- EMAIL -->
-									<div>
-										<label class="block text-sm font-medium text-slate-600 mb-1.5">Email cá nhân</label>
-										<input type="email" id="profileEmail" name="Email"
-											   value="@Model.Email"
-											   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
-											   readonly>
-									</div>
-
-									<!-- GIỚI TÍNH -->
-									<div>
-										<label class="block text-sm font-medium text-slate-600 mb-1.5">
-											Giới tính
-										</label>
-
-										<select id="profileGender"
-												name="Gender"
-												asp-for="Gender"
-												class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
-												disabled>
-											<option value="true">Nam</option>
-											<option value="false">Nữ</option>
-										</select>
-
-										<input type="hidden"
-											   id="profileGenderHidden"
-											   name="Gender"
-											   value="@Model.Gender" />
-									</div>
-
-									<!-- NGÀY SINH -->
-									<div>
-										<label class="block text-sm font-medium text-slate-600 mb-1.5">Ngày sinh</label>
-										<input type="date" id="profileDob" name="DateOfBirth"
-											   value="@Model.DateOfBirth.ToString("yyyy-MM-dd")"
-											   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
-									</div>
-
-									<!-- SỐ ĐIỆN THOẠI -->
-									<div>
-										<label class="block text-sm font-medium text-slate-600 mb-1.5">Số điện thoại</label>
-										<input type="tel" id="profilePhone" name="Phone"
-											   value="@Model.Phone"
-											   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
-									</div>
-
-									<!-- NƠI Ở HIỆN NAY -->
-									<div>
-										<label class="block text-sm font-medium text-slate-600 mb-1.5">Nơi ở hiện nay</label>
-										<input type="text" id="profileAddress"
-											   value="@Model.Address" name="Address"
-											   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500" readonly>
-									</div>
-
-								</div>
-							</div>
-
-							<!-- ================= RIGHT: Readonly ================= -->
-							<div>
-								<h3 class="text-base font-semibold text-slate-700 mb-5">
-									Thông tin công việc:
-								</h3>
-
-								<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-									<!-- MÃ NHÂN VIÊN -->
-									<div>
-										<label class="block text-sm font-medium text-slate-600 mb-1.5">Mã nhân viên</label>
-										<input type="text" id="profileEmployeeCode"
-											   value="@Model.EmployeeCode"
-											   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
-											   readonly>
-									</div>
-
-									<!-- PHÒNG BAN -->
-									<div>
-										<label class="block text-sm font-medium text-slate-600 mb-1.5">Phòng ban</label>
-										<input type="text" id="profileDepartment"
-											   value="@Model.DepartmentName"
-											   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
-											   readonly>
-									</div>
-
-									<!-- CHỨC VỤ -->
-									<div>
-										<label class="block text-sm font-medium text-slate-600 mb-1.5">Chức vụ</label>
-										<input type="text" id="profilePosition"
-											   value="@Model.PositionName"
-											   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
-											   readonly>
-									</div>
-
-									<!-- NGÀY VÀO LÀM -->
-									<div>
-										<label class="block text-sm font-medium text-slate-600 mb-1.5">Ngày vào làm</label>
-										<input type="text" id="profileHireDate"
-											   value="@Model.HireDate.ToString("dd/MM/yyyy")"
-											   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-500"
-											   readonly>
-									</div>
-
-								</div>
-
-								<div class="text-red-600 text-sm mt-8">
-									@if (!ViewData.ModelState.IsValid)
-									{
-										<div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 shadow-sm">
-											<div class="flex items-start gap-3">
-												<div class="text-red-500 text-lg">
-													<i class="bi bi-exclamation-triangle-fill"></i>
-												</div>
-
-												<div class="text-sm text-red-700">
-													<p class="font-medium mb-1">Có lỗi xảy ra:</p>
-													<ul class="list-disc list-inside space-y-1">
-														@foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-														{
-															<li>@error.ErrorMessage</li>
-														}
-													</ul>
-												</div>
-											</div>
-										</div>
-									}
-								</div>
-
-							</div>
-
-						</div>
-					</form>
-				</div>
-			</div>
-		</div>
-	</div>
+            </div>
+        </form>
+    </div>
 </main>
+
+<style>
+    /* 1. Tạo viền và khối cho ô input */
+    .custom-input {
+        @@apply w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-bold text-sm transition-all duration-200 outline-none;
+    }
+
+        /* 2. Khi ở trạng thái Readonly (không được sửa) - Làm mờ viền nhẹ */
+        .custom-input[readonly], .custom-input[disabled] {
+            @@apply bg-slate-50 /50 border-slate-100 text-slate-500 shadow-none cursor-default;
+        }
+
+        /* 3. Khi JS kích hoạt Editing Mode (Bỏ readonly) - Đậm viền Indigo */
+        .custom-input:not([readonly]):not([disabled]) {
+            @@apply bg-white border-indigo-300 shadow-sm text-slate-800;
+        }
+
+        .custom-input:not([readonly]):focus {
+            @@apply border-indigo-600 ring-4 ring-indigo-500/10 bg-white;
+        }
+
+    /* Style cho lỗi validate của JS */
+    .border-red-500 {
+        @@apply border-red-500 bg-red-50/30 !important;
+    }
+</style>
+
 
 @section Scripts {
 	@if (Model != null)

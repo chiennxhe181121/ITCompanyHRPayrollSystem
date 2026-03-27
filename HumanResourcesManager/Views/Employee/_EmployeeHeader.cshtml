@@ -1,17 +1,95 @@
-﻿@* Employee Header *@
-<header class="employee-header px-6 lg:px-8 py-5">
-	<div class="flex flex-wrap items-center justify-between gap-4">
-		<div>
-			<h1 class="text-2xl font-semibold text-slate-800">Bảng điều khiển nhân viên</h1>
-			<p class="text-slate-500 text-sm mt-0.5">Chấm công và quản lý thông tin cá nhân</p>
-		</div>
+﻿<header class="bg-white/80 backdrop-blur-md sticky top-0 z-30 border-b border-slate-200/60 px-6 lg:px-10 py-4 transition-all duration-300">
+    <div class="flex flex-wrap items-center justify-between gap-4 max-w-[1600px] mx-auto">
 
-		<div class="clock-box">
-			<div class="text-right">
-				<p class="clock-date-label" id="currentDateLabel"></p>
-				<p class="clock-date-value" id="currentDate"></p>
-			</div>
-			<p class="clock-time" id="currentTime"></p>
-		</div>
-	</div>
+        <div class="flex items-center gap-4">
+            <div class="hidden md:flex w-12 h-12 bg-indigo-50 rounded-2xl items-center justify-center text-indigo-600 shadow-inner">
+                <i class="fa-solid fa-wand-magic-sparkles text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
+                    <span id="greetingText" class="bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-500">Xin chào</span>, @ViewBag.SidebarUserName!
+                    <span id="greetingEmoji" class="animate-bounce-slow">👋</span>
+                </h1>
+                <p class="text-slate-500 text-[11px] font-semibold uppercase tracking-widest mt-0.5 opacity-70">Hệ thống quản lý nhân sự trực tuyến</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4 bg-gradient-to-r from-slate-50 to-white px-5 py-2.5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow duration-300">
+            <div class="text-right hidden sm:block border-r border-slate-200 pr-4 mr-1">
+                <p class="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] leading-none mb-1" id="dayOfWeek">THỨ HAI</p>
+                <p class="text-xs font-bold text-slate-400 font-sans" id="fullDate">01/01/2026</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="text-3xl font-mono font-black text-slate-800 tracking-tighter tabular-nums" id="liveClock" style="font-variant-numeric: tabular-nums;">
+                    00:00:00
+                </div>
+                <div class="flex flex-col gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-200"></span>
+                </div>
+            </div>
+        </div>
+    </div>
 </header>
+
+<style>
+    keyframes bounce-slow {
+        0%, 100%
+
+    {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+
+    }
+
+    .animate-bounce-slow {
+        animation: bounce-slow 3s infinite ease-in-out;
+        display: inline-block;
+    }
+    /* Đảm bảo font đồng hồ không bị nhảy khi đổi số */
+    #liveClock {
+        font-feature-settings: "tnum";
+        font-variant-numeric: tabular-nums;
+    }
+</style>
+
+<script>
+    function updateDashboardHeader() {
+        const now = new Date();
+        const hours = now.getHours();
+
+        // 1. Cập nhật lời chào tinh tế hơn
+        let greeting = "";
+        let emoji = "";
+        if (hours >= 5 && hours < 12) { greeting = "Chào buổi sáng"; emoji = "☕"; }
+        else if (hours >= 12 && hours < 18) { greeting = "Chào buổi chiều"; emoji = "🌤️"; }
+        else if (hours >= 18 && hours < 22) { greeting = "Chào buổi tối"; emoji = "🌙"; }
+        else { greeting = "Làm việc muộn thế"; emoji = "🦉"; }
+
+        const gText = document.getElementById('greetingText');
+        if(gText.innerText !== greeting) gText.innerText = greeting;
+        document.getElementById('greetingEmoji').innerText = emoji;
+
+        // 2. Cập nhật đồng hồ (giữ định dạng 2 chữ số)
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        document.getElementById('liveClock').innerText = `${hh}:${mm}:${ss}`;
+
+        // 3. Cập nhật ngày tháng
+        const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+        document.getElementById('dayOfWeek').innerText = days[now.getDay()];
+        document.getElementById('fullDate').innerText = now.toLocaleDateString('vi-VN', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    }
+
+    setInterval(updateDashboardHeader, 1000);
+    updateDashboardHeader();
+</script>

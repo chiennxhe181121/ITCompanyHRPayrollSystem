@@ -1,6 +1,7 @@
 ﻿using HumanResourcesManager.DAL.Data;
 using HumanResourcesManager.DAL.Interfaces;
 using HumanResourcesManager.DAL.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,5 +29,16 @@ namespace HumanResourcesManager.DAL.Repository
         public void Update(Allowance allowance) => _context.Allowances.Update(allowance);
 
         public void Save() => _context.SaveChanges();
+
+        
+
+        // Lấy danh sách allowance active của employee
+        public async Task<List<Allowance>> GetActiveAllowancesByEmployeeAsync(int employeeId)
+        {
+            return await _context.Allowances
+                .Include(a => a.EmployeeAllowances)
+                .Where(a => a.EmployeeAllowances.Any(ea => ea.EmployeeId == employeeId ))
+                .ToListAsync();
+        }
     }
 }

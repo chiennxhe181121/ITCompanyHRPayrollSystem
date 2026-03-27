@@ -178,26 +178,101 @@ namespace HumanResourcesManager.DAL.Data
             // ===================== PAYROLL =====================
             if (!context.Payrolls.Any())
             {
-                context.Payrolls.AddRange(
-                    new Payroll
-                    {
-                        EmployeeId = 1,
-                        BasicSalary = 8000000,
-                        TotalOT = 0,
-                        TotalAllowance = 500000,
-                        MissingMinutesPenalty = 0,
-                        NetSalary = 8500000
-                    },
-                    new Payroll
-                    {
-                        EmployeeId = 2,
-                        BasicSalary = 15000000,
-                        TotalOT = 2000000,
-                        TotalAllowance = 800000,
-                        MissingMinutesPenalty = 0,
-                        NetSalary = 17800000
-                    }
-                );
+                var currentYear = DateTime.Today.Year;
+
+                var payrolls = new List<Payroll>
+    {
+        // EMP003 (user đang test chính)
+        new Payroll
+        {
+            EmployeeId = 3,
+            Month = 1,
+            Year = currentYear,
+            BasicSalary = 12000000,
+            TotalOT = 500000,
+            TotalAllowance = 800000,
+            MissingMinutesPenalty = 100000,
+            NetSalary = 12200000,
+            CreatedDate = new DateTime(currentYear, 1, 31)
+        },
+        new Payroll
+        {
+            EmployeeId = 3,
+            Month = 2,
+            Year = currentYear,
+            BasicSalary = 12000000,
+            TotalOT = 700000,
+            TotalAllowance = 800000,
+            MissingMinutesPenalty = 0,
+            NetSalary = 13500000,
+            CreatedDate = new DateTime(currentYear, 2, 28)
+        },
+        new Payroll
+        {
+            EmployeeId = 3,
+            Month = 3,
+            Year = currentYear,
+            BasicSalary = 12000000,
+            TotalOT = 300000,
+            TotalAllowance = 800000,
+            MissingMinutesPenalty = 200000,
+            NetSalary = 12900000,
+            CreatedDate = new DateTime(currentYear, 3, 31)
+        },
+
+        // EMP002
+        new Payroll
+        {
+            EmployeeId = 2,
+            Month = 2,
+            Year = currentYear,
+            BasicSalary = 15000000,
+            TotalOT = 2000000,
+            TotalAllowance = 800000,
+            MissingMinutesPenalty = 0,
+            NetSalary = 17800000,
+            CreatedDate = new DateTime(currentYear, 2, 28)
+        }
+    };
+
+                context.Payrolls.AddRange(payrolls);
+                context.SaveChanges();
+
+                // ===================== PAYROLL DETAIL =====================
+                var details = new List<PayrollDetail>();
+
+                foreach (var p in payrolls)
+                {
+                    details.AddRange(new List<PayrollDetail>
+{
+    new PayrollDetail
+    {
+        PayrollId = p.PayrollId,
+        Description = "[05/03] Đi trễ 15 phút (-50,000)",
+        Amount = -50000
+    },
+    new PayrollDetail
+    {
+        PayrollId = p.PayrollId,
+        Description = "[06/03] Về sớm 30 phút (-100,000)",
+        Amount = -100000
+    },
+    new PayrollDetail
+    {
+        PayrollId = p.PayrollId,
+        Description = "[08/03] OT 2 giờ (+200,000)",
+        Amount = 200000
+    },
+    new PayrollDetail
+    {
+        PayrollId = p.PayrollId,
+        Description = "[10/03] Phụ cấp ăn trưa (+30,000)",
+        Amount = 30000
+    }
+});
+                }
+
+                context.PayrollDetails.AddRange(details);
                 context.SaveChanges();
             }
 

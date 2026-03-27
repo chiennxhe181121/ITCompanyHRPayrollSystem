@@ -54,5 +54,13 @@ namespace HumanResourcesManager.DAL.Repositories
         {
             _context.SaveChanges();
         }
+
+        public async Task<Contract?> GetActiveContractByEmployeeAsync(int employeeId)
+        {
+            return await _context.Contracts
+                .Where(c => c.EmployeeId == employeeId && c.IsActive)
+                .OrderByDescending(c => c.StartDate)
+                .FirstOrDefaultAsync();
+        }
     }
 }
