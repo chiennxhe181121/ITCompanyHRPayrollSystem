@@ -35,4 +35,11 @@ jobs:
 
       # 5. Chạy unit tests
       - name: Run unit tests
-        run: dotnet test HumanResourcesManager.Tests/HumanResourcesManager.Tests.csproj --no-build --configuration Release --logger "console;verbosity=normal"
+        run: |
+          dotnet test HumanResourcesManager.Tests/HumanResourcesManager.Tests.csproj --no-build --configuration Release --logger "console;verbosity=normal"
+          if ($LASTEXITCODE -eq 0) {
+            echo "✅ TEST PASSED"
+          } else {
+            echo "❌ TEST FAILED"
+            exit 1
+          }
