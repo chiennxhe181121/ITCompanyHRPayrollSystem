@@ -32,6 +32,11 @@ namespace HumanResourcesManager.Controllers.HR
                     .Where(p => p.EmployeeName.Contains(search, StringComparison.OrdinalIgnoreCase))
                     .ToList();
             }
+            // 3. Sắp xếp theo Năm giảm dần, rồi Tháng giảm dần (mới nhất lên đầu)
+            allPayrolls = allPayrolls
+                .OrderByDescending(p => p.Year)
+                .ThenByDescending(p => p.Month)
+                .ToList();
 
             // 3. Tính tổng số bản ghi và tổng số trang
             int totalRecords = allPayrolls.Count;
