@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace HumanResourcesManager.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitDatabase : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -287,32 +287,34 @@ namespace HumanResourcesManager.DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "OverTimeRequests",
+                name: "OTSchedules",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    EmployeeId = table.Column<int>(type: "int", nullable: false),
-                    WorkDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    FromTime = table.Column<TimeSpan>(type: "time", nullable: false),
-                    ToTime = table.Column<TimeSpan>(type: "time", nullable: false),
-                    Reason = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    TaskRef = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    StartTime = table.Column<TimeSpan>(type: "time", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EndTime = table.Column<TimeSpan>(type: "time", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    DepartmentId = table.Column<int>(type: "int", nullable: false),
                     ManagerId = table.Column<int>(type: "int", nullable: false),
-                    EmployeeAccepted = table.Column<bool>(type: "bit", nullable: true),
-                    Status = table.Column<long>(type: "bigint", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_OverTimeRequests", x => x.Id);
+                    table.PrimaryKey("PK_OTSchedules", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_OverTimeRequests_Employees_EmployeeId",
-                        column: x => x.EmployeeId,
-                        principalTable: "Employees",
-                        principalColumn: "EmployeeId",
+                        name: "FK_OTSchedules_Departments_DepartmentId",
+                        column: x => x.DepartmentId,
+                        principalTable: "Departments",
+                        principalColumn: "DepartmentId",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_OverTimeRequests_Employees_ManagerId",
+                        name: "FK_OTSchedules_Employees_ManagerId",
                         column: x => x.ManagerId,
                         principalTable: "Employees",
                         principalColumn: "EmployeeId",
@@ -347,26 +349,41 @@ namespace HumanResourcesManager.DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "OTAttendances",
+                name: "OverTimeRequests",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    OverTimeRequestId = table.Column<int>(type: "int", nullable: false),
-                    CheckIn = table.Column<TimeSpan>(type: "time", nullable: false),
-                    CheckOut = table.Column<TimeSpan>(type: "time", nullable: false),
-                    CheckInImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CheckOutImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ActualOTHours = table.Column<double>(type: "float", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false)
+                    EmployeeId = table.Column<int>(type: "int", nullable: false),
+                    WorkDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    StartTime = table.Column<TimeSpan>(type: "time", nullable: false),
+                    EndTime = table.Column<TimeSpan>(type: "time", nullable: false),
+                    Reason = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    TaskRef = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    ManagerId = table.Column<int>(type: "int", nullable: false),
+                    OTScheduleId = table.Column<int>(type: "int", nullable: true),
+                    EmployeeAccepted = table.Column<bool>(type: "bit", nullable: true),
+                    Status = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_OTAttendances", x => x.Id);
+                    table.PrimaryKey("PK_OverTimeRequests", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_OTAttendances_OverTimeRequests_OverTimeRequestId",
-                        column: x => x.OverTimeRequestId,
-                        principalTable: "OverTimeRequests",
+                        name: "FK_OverTimeRequests_Employees_EmployeeId",
+                        column: x => x.EmployeeId,
+                        principalTable: "Employees",
+                        principalColumn: "EmployeeId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_OverTimeRequests_Employees_ManagerId",
+                        column: x => x.ManagerId,
+                        principalTable: "Employees",
+                        principalColumn: "EmployeeId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_OverTimeRequests_OTSchedules_OTScheduleId",
+                        column: x => x.OTScheduleId,
+                        principalTable: "OTSchedules",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -391,6 +408,31 @@ namespace HumanResourcesManager.DAL.Migrations
                         principalTable: "Payrolls",
                         principalColumn: "PayrollId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OTAttendances",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OverTimeRequestId = table.Column<int>(type: "int", nullable: false),
+                    CheckIn = table.Column<TimeSpan>(type: "time", nullable: false),
+                    CheckOut = table.Column<TimeSpan>(type: "time", nullable: false),
+                    CheckInImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CheckOutImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ActualOTHours = table.Column<double>(type: "float", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OTAttendances", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OTAttendances_OverTimeRequests_OverTimeRequestId",
+                        column: x => x.OverTimeRequestId,
+                        principalTable: "OverTimeRequests",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -454,6 +496,16 @@ namespace HumanResourcesManager.DAL.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_OTSchedules_DepartmentId",
+                table: "OTSchedules",
+                column: "DepartmentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OTSchedules_ManagerId",
+                table: "OTSchedules",
+                column: "ManagerId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OverTimeRequests_EmployeeId",
                 table: "OverTimeRequests",
                 column: "EmployeeId");
@@ -462,6 +514,11 @@ namespace HumanResourcesManager.DAL.Migrations
                 name: "IX_OverTimeRequests_ManagerId",
                 table: "OverTimeRequests",
                 column: "ManagerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OverTimeRequests_OTScheduleId",
+                table: "OverTimeRequests",
+                column: "OTScheduleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PayrollDetails_PayrollId",
@@ -520,6 +577,9 @@ namespace HumanResourcesManager.DAL.Migrations
 
             migrationBuilder.DropTable(
                 name: "Payrolls");
+
+            migrationBuilder.DropTable(
+                name: "OTSchedules");
 
             migrationBuilder.DropTable(
                 name: "Employees");
