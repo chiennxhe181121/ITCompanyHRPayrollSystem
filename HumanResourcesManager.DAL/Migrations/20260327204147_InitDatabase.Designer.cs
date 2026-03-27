@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HumanResourcesManager.DAL.Migrations
 {
     [DbContext(typeof(HumanManagerContext))]
-    [Migration("20260327031323_AddOTSchedule")]
-    partial class AddOTSchedule
+    [Migration("20260327204147_InitDatabase")]
+    partial class InitDatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -394,10 +394,10 @@ namespace HumanResourcesManager.DAL.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<double>("DurationHours")
-                        .HasColumnType("float");
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
 
-                    b.Property<TimeSpan>("FromTime")
+                    b.Property<TimeSpan>("EndTime")
                         .HasColumnType("time");
 
                     b.Property<int>("ManagerId")
@@ -411,11 +411,14 @@ namespace HumanResourcesManager.DAL.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
-
-                    b.Property<DateTime>("WorkDate")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -440,7 +443,7 @@ namespace HumanResourcesManager.DAL.Migrations
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
-                    b.Property<TimeSpan>("FromTime")
+                    b.Property<TimeSpan>("EndTime")
                         .HasColumnType("time");
 
                     b.Property<int>("ManagerId")
@@ -454,6 +457,9 @@ namespace HumanResourcesManager.DAL.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time");
+
                     b.Property<long>("Status")
                         .HasColumnType("bigint");
 
@@ -461,9 +467,6 @@ namespace HumanResourcesManager.DAL.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<TimeSpan>("ToTime")
-                        .HasColumnType("time");
 
                     b.Property<DateTime>("WorkDate")
                         .HasColumnType("datetime2");
@@ -543,6 +546,9 @@ namespace HumanResourcesManager.DAL.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("PayrollId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
                         .HasColumnType("int");
 
                     b.HasKey("PayrollDetailId");

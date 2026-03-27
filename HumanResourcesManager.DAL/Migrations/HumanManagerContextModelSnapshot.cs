@@ -372,6 +372,60 @@ namespace HumanResourcesManager.DAL.Migrations
                     b.ToTable("OTAttendances");
                 });
 
+            modelBuilder.Entity("HumanResourcesManager.DAL.Models.OTSchedule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DepartmentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<int>("ManagerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepartmentId");
+
+                    b.HasIndex("ManagerId");
+
+                    b.ToTable("OTSchedules");
+                });
+
             modelBuilder.Entity("HumanResourcesManager.DAL.Models.OverTimeRequest", b =>
                 {
                     b.Property<int>("Id")
@@ -386,16 +440,22 @@ namespace HumanResourcesManager.DAL.Migrations
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
-                    b.Property<TimeSpan>("FromTime")
+                    b.Property<TimeSpan>("EndTime")
                         .HasColumnType("time");
 
                     b.Property<int>("ManagerId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OTScheduleId")
                         .HasColumnType("int");
 
                     b.Property<string>("Reason")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time");
 
                     b.Property<long>("Status")
                         .HasColumnType("bigint");
@@ -405,9 +465,6 @@ namespace HumanResourcesManager.DAL.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<TimeSpan>("ToTime")
-                        .HasColumnType("time");
-
                     b.Property<DateTime>("WorkDate")
                         .HasColumnType("datetime2");
 
@@ -416,6 +473,8 @@ namespace HumanResourcesManager.DAL.Migrations
                     b.HasIndex("EmployeeId");
 
                     b.HasIndex("ManagerId");
+
+                    b.HasIndex("OTScheduleId");
 
                     b.ToTable("OverTimeRequests");
                 });
@@ -695,6 +754,25 @@ namespace HumanResourcesManager.DAL.Migrations
                     b.Navigation("OverTimeRequest");
                 });
 
+            modelBuilder.Entity("HumanResourcesManager.DAL.Models.OTSchedule", b =>
+                {
+                    b.HasOne("HumanResourcesManager.DAL.Models.Department", "Department")
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HumanResourcesManager.DAL.Models.Employee", "Manager")
+                        .WithMany()
+                        .HasForeignKey("ManagerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Department");
+
+                    b.Navigation("Manager");
+                });
+
             modelBuilder.Entity("HumanResourcesManager.DAL.Models.OverTimeRequest", b =>
                 {
                     b.HasOne("HumanResourcesManager.DAL.Models.Employee", "Employee")
@@ -709,9 +787,16 @@ namespace HumanResourcesManager.DAL.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("HumanResourcesManager.DAL.Models.OTSchedule", "OTSchedule")
+                        .WithMany("Registrations")
+                        .HasForeignKey("OTScheduleId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Employee");
 
                     b.Navigation("Manager");
+
+                    b.Navigation("OTSchedule");
                 });
 
             modelBuilder.Entity("HumanResourcesManager.DAL.Models.Payroll", b =>
@@ -777,6 +862,11 @@ namespace HumanResourcesManager.DAL.Migrations
             modelBuilder.Entity("HumanResourcesManager.DAL.Models.LeaveType", b =>
                 {
                     b.Navigation("LeaveRequests");
+                });
+
+            modelBuilder.Entity("HumanResourcesManager.DAL.Models.OTSchedule", b =>
+                {
+                    b.Navigation("Registrations");
                 });
 
             modelBuilder.Entity("HumanResourcesManager.DAL.Models.OverTimeRequest", b =>
