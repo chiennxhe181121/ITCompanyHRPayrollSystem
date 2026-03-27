@@ -1,0 +1,39 @@
+name: .NET CI
+
+# Khi nào chạy
+on:
+  push:
+    branches:
+      - develop
+      - feature/*
+  pull_request:
+    branches:
+      - develop
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    steps:
+      # 1. Lấy code từ repo
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Cài đặt .NET
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0  # hoặc version project của bạn
+
+      # 3. Restore dependencies
+      - name: Restore dependencies
+        run: dotnet restore HRSystem.sln
+
+      # 4. Build project
+      - name: Build solution
+        run: dotnet build HRSystem.sln --no-restore --configuration Release
+
+      # 5. Chạy unit tests
+      - name: Run tests
+        run: dotnet test HRSystem.sln --no-build --verbosity normal
