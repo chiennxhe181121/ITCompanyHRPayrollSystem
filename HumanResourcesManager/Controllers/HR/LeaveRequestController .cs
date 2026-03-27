@@ -7,7 +7,7 @@ using HumanResourcesManager.DAL.Enum;
 namespace HumanResourcesManager.Web.Controllers.HR
 {
     [Authorize(Policy = "HR")]
-    [Route("HR/LeaveRequest")]
+    [Route("HumanResourcesManager/HR/LeaveRequest")]
     public class LeaveRequestController : Controller
     {
         private readonly ILeaveRequestService _service;

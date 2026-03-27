@@ -32,7 +32,7 @@
         </p>
     </div>
 
-    <a href="/Contracts/Create"
+    <a href="/HumanResourcesManager/HR/Contract/Create"
        class="inline-flex items-center gap-2 bg-slate-900 hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md">
         <i class="fa-solid fa-plus"></i>
         Tạo Hợp Đồng
@@ -299,7 +299,7 @@
 
         const form = document.createElement("form");
         form.method = "POST";
-        form.action = "/Contracts/Delete";
+        form.action = "/HumanResourcesManager/HR/Contracts/Delete";
 
         form.innerHTML = `
             <input type="hidden" name="id" value="${contractIdToDelete}" />

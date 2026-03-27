@@ -8,6 +8,7 @@ using HumanResourcesManager.BLL.Helpers;
 
 namespace HumanResourcesManager.Controllers.HR
 {
+    [Route("HumanResourcesManager/HR/Payroll")]
     public class PayrollController : Controller
     {
         private readonly IPayrollService _service;
@@ -18,6 +19,7 @@ namespace HumanResourcesManager.Controllers.HR
         }
 
         // ================== LIST ==================
+        [HttpGet("")]
         public async Task<IActionResult> Index(string search = "", int page = 1, int pageSize = 10)
         {
             // 1. Lấy tất cả payroll
@@ -51,9 +53,9 @@ namespace HumanResourcesManager.Controllers.HR
             return View("~/Views/HR/Payroll/Index.cshtml", pagedPayrolls);
         }
 
-        
+
         // ================== CREATE =================
-        [HttpGet]
+        [HttpGet("create")]
         public async Task<IActionResult> Create(int? employeeId, int? month, int? year)
         {
             int actualMonth = month ?? DateTime.Now.AddMonths(-1).Month;
@@ -88,7 +90,7 @@ namespace HumanResourcesManager.Controllers.HR
             return View("~/Views/HR/Payroll/Create.cshtml", model);
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(PayrollDTO model)
         {
@@ -115,7 +117,7 @@ namespace HumanResourcesManager.Controllers.HR
         }
 
         // ================== EDIT ==================
-        [HttpGet]
+        [HttpGet("edit/{id}")]
         public async Task<IActionResult> Edit(int id)
         {
             var data = await _service.GetByIdAsync(id);
@@ -130,7 +132,7 @@ namespace HumanResourcesManager.Controllers.HR
             return View("~/Views/HR/Payroll/Edit.cshtml", data);
         }
 
-        [HttpPost]
+        [HttpPost("edit")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(PayrollDTO model)
         {
@@ -178,7 +180,7 @@ namespace HumanResourcesManager.Controllers.HR
         }
 
         // ================== DELETE ==================
-        [HttpPost]
+        [HttpPost("delete")]
         public async Task<IActionResult> Delete(int id)
         {
             await _service.DeleteAsync(id);
@@ -186,6 +188,7 @@ namespace HumanResourcesManager.Controllers.HR
         }
 
         // ================== DETAILS ==================
+        [HttpGet("details/{id}")]
         public async Task<IActionResult> Details(int id)
         {
             var data = await _service.GetByIdAsync(id);
@@ -193,6 +196,7 @@ namespace HumanResourcesManager.Controllers.HR
 
             return View("~/Views/HR/Payroll/Details.cshtml", data);
         }
+        [HttpGet("export-pdf")]
         public async Task<IActionResult> ExportPdf(int payrollId, int month, int year)
         {
             var model = await _service.GetByIdAsync(payrollId);

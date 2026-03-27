@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace HumanResourcesManager.Controllers
 {
+    [Route("HumanResourcesManager/HR/Contract")]
     public class ContractsController : Controller
     {
         private readonly IContractService _contractService;
@@ -22,7 +23,7 @@ namespace HumanResourcesManager.Controllers
         // =========================
         // INDEX RIÊNG CHO CONTRACT
         // =========================
-        [HttpGet]
+        [HttpGet("")]
         public IActionResult Index(
      bool isActive = true,
      int page = 1,
@@ -75,7 +76,7 @@ namespace HumanResourcesManager.Controllers
         // =========================
         // GET CREATE
         // =========================
-        [HttpGet]
+        [HttpGet("create")]
         public IActionResult Create()
         {
             var allEmployees = _employeeService.GetAll();
@@ -108,7 +109,7 @@ namespace HumanResourcesManager.Controllers
         // =========================
         // POST CREATE
         // =========================
-        [HttpPost]
+        [HttpPost("create")]
         public IActionResult Create(ContractDTO dto)
         {
             // Validate ngày
@@ -132,7 +133,7 @@ namespace HumanResourcesManager.Controllers
         // =========================
         // DELETE (SOFT DELETE)
         // =========================
-        [HttpPost]
+        [HttpPost("delete")]
         public IActionResult Delete(int id, bool isActive, int page, int pageSize)
         {
             _contractService.SoftDelete(id);
@@ -145,7 +146,7 @@ namespace HumanResourcesManager.Controllers
             });
         }
 
-        [HttpGet]
+        [HttpGet("edit/{id}")]
         public IActionResult Edit(int id)
         {
             var dto = _contractService.GetById(id);
@@ -156,7 +157,7 @@ namespace HumanResourcesManager.Controllers
             return View("~/Views/HR/Contracts/Edit.cshtml", dto);
         }
 
-        [HttpPost]
+        [HttpPost("edit")]
         public IActionResult Edit(ContractDTO dto)
         {
             if (dto.EndDate <= dto.StartDate)
