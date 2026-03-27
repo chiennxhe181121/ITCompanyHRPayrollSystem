@@ -39,10 +39,9 @@ jobs:
       # 6. show unit tests
       - name: Show test summary
         run: |
-          [xml]$trx = Get-Content "HumanResourcesManager.Tests/TestResults/test_results.trx"
+          [xml]$trx = Get-Content "./TestResults/test_results.trx"
           $total = $trx.TestRun.ResultSummary.Counters.total
           $passed = $trx.TestRun.ResultSummary.Counters.passed
 
-          echo "Test Run Summary:"
           echo "Total tests: $total"
           echo "Passed: $passed"
