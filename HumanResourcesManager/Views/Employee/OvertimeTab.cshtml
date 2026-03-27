@@ -107,11 +107,7 @@
 												<td class="py-4 px-6">
 													<div class="flex items-center gap-2 text-sm">
 														<svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-														@{
-															var fromTimeStr = DateTime.Today.Add(item.StartTime).ToString("h:mm tt");
-															var toTimeStr = DateTime.Today.Add(item.EndTime).ToString("h:mm tt");
-														}
-														<span class="text-slate-700 font-semibold">@fromTimeStr - @toTimeStr</span>
+														<span class="text-slate-700 font-semibold">@OtScheduleDisplayHelper.FormatScheduleTimeRange12h(item.StartDate, item.StartTime, item.EndDate, item.EndTime)</span>
 													</div>
 												</td>
 												<td class="py-4 px-6 text-center">
@@ -275,7 +271,7 @@
 											<tr class="hover:bg-slate-50 transition-colors duration-150">
 												<td class="py-3 px-4 text-center text-slate-500 font-medium">@(startIndex + index)</td>
 												<td class="py-3 px-4 text-center font-medium text-slate-800">@item.WorkDate.ToString("dd/MM/yyyy")</td>
-												<td class="py-3 px-4 text-center font-semibold text-slate-700">@item.StartTime.ToString(@"hh\:mm") - @item.EndTime.ToString(@"hh\:mm")</td>
+												<td class="py-3 px-4 text-center font-semibold text-slate-700">@OtScheduleDisplayHelper.FormatScheduleTimeRange24h(item.WorkDate, item.StartTime, item.WorkDate, item.EndTime)</td>
 												<td class="py-3 px-4 text-center">@(item.CheckIn?.ToString(@"hh\:mm") ?? "---")</td>
 												<td class="py-3 px-4 text-center">
 													@if (!string.IsNullOrWhiteSpace(item.CheckInImagePath))
