@@ -7,6 +7,7 @@ using HumanResourcesManager.DAL.Models;
 using HumanResourcesManager.DAL.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using PayrollDetailDTO = HumanResourcesManager.BLL.DTOs.PayrollDetailDTO;
 
 namespace HumanResourcesManager.BLL.Services
 {
@@ -454,5 +455,37 @@ namespace HumanResourcesManager.BLL.Services
             };
         }
 
+        public EmployeePayrollDetailDTO GetPayrollDetail(int payrollId, int employeeId)
+        {
+            var payroll = _repo.GetPayrollDetail(payrollId, employeeId);
+
+            if (payroll == null) return null;
+
+            return new EmployeePayrollDetailDTO
+            {
+                PayrollId = payroll.PayrollId,
+                Month = payroll.Month,
+                Year = payroll.Year,
+                BasicSalary = payroll.BasicSalary,
+                TotalOT = payroll.TotalOT,
+                TotalAllowance = payroll.TotalAllowance,
+                MissingMinutesPenalty = payroll.MissingMinutesPenalty,
+                NetSalary = payroll.NetSalary,
+                Details = payroll.PayrollDetails
+                    .Select(d => new PayrollDetailDTO
+                    {
+                        Type = d.Type,
+                        Description = d.Description,
+                        Amount = d.Amount
+                    }).ToList()
+            };
+        }
+
+        public decimal GetCurrentSalary(int employeeId)
+        {
+            var payroll = _repo.GetLatestPayroll(employeeId);
+
+            return payroll?.NetSalary ?? 0;
+        }
     }
 }
