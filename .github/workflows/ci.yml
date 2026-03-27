@@ -34,6 +34,9 @@ jobs:
         run: dotnet build HumanResourcesManager.sln --no-restore --configuration Release
 
       # 5. Chạy unit tests
+      - name: Run unit tests
+        run: dotnet test HumanResourcesManager.Tests/HumanResourcesManager.Tests.csproj --no-build --configuration Release --logger "trx;LogFileName=test_results.trx" --results-directory ./TestResults
+      # 6. show unit tests
       - name: Show test summary
         run: |
           [xml]$trx = Get-Content "HumanResourcesManager.Tests/TestResults/test_results.trx"
