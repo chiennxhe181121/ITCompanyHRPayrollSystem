@@ -1,6 +1,5 @@
 name: .NET CI
 
-# Khi nào chạy
 on:
   push:
     branches:
@@ -24,16 +23,16 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 8.0  # hoặc version project của bạn
+          dotnet-version: 8.0
 
-      # 3. Restore dependencies
+      # 3. Restore dependencies cho solution
       - name: Restore dependencies
         run: dotnet restore HumanResourcesManager.sln
 
-      # 4. Build project
+      # 4. Build solution (Release)
       - name: Build solution
         run: dotnet build HumanResourcesManager.sln --no-restore --configuration Release
 
       # 5. Chạy unit tests
-      - name: Run tests
-        run: dotnet test HumanResourcesManager.sln --no-build --verbosity normal
+      - name: Run unit tests
+        run: dotnet test HumanResourcesManager.Tests/HumanResourcesManager.Tests.csproj --verbosity normal
