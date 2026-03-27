@@ -1,5 +1,8 @@
-﻿@using HumanResourcesManager.BLL.DTOs.Employee
-@model EmployeeOwnerProfileDTO
+@using HumanResourcesManager.BLL.DTOs.Manager
+@using HumanResourcesManager.Helpers
+@using HumanResourcesManager.Models.Employee
+@using HumanResourcesManager.DAL.Enum
+@model EmployeeOvertimeIndexViewModel
 
 @{
 	Layout = "~/Views/Employee/_EmployeeLayout.cshtml";
@@ -20,58 +23,425 @@
 					<h2 class="text-lg font-semibold text-slate-800">Tăng Ca</h2>
 					<p class="text-sm text-slate-500 mt-1">Nhận việc tăng ca từ lịch do quản lý tạo</p>
 					<div class="flex flex-wrap gap-3 mt-4">
-						<button type="button" id="overtimeBtnList" class="overtime-sub-btn min-w-[160px] px-5 py-2.5 rounded-xl text-sm font-medium transition-all bg-blue-600 text-white shadow-sm hover:bg-blue-700" data-overtime-view="available">
+						<a href="/HumanResourcesManager/employee/overtime/ot-attendance"
+						   class="min-w-[160px] px-5 py-2.5 rounded-xl text-sm font-medium transition-all bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800 inline-flex items-center justify-center gap-2">
+							<svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+							Chấm công OT
+						</a>
+						<a href="/HumanResourcesManager/employee/overtime"
+						   id="overtimeBtnList"
+						   class="overtime-sub-btn min-w-[160px] px-5 py-2.5 rounded-xl text-sm font-medium transition-all bg-blue-600 text-white shadow-sm hover:bg-blue-700"
+						   data-overtime-view="available">
 							<span class="flex items-center justify-center gap-2">
 								<svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
 								Danh sách tăng ca
 							</span>
-						</button>
-						<button type="button" id="overtimeBtnHistory" class="overtime-sub-btn min-w-[160px] px-5 py-2.5 rounded-xl text-sm font-medium transition-all bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800"
-								data-overtime-view="history">
+						</a>
+						<a href="/HumanResourcesManager/employee/overtime?historyPage=1"
+						   id="overtimeBtnHistory"
+						   class="overtime-sub-btn min-w-[160px] px-5 py-2.5 rounded-xl text-sm font-medium transition-all bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800"
+						   data-overtime-view="history">
 							<span class="flex items-center justify-center gap-2">
 								<svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-								Lịch sử nhận tăng ca
+								Lịch sử OT
 							</span>
-						</button>
+						</a>
 					</div>
 				</div>
 				<div class="p-6">
+					@if (TempData["Success"] != null)
+					{
+						<div class="mb-4 p-4 text-sm text-green-700 bg-green-100 rounded-lg">
+							@TempData["Success"]
+						</div>
+					}
+					@if (TempData["Error"] != null)
+					{
+						<div class="mb-4 p-4 text-sm text-red-700 bg-red-100 rounded-lg">
+							@TempData["Error"]
+						</div>
+					}
+
 					<div id="overtimeViewAvailable" class="overtime-view">
-						<div class="overflow-x-auto rounded-xl border border-slate-200/80">
-							<table class="employee-table w-full">
+						<div class="overflow-x-auto">
+							<table class="w-full text-left border-collapse">
 								<thead>
-									<tr class="bg-slate-50 border-b border-slate-200">
-										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ngày</th>
-										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Thời Gian</th>
-										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Mô Tả</th>
-										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Hành Động</th>
+									<tr class="bg-slate-50 border-b border-slate-200/60">
+										<th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Lịch Tăng Ca</th>
+										<th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Ngày diễn ra</th>
+										<th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Thời gian</th>
+										<th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Sĩ số</th>
+										<th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Trạng thái</th>
+										<th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider text-right whitespace-nowrap">Thao tác</th>
 									</tr>
 								</thead>
-								<tbody id="overtimeAvailableBody"></tbody>
+								<tbody class="divide-y divide-slate-100">
+									@if (Model?.AvailableSchedules != null && Model.AvailableSchedules.Any())
+									{
+										foreach (var item in Model.AvailableSchedules)
+										{
+											<tr class="group hover:bg-slate-50/50 transition-all duration-200">
+												<td class="py-4 px-6">
+													<div class="text-sm font-bold text-slate-800">@item.Name</div>
+													@if (!string.IsNullOrEmpty(item.Description))
+													{
+														<div class="text-xs text-slate-400 mt-1 line-clamp-1 max-w-[200px]">@item.Description</div>
+													}
+												</td>
+												<td class="py-4 px-6">
+													<div class="flex items-center gap-2 text-sm text-slate-600">
+														<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+														@if (item.StartDate.Date == item.EndDate.Date)
+														{
+															<span class="font-medium">@item.StartDate.ToString("dd/MM/yyyy")</span>
+														}
+														else
+														{
+															<div class="flex flex-col">
+																<span class="font-medium">@item.StartDate.ToString("dd/MM/yyyy")</span>
+																<span class="text-[10px] text-slate-400">đến @item.EndDate.ToString("dd/MM/yyyy")</span>
+															</div>
+														}
+													</div>
+												</td>
+												<td class="py-4 px-6">
+													<div class="flex items-center gap-2 text-sm">
+														<svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+														@{
+															var fromTimeStr = DateTime.Today.Add(item.StartTime).ToString("h:mm tt");
+															var toTimeStr = DateTime.Today.Add(item.EndTime).ToString("h:mm tt");
+														}
+														<span class="text-slate-700 font-semibold">@fromTimeStr - @toTimeStr</span>
+													</div>
+												</td>
+												<td class="py-4 px-6 text-center">
+													<div class="inline-flex px-2.5 py-1 rounded-full text-xs font-bold @(item.RegisteredCount >= item.Quantity ? "bg-red-50 text-red-600 border border-red-100" : "bg-blue-50 text-blue-600 border border-blue-100")">
+														@item.RegisteredCount/@item.Quantity
+													</div>
+												</td>
+												<td class="py-4 px-6 text-center">
+													@if (item.Status == 5)
+													{
+														<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600 border border-indigo-100 animate-pulse">
+															Sắp tới
+														</span>
+													}
+													else
+													{
+														<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-100 italic">
+															Đang mở
+														</span>
+													}
+												</td>
+												<td class="py-4 px-6 text-right">
+													@if (item.IsRegisteredByCurrentUser)
+													{
+														<form asp-action="CancelOT" asp-controller="Employee" asp-route-id="@item.Id" method="post" class="inline">
+															@Html.AntiForgeryToken()
+															<button type="button"
+																	onclick="confirmOvertimeAction(this.form, 'Hủy nhận OT này?')"
+																	class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+																	title="Hủy nhận">
+																<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+																	<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+																</svg>
+															</button>
+														</form>
+													}
+													else
+													{
+														<form asp-action="RegisterOT" asp-controller="Employee" asp-route-id="@item.Id" method="post" class="inline">
+															@Html.AntiForgeryToken()
+															<button type="button"
+																	onclick="confirmOvertimeAction(this.form, 'Xác nhận nhận OT này?')"
+																	class="p-2 rounded-lg transition-all disabled:opacity-50 @(item.RegisteredCount >= item.Quantity ? "bg-slate-100 text-slate-400 cursor-not-allowed" : "text-slate-400 hover:text-emerald-600 hover:bg-emerald-50")"
+																	title="Nhận OT"
+																	@(item.RegisteredCount >= item.Quantity ? "disabled" : "")>
+																@if (item.RegisteredCount >= item.Quantity)
+																{
+																	<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+																		<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-1.414 1.414A7.5 7.5 0 1019.5 12h-2a5.5 5.5 0 11-1.62-3.88l-1.516 1.516H18.364z"></path>
+																	</svg>
+																}
+																else
+																{
+																	<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+																		<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+																	</svg>
+																}
+															</button>
+														</form>
+													}
+												</td>
+											</tr>
+										}
+									}
+									else
+									{
+										<tr>
+											<td colspan="5" class="py-12 text-center">
+												<div class="flex flex-col items-center">
+													<div class="p-4 bg-slate-50 rounded-full mb-3 text-slate-300">
+														<svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+													</div>
+													<p class="text-slate-400 font-medium">Hiện chưa có lịch tăng ca mới nào</p>
+												</div>
+											</td>
+										</tr>
+									}
+								</tbody>
 							</table>
 						</div>
-						<p id="overtimeAvailableEmpty" class="text-sm text-slate-500 py-6 text-center hidden">Chưa có lịch tăng ca nào để nhận.</p>
-						<div id="overtimeAvailablePagination" class="pagination mt-4"></div>
 					</div>
 					<div id="overtimeViewHistory" class="overtime-view hidden">
+						<form method="get"
+							  class="bg-slate-50 border border-slate-200 rounded-2xl p-6 shadow-sm mb-6"
+							  action="/HumanResourcesManager/employee/overtime">
+							<input type="hidden" name="historyPage" value="1" />
+							<div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+								<div class="min-w-[160px]">
+									<label class="block text-xs text-slate-500 mb-1">Số dòng / trang</label>
+									<select name="historyPageSize" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white">
+										<option value="5" selected="@(Model.History.PageSize == 5)">5</option>
+										<option value="10" selected="@(Model.History.PageSize == 10)">10</option>
+										<option value="20" selected="@(Model.History.PageSize == 20)">20</option>
+									</select>
+								</div>
+
+								<div class="flex flex-wrap items-end gap-4">
+									<div>
+										<label class="block text-xs text-slate-500 mb-1">Tháng</label>
+										<select name="historyMonth" class="border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white">
+											<option value="">Tất cả</option>
+											@for (int m = 1; m <= 12; m++)
+											{
+												<option value="@m" selected="@(Model.History.SelectedMonth == m)">Tháng @m</option>
+											}
+										</select>
+									</div>
+
+									<div>
+										<label class="block text-xs text-slate-500 mb-1">Năm</label>
+										<select name="historyYear" class="border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white">
+											<option value="">Tất cả</option>
+											@for (int y = DateTime.Now.Year - 5; y <= DateTime.Now.Year; y++)
+											{
+												<option value="@y" selected="@(Model.History.SelectedYear == y)">@y</option>
+											}
+										</select>
+									</div>
+
+									<div class="flex gap-3">
+										<button type="submit" class="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition shadow">
+											<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+												<path stroke-linecap="round" stroke-linejoin="round" d="M3 4h18l-7 8v6l-4 2v-8L3 4z" />
+											</svg>
+											Lọc
+										</button>
+										<a href="/HumanResourcesManager/employee/overtime?historyPage=1"
+										   class="flex items-center justify-center w-11 h-11 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 transition shadow-sm">↺</a>
+									</div>
+								</div>
+							</div>
+						</form>
+
 						<div class="overflow-x-auto rounded-xl border border-slate-200/80">
-							<table class="employee-table w-full">
+							<table class="min-w-full text-sm text-slate-700 border-collapse">
 								<thead>
-									<tr class="bg-slate-50 border-b border-slate-200">
-										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ngày</th>
-										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Thời Gian</th>
-										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tổng Giờ</th>
-										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Lý Do</th>
-										<th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Trạng Thái</th>
+									<tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
+										<th class="py-4 px-4 text-center text-xs font-semibold uppercase tracking-wider">STT</th>
+										<th class="py-4 px-4 text-center text-xs font-semibold uppercase tracking-wider">Ngày</th>
+										<th class="py-4 px-4 text-center text-xs font-semibold uppercase tracking-wider">Khung OT</th>
+										<th class="py-4 px-4 text-center text-xs font-semibold uppercase tracking-wider">Check-in</th>
+										<th class="py-4 px-4 text-center text-xs font-semibold uppercase tracking-wider">Ảnh</th>
+										<th class="py-4 px-4 text-center text-xs font-semibold uppercase tracking-wider">Check-out</th>
+										<th class="py-4 px-4 text-center text-xs font-semibold uppercase tracking-wider">Ảnh</th>
+										<th class="py-4 px-4 text-center text-xs font-semibold uppercase tracking-wider">Thiếu (phút)</th>
+										<th class="py-4 px-4 text-center text-xs font-semibold uppercase tracking-wider">Trạng thái</th>
 									</tr>
 								</thead>
-								<tbody id="overtimeTableBody"></tbody>
+								<tbody id="overtimeTableBody" class="divide-y divide-slate-100">
+									@{
+										int pageSize = Model.History.PageSize;
+										int startIndex = (Model.History.CurrentPage - 1) * pageSize;
+										int index = 0;
+									}
+
+									@if (Model?.History?.Records != null && Model.History.Records.Any())
+									{
+										foreach (var item in Model.History.Records)
+										{
+											index++;
+											<tr class="hover:bg-slate-50 transition-colors duration-150">
+												<td class="py-3 px-4 text-center text-slate-500 font-medium">@(startIndex + index)</td>
+												<td class="py-3 px-4 text-center font-medium text-slate-800">@item.WorkDate.ToString("dd/MM/yyyy")</td>
+												<td class="py-3 px-4 text-center font-semibold text-slate-700">@item.StartTime.ToString(@"hh\:mm") - @item.EndTime.ToString(@"hh\:mm")</td>
+												<td class="py-3 px-4 text-center">@(item.CheckIn?.ToString(@"hh\:mm") ?? "---")</td>
+												<td class="py-3 px-4 text-center">
+													@if (!string.IsNullOrWhiteSpace(item.CheckInImagePath))
+													{
+														<button type="button" onclick="openOvertimeCheckInModal('@Url.Content(item.CheckInImagePath)')" class="inline-flex items-center justify-center text-indigo-600 hover:text-indigo-800 transition">👁</button>
+													}
+													else { <span class="text-slate-300">—</span> }
+												</td>
+												<td class="py-3 px-4 text-center">@(item.CheckOut?.ToString(@"hh\:mm") ?? "---")</td>
+												<td class="py-3 px-4 text-center">
+													@if (!string.IsNullOrWhiteSpace(item.CheckOutImagePath))
+													{
+														<button type="button" onclick="openOvertimeCheckOutModal('@Url.Content(item.CheckOutImagePath)')" class="inline-flex items-center justify-center text-indigo-600 hover:text-indigo-800 transition">👁</button>
+													}
+													else { <span class="text-slate-300">—</span> }
+												</td>
+												<td class="py-3 px-4 text-center">
+													<span class="inline-block w-24 text-center px-2 py-1 rounded-md text-xs font-medium @(item.MissingMinutes == 0 ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700")">
+														@item.MissingMinutes
+													</span>
+												</td>
+												<td class="py-3 px-4 text-center">
+													<span class="inline-block w-40 text-center px-3 py-1 text-xs font-medium rounded-full @(
+														item.Status switch
+														{
+															AttendanceStatus.Pending => "bg-gray-100 text-gray-700",
+															AttendanceStatus.CompletedWork => "bg-green-100 text-green-700",
+															AttendanceStatus.InsufficientWork => "bg-orange-100 text-orange-700",
+															AttendanceStatus.MissingCheckOut => "bg-yellow-100 text-yellow-700",
+															AttendanceStatus.ApprovedLeave => "bg-blue-100 text-blue-700",
+															AttendanceStatus.Absent => "bg-red-100 text-red-700",
+															AttendanceStatus.Holiday => "bg-purple-100 text-purple-700",
+															AttendanceStatus.Weekend => "bg-indigo-100 text-indigo-700",
+															_ => "bg-gray-100 text-gray-600"
+														})">
+														@(item.Status.HasValue ? item.Status.Value.ToDisplayName() : "Chưa chấm công")
+													</span>
+												</td>
+											</tr>
+										}
+									}
+									else
+									{
+										<tr>
+											<td colspan="9" class="py-12 text-center text-slate-500">Không có dữ liệu chấm công OT</td>
+										</tr>
+									}
+								</tbody>
 							</table>
 						</div>
-						<div id="overtimePagination" class="pagination mt-6"></div>
+						<div id="overtimePagination" class="pagination mt-6">
+							@if (Model?.History != null && Model.History.TotalPages > 1)
+							{
+								var currentPage = Model.History.CurrentPage;
+								var totalPages = Model.History.TotalPages;
+								<div class="flex justify-center space-x-2 items-center">
+									<a href="/HumanResourcesManager/employee/overtime?historyPage=@(currentPage - 1)&historyPageSize=@Model.History.PageSize&historyMonth=@Model.History.SelectedMonth&historyYear=@Model.History.SelectedYear"
+									   class="px-3 py-1 border rounded-lg bg-white hover:bg-slate-100 @(currentPage <= 1 ? "pointer-events-none opacity-50" : "")">&lt;</a>
+									<span class="text-sm text-slate-600 px-2">@currentPage/@totalPages</span>
+									<a href="/HumanResourcesManager/employee/overtime?historyPage=@(currentPage + 1)&historyPageSize=@Model.History.PageSize&historyMonth=@Model.History.SelectedMonth&historyYear=@Model.History.SelectedYear"
+									   class="px-3 py-1 border rounded-lg bg-white hover:bg-slate-100 @(currentPage >= totalPages ? "pointer-events-none opacity-50" : "")">&gt;</a>
+								</div>
+							}
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
 </main>
+
+@section Scripts {
+	<script>
+		function confirmOvertimeAction(form, titleText) {
+			if (!form) return;
+			if (typeof Swal === "undefined") {
+				form.submit();
+				return;
+			}
+			Swal.fire({
+				title: titleText,
+				icon: "question",
+				showCancelButton: true,
+				confirmButtonColor: "#2563eb",
+				cancelButtonColor: "#64748b",
+				confirmButtonText: "Xác nhận",
+				cancelButtonText: "Hủy"
+			}).then((result) => {
+				if (result.isConfirmed) form.submit();
+			});
+		}
+	</script>
+
+	<!-- Modals for OT history images (same behavior as OTAttendanceHistory) -->
+	<div id="overtimeCheckInImageModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-50">
+		<div class="relative bg-white rounded-3xl shadow-2xl max-w-4xl w-full mx-6 overflow-hidden">
+			<div class="flex items-center justify-between px-6 py-4 border-b bg-gradient-to-r from-emerald-50 to-slate-100">
+				<div>
+					<h2 class="text-xl font-semibold text-slate-800 tracking-tight">Ảnh Check-in OT</h2>
+					<p class="text-sm text-slate-500 mt-1">Ảnh xác nhận thời điểm bắt đầu OT</p>
+				</div>
+				<button type="button" onclick="closeOvertimeCheckInModal()" class="w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-md text-gray-400 hover:text-white hover:bg-red-500 transition">✕</button>
+			</div>
+			<div class="p-8 flex items-center justify-center min-h-[300px]">
+				<div class="w-full max-w-[500px] aspect-square overflow-hidden rounded-2xl bg-slate-100 shadow-sm">
+					<img id="overtimeCheckInPreviewImage" class="w-full h-full object-cover hidden transition duration-300" />
+				</div>
+				<div id="overtimeCheckInNoImage" class="hidden flex flex-col items-center justify-center py-16 absolute">
+					<div class="w-24 h-24 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 text-4xl mb-6 shadow-inner">🖼</div>
+					<h3 class="text-lg font-semibold text-gray-700">Không có ảnh</h3>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="overtimeCheckOutImageModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-50">
+		<div class="relative bg-white rounded-3xl shadow-2xl max-w-4xl w-full mx-6 overflow-hidden">
+			<div class="flex items-center justify-between px-6 py-4 border-b bg-gradient-to-r from-indigo-50 to-slate-100">
+				<div>
+					<h2 class="text-xl font-semibold text-slate-800 tracking-tight">Ảnh Check-out OT</h2>
+					<p class="text-sm text-slate-500 mt-1">Ảnh xác nhận thời điểm kết thúc OT</p>
+				</div>
+				<button type="button" onclick="closeOvertimeCheckOutModal()" class="w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-md text-gray-400 hover:text-white hover:bg-red-500 transition">✕</button>
+			</div>
+			<div class="p-8 flex items-center justify-center min-h-[300px]">
+				<div class="w-full max-w-[500px] aspect-square overflow-hidden rounded-2xl bg-slate-100 shadow-sm">
+					<img id="overtimeCheckOutPreviewImage" class="w-full h-full object-cover hidden transition duration-300" />
+				</div>
+				<div id="overtimeCheckOutNoImage" class="hidden flex flex-col items-center justify-center py-16 absolute">
+					<div class="w-24 h-24 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 text-4xl mb-6 shadow-inner">🖼</div>
+					<h3 class="text-lg font-semibold text-gray-700">Không có ảnh</h3>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		function openOvertimeCheckInModal(imageUrl) {
+			const modal = document.getElementById("overtimeCheckInImageModal");
+			const img = document.getElementById("overtimeCheckInPreviewImage");
+			const fallback = document.getElementById("overtimeCheckInNoImage");
+			modal.classList.remove("hidden"); modal.classList.add("flex");
+			img.classList.add("hidden"); fallback.classList.add("hidden");
+			img.src = imageUrl;
+			img.onload = () => img.classList.remove("hidden");
+			img.onerror = () => fallback.classList.remove("hidden");
+		}
+		function closeOvertimeCheckInModal() {
+			const modal = document.getElementById("overtimeCheckInImageModal");
+			const img = document.getElementById("overtimeCheckInPreviewImage");
+			modal.classList.add("hidden"); modal.classList.remove("flex"); img.src = "";
+		}
+		function openOvertimeCheckOutModal(imageUrl) {
+			const modal = document.getElementById("overtimeCheckOutImageModal");
+			const img = document.getElementById("overtimeCheckOutPreviewImage");
+			const fallback = document.getElementById("overtimeCheckOutNoImage");
+			modal.classList.remove("hidden"); modal.classList.add("flex");
+			img.classList.add("hidden"); fallback.classList.add("hidden");
+			img.src = imageUrl;
+			img.onload = () => img.classList.remove("hidden");
+			img.onerror = () => fallback.classList.remove("hidden");
+		}
+		function closeOvertimeCheckOutModal() {
+			const modal = document.getElementById("overtimeCheckOutImageModal");
+			const img = document.getElementById("overtimeCheckOutPreviewImage");
+			modal.classList.add("hidden"); modal.classList.remove("flex"); img.src = "";
+		}
+	</script>
+}

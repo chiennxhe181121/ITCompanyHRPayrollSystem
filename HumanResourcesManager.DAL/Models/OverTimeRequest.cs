@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace HumanResourcesManager.DAL.Models
@@ -15,8 +15,8 @@ namespace HumanResourcesManager.DAL.Models
         public DateTime WorkDate { get; set; }
 
         // Thời gian OT đăng ký
-        public TimeSpan FromTime { get; set; }
-        public TimeSpan ToTime { get; set; }
+        public TimeSpan StartTime { get; set; }
+        public TimeSpan EndTime { get; set; }
 
         // Nội dung OT
         public string Reason { get; set; } = string.Empty;
@@ -25,6 +25,10 @@ namespace HumanResourcesManager.DAL.Models
         // Manager giao OT (cũng là Employee)
         public int ManagerId { get; set; }
         public Employee Manager { get; set; } = null!;
+
+        // Liên kết lịch OT chung (nếu đăng ký từ schedule)
+        public int? OTScheduleId { get; set; }
+        public OTSchedule? OTSchedule { get; set; }
 
         // Nhân viên phản hồi
         // null = chưa phản hồi | true = đồng ý | false = từ chối

@@ -2,7 +2,7 @@
 @model PayrollDTO
 
 @{
-    ViewData["Title"] = "Payroll Details";
+    ViewData["Title"] = "Chi tiết lương";
     Layout = "~/Views/HR/_HRLayout.cshtml";
 }
 
@@ -11,50 +11,75 @@
         <span class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
             <i class="fa-solid fa-money-bill-wave"></i>
         </span>
-        Payroll Details
+        Chi tiết lương
     </h2>
+    <a asp-action="ExportPdf"
+       asp-route-payrollId="@Model.PayrollId"
+       asp-route-month="@Model.Month"
+       asp-route-year="@Model.Year"
+       class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700">
+        Xuất PDF
+    </a>
 </div>
 
 <div class="p-8 bg-slate-100 min-h-screen">
 
+    <!-- THÔNG TIN -->
     <div class="mb-6">
-        <p><b>Employee:</b> @Model.EmployeeName</p>
-        <p><b>Month/Year:</b> @Model.Month/@Model.Year</p>
+        <p><b>Nhân viên:</b> @Model.EmployeeName</p>
+        <p><b>Tháng/Năm:</b> @Model.Month/@Model.Year</p>
     </div>
 
-    <!-- SALARY BREAKDOWN -->
-    <h3 class="text-lg font-bold mb-2">Salary Breakdown</h3>
+    <!-- CHI TIẾT LƯƠNG -->
+    <h3 class="text-lg font-bold mb-2">Chi tiết thu nhập & khấu trừ</h3>
+
     <div class="bg-white rounded-xl shadow p-4 mb-6">
-        <table class="w-full text-sm text-left">
+        <table class="w-full text-sm text-left border-collapse">
+            <thead>
+                <tr class="border-b">
+                    <th class="py-2">Mô tả</th>
+                    <th class="py-2 text-right">Số tiền</th>
+                </tr>
+            </thead>
             <tbody>
-                <tr><td>Basic Salary</td><td>@Model.BasicSalary.ToString("N0") VND</td></tr>
-                <tr><td>Total OT</td><td>@Model.TotalOT.ToString("N0") VND</td></tr>
-                <tr><td>Total Allowance</td><td>@Model.TotalAllowance.ToString("N0") VND</td></tr>
 
-                <tr><td class="text-red-600">Absent Deduction</td><td class="text-red-600">-@Model.AbsentDeduction.ToString("N0") VND</td></tr>
-                <tr><td class="text-red-600">Missing Checkout Penalty</td><td class="text-red-600">-@Model.MissingCheckoutPenalty.ToString("N0") VND</td></tr>
-                <tr><td class="text-red-600">Insufficient Work Penalty</td><td class="text-red-600">-@Model.InsufficientWorkPenalty.ToString("N0") VND</td></tr>
+                @if (Model.PayrollDetails != null && Model.PayrollDetails.Any())
+                {
+                    foreach (var item in Model.PayrollDetails)
+                    {
+                        var isDeduction = item.Type.ToString() == "Deduction";
 
+                        <tr class="border-b hover:bg-slate-50">
+                            <td class="py-2">@item.Description</td>
+
+                            <td class="py-2 text-right font-semibold @(isDeduction ? "text-red-600" : "text-green-700")">
+                                @(isDeduction ? "-" : "+")@item.Amount.ToString("N0") VND
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="2" class="text-center text-gray-500 py-4">
+                            Không có dữ liệu chi tiết lương
+                        </td>
+                    </tr>
+                }
+
+                <!-- TỔNG LƯƠNG -->
                 <tr>
-                    <td class="font-bold text-red-700">Total Penalty</td>
-                    <td class="font-bold text-red-700">
-                        -@((Model.AbsentDeduction + Model.MissingCheckoutPenalty + Model.InsufficientWorkPenalty).ToString("N0")) VND
+                    <td class="font-bold text-lg pt-3">Lương thực nhận</td>
+                    <td class="text-right font-bold text-green-700 text-lg pt-3">
+                        @Model.NetSalary.ToString("N0") VND
                     </td>
                 </tr>
 
-                <tr>
-                    <td class="font-bold text-green-700">Net Salary</td>
-                    <td class="font-bold text-green-700">@Model.NetSalary.ToString("N0") VND</td>
-                </tr>
             </tbody>
         </table>
     </div>
-    <a asp-action="Index" class="bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 transition-all">Back to List</a>
-</div>
 
-<script>
-    function toggle(id) {
-        var el = document.getElementById(id);
-        el.style.display = (el.style.display === "none") ? "table-row" : "none";
-    }
-</script>
+    <a asp-action="Index" class="bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 transition-all">
+        Quay lại danh sách
+    </a>
+</div>

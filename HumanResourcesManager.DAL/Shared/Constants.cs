@@ -1,4 +1,4 @@
-﻿namespace HumanResourcesManager.DAL.Shared
+namespace HumanResourcesManager.DAL.Shared
 {
     /// <summary>
     /// Common status constants used across the whole system
@@ -35,6 +35,15 @@
         public static readonly TimeSpan CheckOutFrom = new(16, 30, 0);
         public static readonly TimeSpan CheckOutTo = new(20, 0, 0);
 
+        // ==================================================
+        // OT schedule creation rules
+        // ==================================================
+        public static readonly TimeSpan OTWeekdayStart = new(19, 30, 0); // Mon-Fri from 07:30 PM
+        public static readonly TimeSpan OTWeekendStart = new(8, 0, 0);   // Sat-Sun from 08:00 AM
+        public static readonly TimeSpan OTNextDayCutoff = new(2, 0, 0);  // Must end by 02:00 AM next day
+        public const int OTWeekdayMaxHours = 4;
+        public const int OTWeekendMaxHours = 8;
+
         public static readonly List<(int Day, int Month)> FixedHolidays =
             new()
             {
@@ -59,6 +68,11 @@
         public const int PayrollApproved = 42;    // Đã duyệt
         public const int PayrollPaid = 43;        // Đã trả lương
 
+        // Lương theo giờ (có thể thay đổi theo business)
+        public const decimal DEFAULT_HOURLY_RATE = 100000;
+
+        // Phạt mỗi phút thiếu
+        public const decimal MISSING_PENALTY_PER_MINUTE = 10000;
         // ==================================================
         // 6️⃣ User Account
         // ==================================================
@@ -79,5 +93,6 @@
         // 9 LeaveType
         // ==================================================
         public const int MATERNITY_MONTHS = 6;
+
     }
 }

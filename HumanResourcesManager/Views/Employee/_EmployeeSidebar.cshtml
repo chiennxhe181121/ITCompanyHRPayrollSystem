@@ -1,6 +1,15 @@
 @* Employee Sidebar *@
+@using HumanResourcesManager.BLL.DTOs
+@using HumanResourcesManager.Helpers
+@inject IHttpContextAccessor HttpContextAccessor
 @{
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+    var user = HttpContextAccessor.HttpContext?.Session.GetObject<UserSessionDTO>("USER_SESSION");
+    var roleCode = (user?.RoleCode ?? string.Empty).ToUpperInvariant();
+    var canBackToRolePage = roleCode == "MANAGER" || roleCode == "HR";
+    var roleHomeUrl = roleCode == "MANAGER"
+        ? "/HumanResourcesManager/manager/profile"
+        : "/HumanResourcesManager/hr/employees";
 
     // Hàm check active đồng bộ với logic Admin
     string IsActive(params string[] actions)
@@ -73,11 +82,25 @@
                             <span class="font-medium">Nghỉ Phép</span>
                         </a>
 
+                        <a asp-controller="Employee" asp-action="Overtime"
+                           class="nav-item @IsActive("Overtime")">
+                            <span class="nav-icon"><i class="fa-solid fa-clock"></i></span>
+                            <span class="font-medium">Tăng Ca</span>
+                        </a>
+
                         <a asp-controller="Employee" asp-action="Payroll"
                            class="nav-item @IsActive("Payroll", "PayrollDetail")">
                             <span class="nav-icon"><i class="fa-solid fa-file-invoice-dollar"></i></span>
                             <span class="font-medium">Bảng Lương</span>
                         </a>
+
+                        @if (canBackToRolePage)
+                        {
+                            <a href="@roleHomeUrl" class="nav-item">
+                                <span class="nav-icon"><i class="fa-solid fa-arrow-left"></i></span>
+                                <span class="font-medium">Quay lại trang role</span>
+                            </a>
+                        }
 
                     </div>
                 </div>

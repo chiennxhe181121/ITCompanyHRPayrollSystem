@@ -76,11 +76,43 @@ function updateStatButtonIcons() {
 
 // ===== DOM =====
 document.addEventListener('DOMContentLoaded', function () {
+    // Prevent double-submit (spam click) for all forms
+    document.addEventListener("submit", (e) => {
+        const form = e.target;
+        if (!(form instanceof HTMLFormElement)) return;
+
+        if (form.dataset.submitting === "1") {
+            e.preventDefault();
+            return;
+        }
+
+        form.dataset.submitting = "1";
+        form.querySelectorAll('button[type="submit"], input[type="submit"]').forEach((btn) => {
+            try { btn.disabled = true; } catch { }
+        });
+    }, true);
+
     const page = document.body.dataset.page;
 
     switch (page) {
         case "overtime":
             loadOvertimeUI();
+            break;
+        case "ot-attendance":
+            // list page (no special UI)
+            break;
+        case "ot-attendance-today":
+            loadOTAttendanceTodayUI();
+            break;
+        case "today":
+            // /employee/overtime/ot-attendance/today
+            loadOTAttendanceTodayUI();
+            break;
+        case "ot-attendance-history":
+            // history page uses inline scripts only
+            break;
+        case "history":
+            // /employee/overtime/ot-attendance/history
             break;
         case "leaves":
             loadLeavesUI();
@@ -102,6 +134,8 @@ document.addEventListener('DOMContentLoaded', function () {
     setInterval(() => {
         updateCheckInUI();
         updateCheckOutUI();
+        updateOTCheckInUI();
+        updateOTCheckOutUI();
     }, 1000);
 
     const logoutBtn = document.getElementById('logoutBtn');
@@ -216,8 +250,8 @@ document.addEventListener('DOMContentLoaded', function () {
             this.classList.add('hidden');
         });
 
-    document.getElementById('overtimeBtnList')?.addEventListener('click', () => switchOvertimeView('available'));
-    document.getElementById('overtimeBtnHistory')?.addEventListener('click', () => switchOvertimeView('history'));
+    document.getElementById('overtimeBtnList')?.addEventListener('click', (e) => { try { e.preventDefault(); } catch { } switchOvertimeView('available'); });
+    document.getElementById('overtimeBtnHistory')?.addEventListener('click', (e) => { try { e.preventDefault(); } catch { } switchOvertimeView('history'); });
 
     document.querySelectorAll('.stat-toggle').forEach(btn => {
         btn.addEventListener('click', function () {
@@ -268,6 +302,267 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
+
+// ===== OT ATTENDANCE (CAMERA) =====
+let otCheckInStream = null;
+let otCheckOutStream = null;
+let otCheckInPhotoData = null;
+let otCheckOutPhotoData = null;
+
+function loadOTAttendanceTodayUI() {
+    const startIn = document.getElementById('otStartCheckInCameraBtn');
+    const capIn = document.getElementById('otCaptureCheckInBtn');
+    const subIn = document.getElementById('otSubmitCheckInBtn');
+    if (startIn) startIn.addEventListener('click', () => startOTCamera('checkIn'));
+    if (capIn) capIn.addEventListener('click', () => captureOTPhoto('checkIn'));
+    if (subIn) subIn.addEventListener('click', submitOTCheckInClick);
+
+    const startOut = document.getElementById('otStartCheckOutCameraBtn');
+    const capOut = document.getElementById('otCaptureCheckOutBtn');
+    const subOut = document.getElementById('otSubmitCheckOutBtn');
+    if (startOut) startOut.addEventListener('click', () => startOTCamera('checkOut'));
+    if (capOut) capOut.addEventListener('click', () => captureOTPhoto('checkOut'));
+    if (subOut) subOut.addEventListener('click', submitOTCheckOutClick);
+}
+
+async function startOTCamera(type) {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+        if (type === 'checkIn') {
+            otCheckInStream = stream;
+            const video = document.getElementById('otCheckInVideo');
+            if (video) { video.srcObject = stream; video.classList.remove('hidden'); }
+            document.getElementById('otStartCheckInCameraBtn')?.classList.add('hidden');
+            document.getElementById('otCaptureCheckInBtn')?.classList.remove('hidden');
+        } else {
+            otCheckOutStream = stream;
+            const video = document.getElementById('otCheckOutVideo');
+            if (video) { video.srcObject = stream; video.classList.remove('hidden'); }
+            document.getElementById('otStartCheckOutCameraBtn')?.classList.add('hidden');
+            document.getElementById('otCaptureCheckOutBtn')?.classList.remove('hidden');
+        }
+    } catch (error) {
+        alert('Không thể truy cập camera. Vui lòng cấp quyền camera cho trình duyệt!');
+    }
+}
+
+function captureOTPhoto(type) {
+    if (type === 'checkIn') {
+        const video = document.getElementById('otCheckInVideo');
+        const canvas = document.getElementById('otCheckInCanvas');
+        if (!video || !canvas) return;
+        const ctx = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        otCheckInPhotoData = canvas.toDataURL('image/jpeg');
+        const previewImg = document.getElementById('otCheckInPhotoImg');
+        const preview = document.getElementById('otCheckInPhotoPreview');
+        if (previewImg) previewImg.src = otCheckInPhotoData;
+        if (preview) preview.classList.remove('hidden');
+        video.classList.add('hidden');
+        document.getElementById('otCaptureCheckInBtn')?.classList.add('hidden');
+        document.getElementById('otSubmitCheckInBtn')?.classList.remove('hidden');
+        if (otCheckInStream) { otCheckInStream.getTracks().forEach(t => t.stop()); otCheckInStream = null; }
+    } else {
+        const video = document.getElementById('otCheckOutVideo');
+        const canvas = document.getElementById('otCheckOutCanvas');
+        if (!video || !canvas) return;
+        const ctx = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        otCheckOutPhotoData = canvas.toDataURL('image/jpeg');
+        const previewImg = document.getElementById('otCheckOutPhotoImg');
+        const preview = document.getElementById('otCheckOutPhotoPreview');
+        if (previewImg) previewImg.src = otCheckOutPhotoData;
+        if (preview) preview.classList.remove('hidden');
+        video.classList.add('hidden');
+        document.getElementById('otCaptureCheckOutBtn')?.classList.add('hidden');
+        document.getElementById('otSubmitCheckOutBtn')?.classList.remove('hidden');
+        if (otCheckOutStream) { otCheckOutStream.getTracks().forEach(t => t.stop()); otCheckOutStream = null; }
+    }
+}
+
+function submitOTCheckInClick() {
+    if (!otCheckInPhotoData) {
+        alert('Vui lòng chụp ảnh trước khi check-in OT!');
+        return;
+    }
+
+    const now = new Date();
+    document.getElementById("otCheckInTime").value = now.toTimeString().slice(0, 8);
+
+    const byteString = atob(otCheckInPhotoData.split(',')[1]);
+    const mimeString = otCheckInPhotoData.split(',')[0].split(':')[1].split(';')[0];
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+    const blob = new Blob([ab], { type: mimeString });
+    const file = new File([blob], "ot-check-in.jpg", { type: mimeString });
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+    document.getElementById("otCheckInFileInput").files = dataTransfer.files;
+
+    document.getElementById("otCheckInForm").submit();
+}
+
+function submitOTCheckOutClick() {
+    if (!otCheckOutPhotoData) {
+        alert('Vui lòng chụp ảnh trước khi check-out OT!');
+        return;
+    }
+
+    const now = new Date();
+    document.getElementById("otCheckOutTime").value = now.toTimeString().slice(0, 8);
+
+    const byteString = atob(otCheckOutPhotoData.split(',')[1]);
+    const mimeString = otCheckOutPhotoData.split(',')[0].split(':')[1].split(';')[0];
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+    const blob = new Blob([ab], { type: mimeString });
+    const file = new File([blob], "ot-check-out.jpg", { type: mimeString });
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+    document.getElementById("otCheckOutFileInput").files = dataTransfer.files;
+
+    document.getElementById("otCheckOutForm").submit();
+}
+
+function updateOTCheckInUI() {
+    const btn = document.getElementById("otStartCheckInCameraBtn");
+    const badge = document.getElementById("otCheckInBadge");
+    const countdownEl = document.getElementById("otCheckInCountdown");
+    const progressWrapper = document.getElementById("otCheckInProgressWrapper");
+    const progressBar = document.getElementById("otCheckInProgress");
+
+    if (!btn || !badge || !window.otAttendanceState) return;
+
+    if (window.otAttendanceState.hasCheckIn) {
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+        badge.textContent = "✅ Đã check-in OT lúc " + (window.otAttendanceState.checkInTime || "");
+        badge.className = "inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700";
+        countdownEl?.classList.add("hidden");
+        progressWrapper?.classList.add("hidden");
+        return;
+    }
+
+    const now = new Date();
+    const current = now.toTimeString().slice(0, 8);
+    const start = window.otAttendanceState.startTime;
+    const end = window.otAttendanceState.endTime;
+
+    if (current < start) {
+        const diff = getTimeDiff(start);
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+        badge.textContent = "⏳ Chưa tới giờ OT";
+        badge.className = "inline-block px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700";
+        countdownEl?.classList.remove("hidden");
+        if (countdownEl) countdownEl.textContent = diff ?? "00:00:00";
+        progressWrapper?.classList.add("hidden");
+        return;
+    }
+
+    if (current > end) {
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+        badge.textContent = "⛔ Đã đóng - Chưa check-in OT";
+        badge.className = "inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700";
+        countdownEl?.classList.add("hidden");
+        progressWrapper?.classList.add("hidden");
+        return;
+    }
+
+    btn.disabled = false;
+    btn.classList.remove("opacity-50", "cursor-not-allowed");
+    badge.textContent = "🟢 Đang mở";
+    badge.className = "inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700";
+
+    const diff = getTimeDiff(end);
+    countdownEl?.classList.remove("hidden");
+    if (countdownEl) countdownEl.textContent = diff ?? "00:00:00";
+
+    const total = new Date(`1970-01-01T${end}`) - new Date(`1970-01-01T${start}`);
+    const passed = new Date(`1970-01-01T${current}`) - new Date(`1970-01-01T${start}`);
+    const percent = Math.min(100, Math.max(0, (passed / total) * 100));
+    progressWrapper?.classList.remove("hidden");
+    if (progressBar) progressBar.style.width = percent + "%";
+}
+
+function updateOTCheckOutUI() {
+    const btn = document.getElementById("otStartCheckOutCameraBtn");
+    const badge = document.getElementById("otCheckOutBadge");
+    const countdownEl = document.getElementById("otCheckOutCountdown");
+    const progressWrapper = document.getElementById("otCheckOutProgressWrapper");
+    const progressBar = document.getElementById("otCheckOutProgress");
+
+    if (!btn || !badge || !window.otAttendanceState) return;
+
+    if (window.otAttendanceState.hasCheckOut) {
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+        badge.textContent = "✅ Đã check-out OT lúc " + (window.otAttendanceState.checkOutTime || "");
+        badge.className = "inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700";
+        countdownEl?.classList.add("hidden");
+        progressWrapper?.classList.add("hidden");
+        return;
+    }
+
+    if (!window.otAttendanceState.hasCheckIn) {
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+        badge.textContent = "⛔ Chưa check-in OT";
+        badge.className = "inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700";
+        countdownEl?.classList.add("hidden");
+        progressWrapper?.classList.add("hidden");
+        return;
+    }
+
+    const now = new Date();
+    const current = now.toTimeString().slice(0, 8);
+    const start = window.otAttendanceState.startTime;
+    const end = window.otAttendanceState.endTime;
+
+    if (current < start) {
+        const diff = getTimeDiff(start);
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+        badge.textContent = "⏳ Chưa tới giờ OT";
+        badge.className = "inline-block px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700";
+        countdownEl?.classList.remove("hidden");
+        if (countdownEl) countdownEl.textContent = diff ?? "00:00:00";
+        progressWrapper?.classList.add("hidden");
+        return;
+    }
+
+    if (current > end) {
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+        badge.textContent = "⛔ Đã đóng - Chưa check-out OT";
+        badge.className = "inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700";
+        countdownEl?.classList.add("hidden");
+        progressWrapper?.classList.add("hidden");
+        return;
+    }
+
+    btn.disabled = false;
+    btn.classList.remove("opacity-50", "cursor-not-allowed");
+    badge.textContent = "🟢 Đang mở";
+    badge.className = "inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700";
+
+    const diff = getTimeDiff(end);
+    countdownEl?.classList.remove("hidden");
+    if (countdownEl) countdownEl.textContent = diff ?? "00:00:00";
+
+    const total = new Date(`1970-01-01T${end}`) - new Date(`1970-01-01T${start}`);
+    const passed = new Date(`1970-01-01T${current}`) - new Date(`1970-01-01T${start}`);
+    const percent = Math.min(100, Math.max(0, (passed / total) * 100));
+    progressWrapper?.classList.remove("hidden");
+    if (progressBar) progressBar.style.width = percent + "%";
+}
 
 // ===== PROFILE =====
 function loadProfileAvatarFromDB() {
@@ -993,7 +1288,14 @@ function switchOvertimeView(view) {
 }
 
 function loadOvertimeUI() {
-    switchOvertimeView('available');
+    // If URL contains history paging params, auto-open history tab
+    try {
+        const qs = new URLSearchParams(window.location.search);
+        const hasHistoryParams = qs.has('historyPage') || qs.has('historyMonth') || qs.has('historyYear') || qs.has('historyPageSize');
+        switchOvertimeView(hasHistoryParams ? 'history' : 'available');
+    } catch {
+        switchOvertimeView('available');
+    }
     const availableBody = document.getElementById('overtimeAvailableBody');
     const availableEmpty = document.getElementById('overtimeAvailableEmpty');
     if (availableBody) availableBody.innerHTML = '';
@@ -1004,6 +1306,8 @@ function loadOvertimeUI() {
     if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-500">Chưa có dữ liệu tăng ca</td></tr>';
     document.getElementById('overtimePagination').innerHTML = '';
 }
+
+// OT history is rendered server-side (no fetch).
 
 // ===== PAYROLL =====
 function loadPayrollUI() {

@@ -1,0 +1,19 @@
+@using HumanResourcesManager.BLL.DTOs
+@model IEnumerable<EmployeeDTO>
+
+@{
+    ViewData["Title"] = "Nhân viên của tôi";
+    ViewData["PageTitle"] = "Nhân viên của tôi";
+    ViewData["PageSubtitle"] = "Theo dõi danh sách nhân sự thuộc quyền quản lý";
+    Layout = "~/Views/Manager/_ManagerLayout.cshtml";
+}
+
+@await Html.PartialAsync("_ManagerHeader")
+
+<div class="p-5 lg:p-8 bg-slate-50/50 min-h-screen">
+    @await Html.PartialAsync("_ManagerStats")
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
+        @await Html.PartialAsync("_TeamTab", Model)
+    </div>
+</div>

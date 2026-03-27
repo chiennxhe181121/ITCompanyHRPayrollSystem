@@ -1,0 +1,91 @@
+@model HumanResourcesManager.BLL.DTOs.EmployeeDTO
+
+@{
+    Layout = "~/Views/Manager/_ManagerLayout.cshtml";
+    var keyword = ViewBag.Keyword as string;
+    var status = ViewBag.Status as int?;
+    var currentPage = ViewBag.Page as int? ?? 1;
+}
+
+@await Html.PartialAsync("_ManagerHeader")
+
+<div class="p-5 lg:p-8 bg-slate-50/50 min-h-screen">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
+        <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+            <div>
+                <h2 class="text-lg font-semibold text-slate-800">Chi tiết nhân viên</h2>
+                <p class="text-sm text-slate-500 mt-0.5">Thông tin đầy đủ của nhân sự thuộc nhóm quản lý.</p>
+            </div>
+            <a href="/HumanResourcesManager/manager/team?page=@currentPage&keyword=@keyword&status=@status"
+               class="px-4 py-2 rounded-xl text-sm font-medium bg-slate-100 hover:bg-slate-200 text-slate-700">
+                Quay lại danh sách
+            </a>
+        </div>
+
+        <div class="p-6">
+            <div class="flex items-center gap-4 mb-6 p-4 rounded-2xl bg-white border border-slate-200/60">
+                <div class="relative">
+                    @if (!string.IsNullOrWhiteSpace(Model.ImgAvatar))
+                    {
+                        <img src="@Url.Content(Model.ImgAvatar)"
+                             alt="Avatar @Model.FullName"
+                             class="w-16 h-16 rounded-2xl object-cover ring-2 ring-white shadow-sm shadow-slate-200" />
+                    }
+                    else
+                    {
+                        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-black text-xl ring-2 ring-white shadow-sm shadow-slate-200">
+                            @(string.IsNullOrWhiteSpace(Model.FullName) ? "?" : Model.FullName[..1].ToUpper())
+                        </div>
+                    }
+                    <span class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white @(Model.Status == 1 ? "bg-emerald-500" : "bg-slate-400")"></span>
+                </div>
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h3 class="text-lg font-bold text-slate-800 truncate">@Model.FullName</h3>
+                        <span class="px-2.5 py-1 rounded-full text-xs font-bold @(Model.Status == 1 ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-slate-100 text-slate-600 border border-slate-200")">
+                            @(Model.Status == 1 ? "Đang làm việc" : "Ngừng hoạt động")
+                        </span>
+                    </div>
+                    <p class="text-sm text-slate-500 font-medium mt-0.5">
+                        @Model.EmployeeCode • @(Model.PositionName ?? "Nhân viên") • @(Model.DepartmentName ?? "Chưa có phòng ban")
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Mã nhân viên</label>
+                <input value="@Model.EmployeeCode" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-700" readonly />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Họ tên</label>
+                <input value="@Model.FullName" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-700" readonly />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Email</label>
+                <input value="@Model.Email" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-700" readonly />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Số điện thoại</label>
+                <input value="@Model.Phone" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-700" readonly />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Phòng ban</label>
+                <input value="@Model.DepartmentName" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-700" readonly />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Chức vụ</label>
+                <input value="@Model.PositionName" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-700" readonly />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Ngày vào làm</label>
+                <input value="@Model.HireDate.ToString("dd/MM/yyyy")" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-700" readonly />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Trạng thái</label>
+                <input value="@(Model.Status == 1 ? "Đang làm việc" : "Ngừng hoạt động")" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-700" readonly />
+            </div>
+            </div>
+        </div>
+    </div>
+</div>

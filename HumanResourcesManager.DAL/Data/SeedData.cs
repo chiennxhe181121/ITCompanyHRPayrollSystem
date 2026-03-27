@@ -517,6 +517,103 @@ namespace HumanResourcesManager.DAL.Data
 
                 context.SaveChanges();
             }
+
+            // ===================== OT (OTSchedule, OverTimeRequest, OTAttendance) — test EmployeeId 3, ManagerId 4 =====================
+            if (!context.OTSchedules.Any())
+            {
+                const int otEmployeeId = 3;
+                const int otManagerId = 4;
+                const int otDepartmentId = 3; // Finance — cùng phòng EMP003
+
+                var futureOtDay = DateTime.Today.AddDays(14);
+                var pastOtDay = DateTime.Today.AddDays(-5);
+
+                var schedule = new OTSchedule
+                {
+                    Name = "Lịch OT test — Tổng kết quý (Finance)",
+                    Description = "Seed: lịch OT chung để test đăng ký (EMP003 / Manager Giang)",
+                    Quantity = 5,
+                    StartDate = futureOtDay.Date,
+                    EndDate = futureOtDay.Date,
+                    StartTime = new TimeSpan(19, 30, 0),
+                    EndTime = new TimeSpan(23, 30, 0),
+                    Status = 5,
+                    DepartmentId = otDepartmentId,
+                    ManagerId = otManagerId,
+                    CreatedAt = DateTime.Now
+                };
+                context.OTSchedules.Add(schedule);
+                context.SaveChanges();
+
+                var reqFromSchedule = new OverTimeRequest
+                {
+                    EmployeeId = otEmployeeId,
+                    WorkDate = futureOtDay.Date,
+                    StartTime = new TimeSpan(19, 30, 0),
+                    EndTime = new TimeSpan(23, 30, 0),
+                    Reason = "Hỗ trợ tổng kết quý theo lịch OT chung",
+                    TaskRef = "Lịch OT Chung",
+                    ManagerId = otManagerId,
+                    OTScheduleId = schedule.Id,
+                    EmployeeAccepted = true,
+                    Status = 1
+                };
+
+                var reqPastWithAttendance = new OverTimeRequest
+                {
+                    EmployeeId = otEmployeeId,
+                    WorkDate = pastOtDay.Date,
+                    StartTime = new TimeSpan(19, 30, 0),
+                    EndTime = new TimeSpan(22, 30, 0),
+                    Reason = "Hỗ trợ release gấp (seed test OT)",
+                    TaskRef = "PRJ-TEST-OT",
+                    ManagerId = otManagerId,
+                    OTScheduleId = null,
+                    EmployeeAccepted = true,
+                    Status = 1,
+                    OTAttendance = new OTAttendance
+                    {
+                        CheckIn = new TimeSpan(19, 35, 0),
+                        CheckOut = new TimeSpan(22, 20, 0),
+                        Status = AttendanceStatus.CompletedWork
+                    }
+                };
+
+                var reqFutureNoAttendance = new OverTimeRequest
+                {
+                    EmployeeId = otEmployeeId,
+                    WorkDate = DateTime.Today.AddDays(3).Date,
+                    StartTime = new TimeSpan(19, 30, 0),
+                    EndTime = new TimeSpan(23, 0, 0),
+                    Reason = "Hoàn thiện báo cáo (seed test OT)",
+                    TaskRef = "RPT-TEST-OT",
+                    ManagerId = otManagerId,
+                    OTScheduleId = null,
+                    EmployeeAccepted = true,
+                    Status = 1
+                };
+
+                var reqCancelled = new OverTimeRequest
+                {
+                    EmployeeId = otEmployeeId,
+                    WorkDate = DateTime.Today.AddDays(-10).Date,
+                    StartTime = new TimeSpan(19, 30, 0),
+                    EndTime = new TimeSpan(21, 30, 0),
+                    Reason = "Đã hủy — đổi kế hoạch (seed test OT)",
+                    TaskRef = "CANCEL-TEST-OT",
+                    ManagerId = otManagerId,
+                    OTScheduleId = null,
+                    EmployeeAccepted = false,
+                    Status = 3
+                };
+
+                context.OverTimeRequests.AddRange(
+                    reqFromSchedule,
+                    reqPastWithAttendance,
+                    reqFutureNoAttendance,
+                    reqCancelled);
+                context.SaveChanges();
+            }
         }
     }
 }

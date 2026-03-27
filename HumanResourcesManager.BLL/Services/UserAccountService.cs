@@ -1,4 +1,4 @@
-﻿using HumanResourcesManager.BLL.DTOs;
+using HumanResourcesManager.BLL.DTOs;
 using HumanResourcesManager.BLL.DTOs.Common;
 using HumanResourcesManager.BLL.DTOs.Employee;
 using HumanResourcesManager.BLL.DTOs.UserAccount;

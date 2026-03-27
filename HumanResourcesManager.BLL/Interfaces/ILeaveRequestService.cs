@@ -15,4 +15,6 @@ public interface ILeaveRequestService
     LeaveRequestDTO? GetById(int id);
     void UpdateStatus(int leaveRequestId, RequestStatus status);
     ServiceResult CreateLeaveRequest(int employeeId, CreateLeaveRequestDTO dto);
+    ServiceResult ApproveLeaveRequest(int leaveRequestId, int approverId);
+    ServiceResult RejectLeaveRequest(int leaveRequestId, int approverId);
 }

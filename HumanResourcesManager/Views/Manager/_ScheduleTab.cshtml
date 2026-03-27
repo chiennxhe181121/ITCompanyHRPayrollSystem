@@ -1,32 +1,295 @@
-<div id="scheduleTab" class="tab-content hidden">
+@model HumanResourcesManager.Models.Manager.ManagerScheduleIndexViewModel
+<div class="tab-content">
     <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h2 class="text-lg font-semibold text-slate-800">Lịch Tăng Ca</h2>
                 <p class="text-sm text-slate-500 mt-0.5">Tạo và quản lý lịch tăng ca cho phòng ban</p>
             </div>
-            <button id="addScheduleBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2.5 rounded-xl shadow-sm transition-colors text-sm">
+            <a href="/HumanResourcesManager/manager/schedule/create" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2.5 rounded-xl shadow-sm transition-colors text-sm">
                 + Thêm Lịch
-            </button>
+            </a>
         </div>
     </div>
     <div class="p-6">
-        <div class="overflow-x-auto rounded-xl border border-slate-200/80">
-            <table class="employee-table w-full">
+        <form method="get" action="/HumanResourcesManager/manager/schedule" class="grid grid-cols-1 md:grid-cols-12 gap-3 mb-5">
+            <div class="md:col-span-6">
+                <input type="text"
+                       name="keyword"
+                       value="@Model?.Keyword"
+                       placeholder="Tìm theo tên lịch hoặc nội dung..."
+                       class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+            </div>
+            <div class="md:col-span-3">
+                <select name="status"
+                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="5" selected="@(Model?.Status == 5)">Sắp tới</option>
+                    <option value="0" selected="@(Model?.Status == 0)">Đang hoạt động</option>
+                    <option value="1" selected="@(Model?.Status == 1)">Đã hết hạn</option>
+                    <option value="2" selected="@(Model?.Status == 2)">Đã hủy</option>
+                    <option value="3" selected="@(Model?.Status == 3)">Đã hết hạn</option>
+                    <option value="4" selected="@(Model?.Status == 4)">Hoàn thành</option>
+                </select>
+            </div>
+            <input type="hidden" name="pageSize" value="5" />
+            <div class="md:col-span-3 grid grid-cols-2 gap-2">
+                <button type="submit" class="w-full min-h-[44px] bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2.5 rounded-xl shadow-sm transition-colors text-sm whitespace-nowrap">
+                    Tìm kiếm
+                </button>
+                <a href="/HumanResourcesManager/manager/schedule" class="w-full min-h-[44px] inline-flex items-center justify-center text-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-4 py-2.5 rounded-xl transition-colors text-sm whitespace-nowrap">
+                    Làm mới
+                </a>
+            </div>
+        </form>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-slate-50 border-b border-slate-200">
-                        <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ngày</th>
-                        <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Thời Gian</th>
-                        <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Phòng Ban</th>
-                        <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Mô Tả</th>
-                        <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Người Tạo</th>
-                        <th class="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Hành Động</th>
+                    <tr class="bg-slate-50/80 border-b border-slate-200/60">
+                        <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Tên Lịch OT</th>
+                        <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Ngày diễn ra</th>
+                        <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Thời gian</th>
+                        <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Sĩ số</th>
+                        <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Trạng thái</th>
+                        <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider text-right whitespace-nowrap">Thao tác</th>
                     </tr>
                 </thead>
-                <tbody id="scheduleTableBody"></tbody>
+                <tbody class="divide-y divide-slate-100">
+                    @if (Model?.Items != null && Model.Items.Any())
+                    {
+                        foreach (var item in Model.Items)
+                        {
+                            <tr class="group hover:bg-slate-50/50 transition-all duration-200">
+                                <td class="py-4 px-6">
+                                    <div class="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors">@item.Name</div>
+                                    @if (!string.IsNullOrEmpty(item.Description))
+                                    {
+                                        <div class="text-xs text-slate-400 mt-1 line-clamp-1 max-w-[200px]">@item.Description</div>
+                                    }
+                                </td>
+                                <td class="py-4 px-6">
+                                    <div class="flex items-center gap-2 text-sm text-slate-600">
+                                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                        @if (item.StartDate.Date == item.EndDate.Date)
+                                        {
+                                            <span class="font-medium">@item.StartDate.ToString("dd/MM/yyyy")</span>
+                                        }
+                                        else
+                                        {
+                                            <div class="flex flex-col">
+                                                <span class="font-medium">@item.StartDate.ToString("dd/MM/yyyy")</span>
+                                                <span class="text-[10px] text-slate-400">đến @item.EndDate.ToString("dd/MM/yyyy")</span>
+                                            </div>
+                                        }
+                                    </div>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <div class="flex items-center gap-2 text-sm">
+                                        <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        @{
+                                            var fromTimeStr = DateTime.Today.Add(item.StartTime).ToString("h:mm tt");
+                                            var toTimeStr = DateTime.Today.Add(item.EndTime).ToString("h:mm tt");
+                                        }
+                                        <span class="text-slate-700 font-semibold">@fromTimeStr - @toTimeStr</span>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-6 text-center">
+                                    @{
+                                        var isFull = item.RegisteredCount >= item.Quantity;
+                                        var percent = (double)item.RegisteredCount / item.Quantity * 100;
+                                    }
+                                    <div class="inline-flex flex-col items-center gap-1">
+                                        <div class="px-2.5 py-1 rounded-full text-xs font-bold @(isFull ? "bg-red-50 text-red-600 border border-red-100" : "bg-blue-50 text-blue-600 border border-blue-100")">
+                                            @item.RegisteredCount/@item.Quantity
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-6 text-center">
+                                    @if (item.Status == 5)
+                                    {
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600 border border-indigo-100">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 mr-1.5 animate-pulse"></span>
+                                            Sắp tới
+                                        </span>
+                                    }
+                                    else if (item.Status == 0)
+                                    {
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-100 italic">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+                                            Đang hoạt động
+                                        </span>
+                                    }
+                                    else if (item.Status == 3 || item.Status == 1)
+                                    {
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-600 border border-amber-100">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
+                                            Đã hết hạn
+                                        </span>
+                                    }
+                                    else if (item.Status == 2)
+                                    {
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-500 border border-slate-200">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-slate-400 mr-1.5"></span>
+                                            Đã hủy
+                                        </span>
+                                    }
+                                    else if (item.Status == 4)
+                                    {
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-600 border border-blue-100">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                            Hoàn thành
+                                        </span>
+                                    }
+                                </td>
+                                <td class="py-4 px-6 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="/HumanResourcesManager/manager/schedule/@item.Id" 
+                                           class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" 
+                                           title="Chi tiết">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                        </a>
+
+                                        @if (item.Status == 0 || item.Status == 5 || item.Status == 3 || item.Status == 1)
+                                        {
+                                            <a href="/HumanResourcesManager/manager/schedule/@item.Id/edit" 
+                                               class="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" 
+                                               title="Sửa">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                            </a>
+                                        }
+
+                                        @if (item.Status == 0 || item.Status == 5)
+                                        {
+                                            <form asp-action="CancelSchedule" asp-controller="Manager" asp-route-id="@item.Id" method="post" class="inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="button"
+                                                        onclick="confirmManagerAction(this.form, 'Hủy lịch OT', 'Bạn có chắc chắn muốn hủy lịch OT này?')"
+                                                        class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" 
+                                                        title="Hủy lịch">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                </button>
+                                            </form>
+                                        }
+                                        
+                                        @if (item.Status == 0 || item.Status == 5 || item.Status == 3 || item.Status == 1)
+                                        {
+                                            <form asp-action="MarkCompleted" asp-controller="Manager" asp-route-id="@item.Id" method="post" class="inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="button"
+                                                        onclick="confirmManagerAction(this.form, 'Hoàn thành lịch OT', 'Xác nhận hoàn thành lịch OT này?')"
+                                                        class="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all" 
+                                                        title="Hoàn thành">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                </button>
+                                            </form>
+                                        }
+                                            @if (item.Status == 2 && item.EndDate.Add(item.EndTime) > DateTime.Now)
+                                            {
+                                                <form asp-action="ReopenSchedule" asp-controller="Manager" asp-route-id="@item.Id" method="post" class="inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="button"
+                                                            onclick="confirmManagerAction(this.form, 'Mở lại lịch OT', 'Mở lại lịch OT này?')"
+                                                            class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                                                            title="Mở lại">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                                    </button>
+                                                </form>
+                                            }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-12">
+                                <div class="flex flex-col items-center">
+                                    <div class="p-3 bg-slate-50 rounded-full mb-3 text-slate-300">
+                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                                    </div>
+                                    <p class="text-slate-400 text-sm font-medium">Chưa có lịch tăng ca nào được tạo</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
             </table>
         </div>
-        <div id="schedulePagination" class="pagination mt-6"></div>
+
+        @if (Model != null && Model.TotalPages > 1)
+        {
+            <div class="mt-6 flex items-center justify-between">
+                <p class="text-sm text-slate-500">
+                    Trang @Model.Page / @Model.TotalPages
+                </p>
+                <div class="flex gap-2 flex-wrap justify-end">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        var activeClass = i == Model.Page
+                            ? "bg-blue-600 text-white"
+                            : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50";
+                        <a href="/HumanResourcesManager/manager/schedule?page=@i&pageSize=@Model.PageSize&keyword=@Model.Keyword&status=@Model.Status"
+                           class="px-3 py-1.5 rounded-lg text-sm @activeClass">
+                            @i
+                        </a>
+                    }
+                </div>
+            </div>
+        }
     </div>
 </div>
+
+<script>
+    function confirmManagerAction(form, title, text) {
+        if (!form) return;
+        if (typeof Swal === "undefined") {
+            form.submit();
+            return;
+        }
+        Swal.fire({
+            title: title || "Xác nhận",
+            text: text || "Bạn có chắc chắn muốn thực hiện thao tác này?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonColor: "#2563eb",
+            cancelButtonColor: "#64748b",
+            confirmButtonText: "Xác nhận",
+            cancelButtonText: "Hủy"
+        }).then((result) => {
+            if (result.isConfirmed) form.submit();
+        });
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <text>
+        Swal.fire({
+            toast: true,
+            position: "top-end",
+            icon: "success",
+            title: @Html.Raw(Json.Serialize(TempData["Success"])),
+            showConfirmButton: false,
+            timer: 2500,
+            timerProgressBar: true
+        });
+        </text>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <text>
+        Swal.fire({
+            toast: true,
+            position: "top-end",
+            icon: "error",
+            title: @Html.Raw(Json.Serialize(TempData["Error"])),
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+        });
+        </text>
+    }
+</script>
 

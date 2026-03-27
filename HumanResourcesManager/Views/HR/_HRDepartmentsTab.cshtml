@@ -1,95 +1,130 @@
-@using HumanResourcesManager.BLL.DTOs
-@model List<ContractDTO>
+@model LeaveRequestViewDTO
+@using HumanResourcesManager.DAL.Enum
 
-<div class="p-6">
+@{
+    ViewData["Title"] = "Duyệt đơn xin nghỉ";
+}
 
-    <!-- HEADER -->
-    <div class="mb-6">
-        <h2 class="text-xl font-semibold text-slate-800">Hợp Đồng</h2>
-        <p class="text-sm text-slate-500">
-            Tổng số hợp đồng: <strong>@ViewBag.TotalRecords</strong>
-        </p>
+<h2 class="mb-4">Danh sách đơn xin nghỉ cần duyệt</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
+}
 
-    <!-- TABLE -->
-    <div class="overflow-x-auto rounded-xl border border-slate-200">
-        <table class="w-full text-sm">
-            <thead>
-                <tr class="bg-slate-50 border-b border-slate-200">
-                    <th class="py-3 px-4 text-left">Nhân viên</th>
-                    <th class="py-3 px-4 text-left">Loại</th>
-                    <th class="py-3 px-4 text-left">Từ ngày</th>
-                    <th class="py-3 px-4 text-left">Đến ngày</th>
-                    <th class="py-3 px-4 text-left">Lương</th>
-                    <th class="py-3 px-4 text-left">Trạng thái</th>
-                    <th class="py-3 px-4 text-left">Hành động</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                @if (Model != null && Model.Any())
-                {
-                    foreach (var c in Model)
-                    {
-                        <tr class="border-b border-slate-100 hover:bg-slate-50">
-                            <td class="py-3 px-4">@c.EmployeeName</td>
-                            <td class="py-3 px-4">@c.ContractType</td>
-                            <td class="py-3 px-4">@c.StartDate.ToString("dd/MM/yyyy")</td>
-                            <td class="py-3 px-4">
-                                @(c.EndDate.HasValue ? c.EndDate.Value.ToString("dd/MM/yyyy") : "-")
-                            </td>
-                            <td class="py-3 px-4">
-                                @String.Format("{0:N0} đ", c.BasicSalary)
-                            </td>
-                            <td class="py-3 px-4">
-                                @if (c.IsActive)
-                                {
-                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-lg">
-                                        Đang hiệu lực
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="px-2 py-1 text-xs bg-red-100 text-red-600 rounded-lg">
-                                        Hết hiệu lực
-                                    </span>
-                                }
-                            </td>
-                            <td class="py-3 px-4">
-                                <a asp-controller="Contracts"
-                                   asp-action="Delete"
-                                   asp-route-id="@c.ContractId"
-                                   class="text-red-600 hover:underline text-sm">
-                                    Xóa
-                                </a>
-                            </td>
-                        </tr>
-                    }
-                }
-                else
-                {
-                    <tr>
-                        <td colspan="7" class="text-center py-6 text-slate-400">
-                            ⚠ Không có dữ liệu hợp đồng
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
+}
 
-    <!-- PAGINATION -->
-    <div class="mt-6 flex gap-2">
-        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+<table class="table table-bordered table-hover align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Nhân viên</th>
+            <th>Loại nghỉ</th>
+            <th>Từ ngày</th>
+            <th>Đến ngày</th>
+            <th>Lý do</th>
+            <th>Trạng thái</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model == null || Model.Records == null || !Model.Records.Any())
         {
-            <a asp-controller="Contracts"
-               asp-action="Index"
-               asp-route-page="@i"
-               class="px-3 py-1 rounded-lg border text-sm
-               @(i == ViewBag.CurrentPage ? "bg-blue-600 text-white" : "bg-white")">
-                @i
-            </a>
+            <tr>
+                <td colspan="7" class="text-center py-4">Không có đơn xin nghỉ nào cần duyệt.</td>
+            </tr>
         }
-    </div>
+        else
+        {
+            @foreach (var item in Model.Records)
+            {
+                <tr>
+                    <td>@item.EmployeeName</td>
+                    <td>@item.LeaveTypeName</td>
+                    <td>@item.FromDate.ToString("dd/MM/yyyy")</td>
+                    <td>@item.ToDate.ToString("dd/MM/yyyy")</td>
+                    <td>-</td>
+                    <td>
+                        <span class="badge
+                            @(item.Status == RequestStatus.Pending ? "bg-warning" :
+                              item.Status == RequestStatus.Approved ? "bg-success" : "bg-danger")">
+                            @item.Status
+                        </span>
+                    </td>
+                    <td>
+                        @if (item.Status == RequestStatus.Pending)
+                        {
+                            <form asp-action="Approve" method="post" style="display:inline-block; margin-right: 8px;">
+                                <input type="hidden" name="LeaveRequestId" value="@item.LeaveRequestId" />
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-success btn-sm">Duyệt</button>
+                            </form>
 
+                            <button type="button"
+                                    class="btn btn-danger btn-sm"
+                                    onclick="showRejectModal(@item.LeaveRequestId)">
+                                Từ chối
+                            </button>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<!-- Modal Từ chối -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Từ chối đơn xin nghỉ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="rejectForm" asp-action="Reject" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="rejectLeaveRequestId" name="LeaveRequestId" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Lý do từ chối <span class="text-danger">*</span></label>
+                        <textarea id="rejectComments" name="Comments" class="form-control" rows="4"
+                                  placeholder="Nhập lý do từ chối..." required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" onclick="submitReject()">Xác nhận từ chối</button>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        function showRejectModal(leaveRequestId) {
+            document.getElementById("rejectLeaveRequestId").value = leaveRequestId;
+            document.getElementById("rejectComments").value = "";
+            var modal = new bootstrap.Modal(document.getElementById('rejectModal'));
+            modal.show();
+        }
+
+        function submitReject() {
+            const comments = document.getElementById("rejectComments").value.trim();
+            if (comments === "") {
+                alert("Vui lòng nhập lý do từ chối!");
+                return;
+            }
+            document.getElementById("rejectForm").submit();
+        }
+    </script>
+}

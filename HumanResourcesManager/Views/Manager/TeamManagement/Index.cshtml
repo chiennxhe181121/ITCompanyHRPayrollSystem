@@ -1,0 +1,209 @@
+@model HumanResourcesManager.Models.Manager.ManagerTeamIndexViewModel
+
+@{
+    Layout = "~/Views/Manager/_ManagerLayout.cshtml";
+}
+
+@await Html.PartialAsync("_ManagerHeader")
+
+<div class="p-5 lg:p-8 bg-slate-50/50 min-h-screen">
+    @await Html.PartialAsync("_ManagerStats")
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
+        <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-lg font-semibold text-slate-800">Nhân viên của tôi</h2>
+                    <p class="text-sm text-slate-500 mt-0.5">Lọc, tìm kiếm, xem chi tiết và cập nhật trạng thái nhân sự thuộc nhóm.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <form method="get" action="/HumanResourcesManager/manager/team" class="grid grid-cols-1 md:grid-cols-12 gap-3 mb-5">
+                <div class="md:col-span-6">
+                    <input type="text"
+                           name="keyword"
+                           value="@Model.Keyword"
+                           placeholder="Tìm theo mã NV, họ tên, email, số điện thoại..."
+                           class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+                </div>
+                <div class="md:col-span-3">
+                    <select name="status"
+                            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="1" selected="@(Model.Status == 1)">Đang làm việc</option>
+                        <option value="0" selected="@(Model.Status == 0)">Ngừng hoạt động</option>
+                    </select>
+                </div>
+                <div class="md:col-span-3 flex gap-2">
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2.5 rounded-xl shadow-sm transition-colors text-sm">
+                        Tìm kiếm
+                    </button>
+                    <a href="/HumanResourcesManager/manager/team" class="w-full text-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-4 py-2.5 rounded-xl transition-colors text-sm">
+                        Làm mới
+                    </a>
+                </div>
+            </form>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50/80 border-b border-slate-200/60">
+                            <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Mã NV</th>
+                            <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Họ tên</th>
+                            <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Chức vụ</th>
+                            <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Email</th>
+                            <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Điện thoại</th>
+                            <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Trạng thái</th>
+                            <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider text-right whitespace-nowrap">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @if (!Model.Items.Any())
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center py-12">
+                                    <div class="flex flex-col items-center">
+                                        <div class="p-3 bg-slate-50 rounded-full mb-3 text-slate-300">
+                                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V4H2v16h5m10 0v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5m10 0H7"></path></svg>
+                                        </div>
+                                        <p class="text-slate-400 text-sm font-medium">Không có dữ liệu phù hợp</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model.Items)
+                            {
+                                var statusLabel = item.Status == 1 ? "Đang làm việc" : "Ngừng hoạt động";
+                                var statusClass = item.Status == 1
+                                    ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
+                                    : "bg-slate-100 text-slate-500 border border-slate-200";
+
+                                <tr class="group hover:bg-slate-50/50 transition-all duration-200">
+                                    <td class="py-4 px-6 text-sm font-bold text-slate-800">@item.EmployeeCode</td>
+                                    <td class="py-4 px-6 text-sm text-slate-700 font-semibold">@item.FullName</td>
+                                    <td class="py-4 px-6 text-sm text-slate-700">@item.PositionName</td>
+                                    <td class="py-4 px-6 text-sm text-slate-700">@item.Email</td>
+                                    <td class="py-4 px-6 text-sm text-slate-700">@item.Phone</td>
+                                    <td class="py-4 px-6 text-center">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium @statusClass">
+                                            @statusLabel
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-6 text-right">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <a href="/HumanResourcesManager/manager/team/detail/@item.EmployeeId?keyword=@Model.Keyword&status=@Model.Status&page=@Model.Page"
+                                               class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                               title="Chi tiết">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                            </a>
+
+                                            @{
+                                                var statusFormId = $"status-form-{item.EmployeeId}";
+                                                var targetStatus = item.Status == 1 ? 0 : 1;
+                                                var statusBtnLabel = item.Status == 1 ? "Ngừng hoạt động" : "Kích hoạt";
+                                                var statusBtnClass = item.Status == 1
+                                                    ? "bg-amber-50 text-amber-700 hover:bg-amber-100"
+                                                    : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100";
+                                            }
+                                            <form id="@statusFormId"
+                                                  method="post"
+                                                  action="/HumanResourcesManager/manager/team/status/@item.EmployeeId"
+                                                  class="inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="newStatus" value="@targetStatus" />
+                                                <input type="hidden" name="keyword" value="@Model.Keyword" />
+                                                <input type="hidden" name="status" value="@Model.Status" />
+                                                <input type="hidden" name="page" value="@Model.Page" />
+                                                <button type="button"
+                                                        onclick="confirmChangeStatus('@statusFormId', '@statusBtnLabel')"
+                                                        class="p-2 rounded-lg transition-all @statusBtnClass"
+                                                        title="@statusBtnLabel">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-6 flex items-center justify-between">
+                <p class="text-sm text-slate-500">
+                    Trang @Model.Page / @Model.TotalPages
+                </p>
+                <div class="flex gap-2">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        var activeClass = i == Model.Page
+                            ? "bg-blue-600 text-white"
+                            : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50";
+                        <a href="/HumanResourcesManager/manager/team?page=@i&pageSize=@Model.PageSize&keyword=@Model.Keyword&status=@Model.Status"
+                           class="px-3 py-1.5 rounded-lg text-sm @activeClass">
+                            @i
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmChangeStatus(formId, actionLabel) {
+            Swal.fire({
+                title: "Xác nhận cập nhật trạng thái",
+                text: `Bạn có chắc muốn ${actionLabel.toLowerCase()} cho nhân viên này?`,
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonColor: "#2563eb",
+                cancelButtonColor: "#64748b",
+                confirmButtonText: "Xác nhận",
+                cancelButtonText: "Hủy"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(formId).submit();
+                }
+            });
+        }
+
+        @if (TempData["Success"] != null)
+        {
+            <text>
+            Swal.fire({
+                toast: true,
+                position: "top-end",
+                icon: "success",
+                title: @Html.Raw(Json.Serialize(TempData["Success"])),
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true
+            });
+            </text>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <text>
+            Swal.fire({
+                toast: true,
+                position: "top-end",
+                icon: "error",
+                title: @Html.Raw(Json.Serialize(TempData["Error"])),
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+            </text>
+        }
+    </script>
+}
