@@ -6,6 +6,8 @@ namespace HumanResourcesManager.Models.Manager
     public class ManagerScheduleIndexViewModel
     {
         public List<OTScheduleDTO> Items { get; set; } = new();
+        public string? Keyword { get; set; }
+        public int? Status { get; set; }
 
         public int Page { get; set; }
         public int PageSize { get; set; }

@@ -249,17 +249,30 @@ namespace HumanResourcesManager.Controllers.Manager
 
 
         [HttpGet("schedule")]
-        public IActionResult Schedule(int page = 1, int pageSize = 10)
+        public IActionResult Schedule(string? keyword, int? status, int page = 1, int pageSize = 5)
         {
             _scheduleService.CancelExpiredSchedules();
             LoadSidebarUserCard();
             LoadManagerStats();
             if (page < 1) page = 1;
-            if (pageSize < 1) pageSize = 10;
+            pageSize = 5;
 
             var query = _scheduleService.GetManagerSchedules(CurrentUserId)
                 .OrderByDescending(x => x.CreatedAt)
                 .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var normalizedKeyword = keyword.Trim();
+                query = query.Where(x =>
+                    (!string.IsNullOrWhiteSpace(x.Name) && x.Name.Contains(normalizedKeyword, StringComparison.OrdinalIgnoreCase))
+                    || (!string.IsNullOrWhiteSpace(x.Description) && x.Description.Contains(normalizedKeyword, StringComparison.OrdinalIgnoreCase)));
+            }
+
+            if (status.HasValue)
+            {
+                query = query.Where(x => x.Status == status.Value);
+            }
 
             var totalItems = query.Count();
             var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
@@ -273,6 +286,8 @@ namespace HumanResourcesManager.Controllers.Manager
             var model = new HumanResourcesManager.Models.Manager.ManagerScheduleIndexViewModel
             {
                 Items = items,
+                Keyword = keyword,
+                Status = status,
                 Page = page,
                 PageSize = pageSize,
                 TotalItems = totalItems,
