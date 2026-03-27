@@ -10,6 +10,7 @@ using HumanResourcesManager.DAL.Shared;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
+using Rotativa.AspNetCore;
 
 namespace HumanResourcesManager
 {
@@ -157,6 +158,7 @@ namespace HumanResourcesManager
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
+            RotativaConfiguration.Setup(app.Environment.WebRootPath, "Rotativa");
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();

@@ -52,4 +52,11 @@ namespace HumanResourcesManager.BLL.DTOs
         public string Reason { get; set; } = "";
         public decimal Amount { get; set; }
     }
+    public class PayrollAuditSimpleDTO
+    {
+        public int PayrollId { get; set; }
+        public PayrollDetailType Type { get; set; }
+        public string Description { get; set; } // Ví dụ: "Thiếu [05/03] Không đi làm"
+        public decimal Amount { get; set; }     // Số tiền cần điều chỉnh / thiếu / thừa
+    }
 }

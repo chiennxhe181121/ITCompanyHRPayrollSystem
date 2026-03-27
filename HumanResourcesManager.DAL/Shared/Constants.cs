@@ -59,6 +59,11 @@
         public const int PayrollApproved = 42;    // Đã duyệt
         public const int PayrollPaid = 43;        // Đã trả lương
 
+        // Lương theo giờ (có thể thay đổi theo business)
+        public const decimal DEFAULT_HOURLY_RATE = 100000;
+
+        // Phạt mỗi phút thiếu
+        public const decimal MISSING_PENALTY_PER_MINUTE = 10000;
         // ==================================================
         // 6️⃣ User Account
         // ==================================================
@@ -79,5 +84,6 @@
         // 9 LeaveType
         // ==================================================
         public const int MATERNITY_MONTHS = 6;
+
     }
 }

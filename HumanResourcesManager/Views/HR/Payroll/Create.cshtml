@@ -2,28 +2,28 @@
 @model PayrollDTO
 
 @{
-    ViewData["Title"] = "Create Payroll";
+    ViewData["Title"] = "Tạo bảng lương";
     Layout = "~/Views/HR/_HRLayout.cshtml";
 }
 
-<div class="px-8 py-6 bg-white border-b border-slate-100 shadow-sm flex justify-between items-center">
+<div class="px-8 py-6 bg-white border-b shadow-sm flex justify-between items-center">
     <h2 class="text-2xl font-extrabold text-slate-800 flex items-center gap-3">
         <span class="w-10 h-10 rounded-xl bg-gradient-to-tr from-green-500 to-emerald-600 flex items-center justify-center text-white shadow-lg">
             <i class="fa-solid fa-money-bill-wave"></i>
         </span>
-        Create Payroll
+        Tạo bảng lương
     </h2>
 </div>
 
 <div class="p-8 bg-slate-100 min-h-screen">
 
-    <!-- FILTER FORM -->
+    <!-- FILTER -->
     <form method="get" asp-action="Create" class="flex gap-4 items-end mb-6">
 
         <div id="employee-container">
-            <label class="block mb-1 font-semibold">Employee:</label>
+            <label class="block mb-1 font-semibold">Nhân viên:</label>
             <select id="employeeId" name="employeeId" class="px-4 py-2 border rounded-lg text-sm w-64">
-                <option value="">--Select Employee--</option>
+                <option value="">--Chọn nhân viên--</option>
                 @foreach (var emp in Model.Employees)
                 {
                     <option value="@emp.EmployeeId" selected="@(emp.EmployeeId == Model.EmployeeId)">
@@ -34,22 +34,22 @@
         </div>
 
         <div>
-            <label class="block mb-1 font-semibold">Month:</label>
+            <label class="block mb-1 font-semibold">Tháng:</label>
             <input id="month" name="month" type="number" min="1" max="12"
                    value="@Model.Month" onchange="filterEmployees()"
                    class="px-4 py-2 border rounded-lg text-sm w-24" />
         </div>
 
         <div>
-            <label class="block mb-1 font-semibold">Year:</label>
-            <input id="year" name="year" type="number" min="2000" max="2100"
+            <label class="block mb-1 font-semibold">Năm:</label>
+            <input id="year" name="year" type="number"
                    value="@Model.Year" onchange="filterEmployees()"
                    class="px-4 py-2 border rounded-lg text-sm w-24" />
         </div>
 
         <button type="submit"
-                class="bg-green-600 text-white px-5 py-2 rounded-xl font-bold shadow-md hover:bg-green-700 transition-all">
-            Filter
+                class="bg-green-600 text-white px-5 py-2 rounded-xl font-bold shadow hover:bg-green-700">
+            Lọc
         </button>
     </form>
 
@@ -57,99 +57,76 @@
     {
         @if (Model.TotalWorkingDays == 0)
         {
-            <h3 class="text-red-600 font-bold">No attendance data</h3>
+            <h3 class="text-red-600 font-bold">Không có dữ liệu chấm công</h3>
         }
         else
         {
-            <!-- SALARY BREAKDOWN -->
-            <h3 class="text-lg font-bold mb-2">Salary Breakdown</h3>
-            <div class="bg-white rounded-xl shadow p-4 mb-6">
-                <table class="w-full text-sm text-left">
-                    <tbody>
-                        <tr><td>Basic Salary</td><td>@Model.BasicSalary.ToString("N0") VND</td></tr>
-                        <tr><td>Over Time</td><td>@Model.TotalOT.ToString("N0") VND</td></tr>
-                        <tr><td>Allowance</td><td>@Model.TotalAllowance.ToString("N0") VND</td></tr>
-
-                        <tr>
-                            <td class="text-red-600">Absent Deduction</td>
-                            <td class="text-red-600">-@Model.AbsentDeduction.ToString("N0") VND</td>
-                        </tr>
-                        <tr>
-                            <td class="text-red-600">Missing Checkout</td>
-                            <td class="text-red-600">-@Model.MissingCheckoutPenalty.ToString("N0") VND</td>
-                        </tr>
-                        <tr>
-                            <td class="text-red-600">Insufficient Work</td>
-                            <td class="text-red-600">-@Model.InsufficientWorkPenalty.ToString("N0") VND</td>
-                        </tr>
-
-                        <tr>
-                            <td class="font-bold text-red-700">Total Penalty</td>
-                            <td class="font-bold text-red-700">
-                                -@((Model.AbsentDeduction + Model.MissingCheckoutPenalty + Model.InsufficientWorkPenalty).ToString("N0")) VND
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- ATTENDANCE -->
-            <h3 class="text-lg font-bold mb-2">Attendance Summary (Click to expand)</h3>
+            <!-- LƯƠNG -->
+            <h3 class="text-lg font-bold mb-2">Chi tiết lương</h3>
             <div class="bg-white rounded-xl shadow p-4 mb-6">
                 <table class="w-full text-sm">
-                    @* Absent *@
-                    <tr onclick="toggle('absent')" class="cursor-pointer bg-red-100">
-                        <td>Absent Days (@Model.AbsentDays)</td>
-                        <td>▼</td>
-                    </tr>
-                    <tr id="absent" style="display:none;">
-                        <td colspan="2">
-                            @foreach (var d in Model.AbsentDetails)
-                            {
-                                <div>📅 @d.WorkDate: -@d.Amount.ToString("N0") VND</div>
-                            }
-                        </td>
-                    </tr>
+                    <tr><td>Lương cơ bản</td><td>@Model.BasicSalary.ToString("N0") VND</td></tr>
+                    <tr><td>Tăng ca</td><td>@Model.TotalOT.ToString("N0") VND</td></tr>
+                    <tr><td>Phụ cấp</td><td>@Model.TotalAllowance.ToString("N0") VND</td></tr>
 
-                    @* Missing Checkout *@
-                    <tr onclick="toggle('missing')" class="cursor-pointer bg-yellow-100">
-                        <td>Missing Checkout (@Model.MissingCheckoutDays)</td>
-                        <td>▼</td>
-                    </tr>
-                    <tr id="missing" style="display:none;">
-                        <td colspan="2">
-                            @foreach (var d in Model.MissingCheckoutDetails)
-                            {
-                                <div>📅 @d.WorkDate: -@d.Amount.ToString("N0") VND</div>
-                            }
-                        </td>
-                    </tr>
-
-                    @* Insufficient *@
-                    <tr onclick="toggle('insufficient')" class="cursor-pointer bg-blue-100">
-                        <td>Insufficient (@Model.TotalMissingMinutes mins)</td>
-                        <td>▼</td>
-                    </tr>
-                    <tr id="insufficient" style="display:none;">
-                        <td colspan="2">
-                            @foreach (var d in Model.InsufficientDetails)
-                            {
-                                <div>📅 @d.WorkDate: -@d.Amount.ToString("N0") VND</div>
-                            }
-                        </td>
-                    </tr>
-
-                    <!-- Total working days -->
-                    <tr>
-                        <td>Total Working Days</td>
-                        <td>@Model.TotalWorkingDays</td>
-                    </tr>
+                    <tr class="text-red-600"><td>Trừ nghỉ</td><td>-@Model.AbsentDeduction.ToString("N0")</td></tr>
+                    <tr class="text-red-600"><td>Thiếu checkout</td><td>-@Model.MissingCheckoutPenalty.ToString("N0")</td></tr>
+                    <tr class="text-red-600"><td>Làm thiếu</td><td>-@Model.InsufficientWorkPenalty.ToString("N0")</td></tr>
                 </table>
             </div>
 
-            <!-- NET SALARY -->
+            <!-- CHI TIẾT VI PHẠM -->
+            <h3 class="text-lg font-bold mb-2">Chi tiết vi phạm</h3>
+            <div class="bg-white rounded-xl shadow p-4 mb-6 space-y-4">
+
+                <!-- Absent -->
+                <div>
+                    <div class="font-semibold text-red-600 mb-1">
+                        Nghỉ không phép (@Model.AbsentDays ngày)
+                    </div>
+                    <div class="pl-4 space-y-1 text-sm">
+                        @foreach (var d in Model.AbsentDetails)
+                        {
+                            <div>📅 @d.WorkDate.ToString("dd/MM"): -@d.Amount.ToString("N0") VND</div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Missing checkout -->
+                <div>
+                    <div class="font-semibold text-yellow-600 mb-1">
+                        Thiếu checkout (@Model.MissingCheckoutDays ngày)
+                    </div>
+                    <div class="pl-4 space-y-1 text-sm">
+                        @foreach (var d in Model.MissingCheckoutDetails)
+                        {
+                            <div>📅 @d.WorkDate.ToString("dd/MM"): -@d.Amount.ToString("N0") VND</div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Insufficient -->
+                <div>
+                    <div class="font-semibold text-blue-600 mb-1">
+                        Làm thiếu (@Model.TotalMissingMinutes phút)
+                    </div>
+                    <div class="pl-4 space-y-1 text-sm">
+                        @foreach (var d in Model.InsufficientDetails)
+                        {
+                            <div>📅 @d.WorkDate.ToString("dd/MM"): -@d.Amount.ToString("N0") VND</div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Tổng ngày làm -->
+                <div class="pt-2 border-t">
+                    <b>Tổng ngày làm:</b> @Model.TotalWorkingDays
+                </div>
+            </div>
+
+            <!-- NET -->
             <h3 class="text-xl font-bold text-green-700 mb-4">
-                Net Salary: @Model.NetSalary.ToString("N0") VND
+                Lương thực nhận: @Model.NetSalary.ToString("N0") VND
             </h3>
 
             <!-- SAVE -->
@@ -170,39 +147,10 @@
                 <input type="hidden" name="NetSalary" value="@Model.NetSalary" />
 
                 <button type="submit"
-                        class="bg-green-600 text-white px-5 py-2 rounded-xl font-bold shadow-md hover:bg-green-700 transition-all">
-                    Save Payroll
+                        class="bg-green-600 text-white px-5 py-2 rounded-xl font-bold shadow hover:bg-green-700">
+                    Lưu bảng lương
                 </button>
             </form>
         }
     }
 </div>
-
-<script>
-    function toggle(id){
-        var el = document.getElementById(id);
-        el.style.display = (el.style.display === "none") ? "table-row" : "none";
-    }
-
-    async function filterEmployees() {
-        var month = document.getElementById("month").value;
-        var year = document.getElementById("year").value;
-        if (!month || !year) return;
-
-        var response = await fetch(`/HR/Payroll/GetEmployeesForMonth?month=${month}&year=${year}`);
-        var employees = await response.json();
-
-        var select = document.getElementById("employeeId");
-        var currentId = select.value;
-        var container = document.getElementById("employee-container");
-
-        var html = '<label class="block mb-1 font-semibold">Employee:</label>';
-        html += '<select id="employeeId" name="employeeId" class="px-4 py-2 border rounded-lg text-sm w-64">';
-        html += '<option value="">--Select Employee--</option>';
-        employees.forEach(e => {
-            html += `<option value="${e.employeeId}" ${e.employeeId == currentId ? "selected" : ""}>${e.fullName}</option>`;
-        });
-        html += '</select>';
-        container.innerHTML = html;
-    }
-</script>

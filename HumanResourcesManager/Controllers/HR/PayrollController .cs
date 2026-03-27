@@ -3,6 +3,8 @@ using HumanResourcesManager.BLL.Services;
 using HumanResourcesManager.DAL.Models;
 using HumanResourcesManager.BLL.DTOs;
 using HumanResourcesManager.BLL.Interfaces;
+using Rotativa.AspNetCore;
+using HumanResourcesManager.BLL.Helpers;
 
 namespace HumanResourcesManager.Controllers.HR
 {
@@ -49,7 +51,7 @@ namespace HumanResourcesManager.Controllers.HR
             return View("~/Views/HR/Payroll/Index.cshtml", pagedPayrolls);
         }
 
-        // ================== CREATE ==================
+        
         // ================== CREATE =================
         [HttpGet]
         public async Task<IActionResult> Create(int? employeeId, int? month, int? year)
@@ -119,16 +121,59 @@ namespace HumanResourcesManager.Controllers.HR
             var data = await _service.GetByIdAsync(id);
             if (data == null) return NotFound();
 
+            data.PayrollDetails ??= new List<PayrollDetailDTO>();
+
+            // Lấy audit để hiển thị các khoản cần điều chỉnh
+            var audit = await _service.AuditPayrollSimpleAsync(id);
+            ViewBag.Audit = audit;
+
             return View("~/Views/HR/Payroll/Edit.cshtml", data);
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(PayrollDTO model)
         {
             if (!ModelState.IsValid)
+            {
+                var audit = await _service.AuditPayrollSimpleAsync(model.PayrollId.GetValueOrDefault());
+                ViewBag.Audit = audit;
                 return View("~/Views/HR/Payroll/Edit.cshtml", model);
+            }
 
-            await _service.UpdateAsync(model);
+            var existing = await _service.GetByIdAsync(model.PayrollId.GetValueOrDefault());
+            if (existing == null) return NotFound();
+
+            // Cập nhật các trường tổng HR có thể chỉnh
+            existing.BasicSalary = model.BasicSalary;
+            existing.TotalOT = model.TotalOT;
+            existing.TotalAllowance = model.TotalAllowance;
+            existing.MissingMinutesPenalty = model.MissingMinutesPenalty ;
+
+            // === QUAN TRỌNG: CHỈ THÊM DÒNG MỚI, KHÔNG XÓA DÒNG CŨ ===
+            if (model.PayrollDetails != null && model.PayrollDetails.Any())
+            {
+                foreach (var detail in model.PayrollDetails)
+                {
+                    bool alreadyExists = existing.PayrollDetails.Any(ed =>
+                        string.Equals(ed.Description?.Trim(), detail.Description?.Trim(), StringComparison.OrdinalIgnoreCase) &&
+                        ed.Type == detail.Type);
+
+                    if (!alreadyExists)
+                    {
+                        existing.PayrollDetails.Add(new PayrollDetailDTO
+                        {
+                            Description = detail.Description?.Trim(),
+                            Amount = detail.Amount,
+                            Type = detail.Type
+                        });
+                    }
+                }
+            }
+
+            // Gọi service để update và tính lại NetSalary
+            await _service.UpdateAsync(existing);
+
             return RedirectToAction("Index");
         }
 
@@ -147,6 +192,27 @@ namespace HumanResourcesManager.Controllers.HR
             if (data == null) return NotFound();
 
             return View("~/Views/HR/Payroll/Details.cshtml", data);
+        }
+        public async Task<IActionResult> ExportPdf(int payrollId, int month, int year)
+        {
+            var model = await _service.GetByIdAsync(payrollId);
+
+            if (model == null)
+            {
+                return Content("Không có dữ liệu bảng lương");
+            }
+
+            // 🔥 nếu muốn đảm bảo chắc chắn (optional)
+            model.Month = month;
+            model.Year = year;
+            var safeName = RemoveVietNameseHelper.RemoveVietnamese(model.EmployeeName);
+
+            return new ViewAsPdf("~/Views/HR/Payroll/PayrollPdf.cshtml", model)
+            {
+                FileName = $"BangLuong_{safeName}_T{month}_{year}.pdf",
+                PageSize = Rotativa.AspNetCore.Options.Size.A4,
+                CustomSwitches = "--enable-local-file-access"
+            };
         }
     }
 }

@@ -1,56 +1,131 @@
-﻿@model PayrollDTO
-@using HumanResourcesManager.BLL.DTOs
-<h2>Edit Payroll</h2>
+﻿@using HumanResourcesManager.BLL.DTOs
+@using HumanResourcesManager.DAL.Enum
+@model PayrollDTO
+@{
+    ViewData["Title"] = "Chỉnh sửa bảng lương";
+    Layout = "~/Views/HR/_HRLayout.cshtml";
+    var audit = ViewBag.Audit as List<PayrollAuditSimpleDTO>;
+}
 
-<form asp-action="Edit" method="post">
-    <input type="hidden" asp-for="PayrollId" />
+<div class="px-8 py-6 bg-white border-b shadow-sm flex justify-between items-center">
+    <h2 class="text-2xl font-extrabold text-slate-800 flex items-center gap-3">
+        <span class="w-10 h-10 rounded-xl bg-gradient-to-tr from-green-500 to-emerald-600 flex items-center justify-center text-white shadow-lg">
+            <i class="fa-solid fa-money-bill-wave"></i>
+        </span>
+        Chỉnh sửa bảng lương
+    </h2>
+</div>
 
-    <label>EmployeeId:</label>
-    <input asp-for="EmployeeId" /><br/>
-
-    <label>Month:</label>
-    <input asp-for="Month" /><br/>
-
-    <label>Year:</label>
-    <input asp-for="Year" /><br/>
-
-    <label>Basic Salary:</label>
-    <input asp-for="BasicSalary" /><br/>
-
-    <label>Total OT:</label>
-    <input asp-for="TotalOT" /><br/>
-
-    <label>Total Allowance:</label>
-    <input asp-for="TotalAllowance" /><br/>
-
-    <label>Missing Minutes Penalty:</label>
-    <input asp-for="MissingMinutesPenalty" /><br/>
-
-    <h3>Payroll Details</h3>
-    <div id="details">
-        @for (int i = 0; i < Model.PayrollDetails.Count; i++)
-        {
-                <div>
-                    <input name="PayrollDetails[@i].Description" value="@Model.PayrollDetails[i].Description" />
-                    <input name="PayrollDetails[@i].Amount" value="@Model.PayrollDetails[i].Amount" />
-                </div>
-        }
+<div class="p-8 bg-slate-100 min-h-screen">
+    <div class="mb-6">
+        <b>Nhân viên:</b> @Model.EmployeeName <br />
+        <b>Tháng/Năm:</b> @Model.Month / @Model.Year
     </div>
 
-    <button type="button" onclick="addRow()">Add Detail</button><br/><br/>
-    <button type="submit">Update</button>
-</form>
+    @if (audit == null || audit.Count == 0)
+    {
+        <p class="text-green-600 font-bold">Payroll đã chính xác, không cần chỉnh sửa.</p>
+    }
+    else
+    {
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="PayrollId" />
+            <input type="hidden" asp-for="NetSalary" id="hiddenNetSalary" />
+
+            <!-- Basic salary (editable) -->
+            <div class="bg-white rounded-xl shadow p-6 mb-6">
+                <h3 class="font-bold mb-4 text-lg">Chi tiết lương cố định</h3>
+                <table class="w-full text-sm">
+                    <tr class="border-b">
+                        <td class="py-3 font-medium">Lương cơ bản</td>
+                        <td class="py-3 text-right">
+                            <input asp-for="BasicSalary"
+                                   class="w-40 text-right border border-gray-300 px-3 py-2 rounded focus:outline-none focus:border-blue-500"
+                                   onchange="recalcNetSalary()" />
+                        </td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-3 font-medium">Tăng ca</td>
+                        <td class="py-3 text-right font-medium text-gray-700">
+                            @Model.TotalOT.ToString("N0") VND
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 font-medium">Phụ cấp</td>
+                        <td class="py-3 text-right font-medium text-gray-700">
+                            @Model.TotalAllowance.ToString("N0") VND
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Audit rows -->
+            <div class="bg-white rounded-xl shadow p-6 mb-8">
+                <h3 class="font-bold mb-4 text-lg">Điều chỉnh chi tiết</h3>
+                <div id="adjustDetails">
+                    @for (int i = 0; i < audit.Count; i++)
+                    {
+                        var d = audit[i];
+                        var color = d.Type == PayrollDetailType.Deduction ? "red-600" : "green-700";
+                        var sign = d.Type == PayrollDetailType.Earning ? "+" : "-";
+
+                        <div class="mb-3 p-3 border-l-4 border-@color bg-@color/10 rounded-lg">
+                            <div class="flex justify-between items-center gap-3">
+                                <input type="hidden" name="PayrollDetails[@i].Type" value="@d.Type" />
+                                <input name="PayrollDetails[@i].Description" value="@d.Description"
+                                       class="flex-1 border px-3 py-2 rounded focus:outline-none" />
+                                <input name="PayrollDetails[@i].Amount" value="@d.Amount"
+                                       type="number" step="0.01"
+                                       class="w-36 text-right border px-3 py-2 rounded focus:outline-none"
+                                       onchange="recalcNetSalary()" />
+                                <span class="font-bold text-@color">@sign@d.Amount.ToString("N0")</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- NetSalary -->
+            <div class="bg-white rounded-xl shadow p-6 mb-8">
+                <h3 class="text-xl font-bold text-green-700">
+                    Lương thực nhận:
+                    <span id="netSalary" class="text-2xl">@Model.NetSalary.ToString("N0") VND</span>
+                </h3>
+            </div>
+
+            <button type="submit"
+                    class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-xl font-bold shadow text-lg">
+                Cập nhật bảng lương
+            </button>
+        </form>
+    }
+</div>
 
 <script>
-    let index = @Model.PayrollDetails.Count;
+    const netOld = parseFloat('@Model.NetSalary') || 0;
+    const basicOld = parseFloat('@Model.BasicSalary') || 0;
 
-    function addRow() {
-        let html = `
-        <div>
-            <input name="PayrollDetails[${index}].Description" placeholder="Description" />
-            <input name="PayrollDetails[${index}].Amount" placeholder="Amount" />
-        </div>`;
-        document.getElementById("details").insertAdjacentHTML('beforeend', html);
-        index++;
+    function recalcNetSalary() {
+        const basicNew = parseFloat(document.querySelector('input[name="BasicSalary"]').value) || 0;
+        let net = netOld + (basicNew - basicOld);
+
+        // Audit
+        document.querySelectorAll('#adjustDetails > div').forEach(row => {
+            const amountInput = row.querySelector('input[name$=".Amount"]');
+            const typeInput = row.querySelector('input[name$=".Type"]');
+
+            if (!amountInput || !typeInput) return;
+
+            const amount = parseFloat(amountInput.value) || 0;
+            const type = typeInput.value;
+
+            if (type === "Earning") net += amount;
+            else if (type === "Deduction") net -= amount;
+        });
+
+        document.getElementById('netSalary').innerText = net.toLocaleString('vi-VN') + ' VND';
+        document.getElementById('hiddenNetSalary').value = net.toFixed(2);
     }
+
+    document.addEventListener('DOMContentLoaded', recalcNetSalary);
 </script>
