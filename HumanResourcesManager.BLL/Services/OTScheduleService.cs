@@ -27,6 +27,13 @@ namespace HumanResourcesManager.BLL.Services
         private static DateTime GetScheduleEndDateTime(DateTime endDate, TimeSpan endTime)
             => endDate.Date.Add(endTime);
 
+        private static DateTime GetEffectiveScheduleEndDateTime(DateTime startDate, TimeSpan startTime, DateTime endDate, TimeSpan endTime)
+        {
+            if (startDate.Date == endDate.Date && endTime <= startTime)
+                return startDate.Date.AddDays(1).Add(endTime);
+            return endDate.Date.Add(endTime);
+        }
+
         private static bool IsTimeOverlap(TimeSpan aStart, TimeSpan aEnd, TimeSpan bStart, TimeSpan bEnd)
             => aStart < bEnd && bStart < aEnd;
 
@@ -88,7 +95,7 @@ namespace HumanResourcesManager.BLL.Services
         private static int ResolveRuntimeStatus(DateTime now, DateTime startDate, TimeSpan startTime, DateTime endDate, TimeSpan endTime)
         {
             var startDateTime = GetScheduleStartDateTime(startDate, startTime);
-            var endDateTime = GetScheduleEndDateTime(endDate, endTime);
+            var endDateTime = GetEffectiveScheduleEndDateTime(startDate, startTime, endDate, endTime);
 
             if (now < startDateTime)
             {
@@ -102,6 +109,16 @@ namespace HumanResourcesManager.BLL.Services
             }
 
             return 0;
+        }
+
+        private static int GetEffectiveScheduleStatus(OTSchedule s, DateTime now)
+        {
+            if (s.Status == 2 || s.Status == 4) return s.Status; 
+            
+            var resolved = ResolveRuntimeStatus(now, s.StartDate, s.StartTime, s.EndDate, s.EndTime);
+            if (s.Status == 3 && resolved == 0) return 3; // Keep expired if nobody registered
+            
+            return resolved;
         }
 
         private static DateTime? GetNextOccurrenceStart(DateTime now, DateTime scheduleStartDate, DateTime scheduleEndDate, TimeSpan startTime)
@@ -208,7 +225,7 @@ namespace HumanResourcesManager.BLL.Services
                 DepartmentId = s.DepartmentId,
                 ManagerId = s.ManagerId,
                 ManagerName = s.Manager?.FullName ?? "",
-                Status = s.Status,
+                Status = GetEffectiveScheduleStatus(s, VietnamClock.Now),
                 CreatedAt = s.CreatedAt,
                 RegisteredCount = s.Registrations.Where(x => x.Status != 3).GroupBy(x => x.EmployeeId).Count()
             });
@@ -235,7 +252,7 @@ namespace HumanResourcesManager.BLL.Services
                     DepartmentId = s.DepartmentId,
                     ManagerId = s.ManagerId,
                     ManagerName = s.Manager?.FullName ?? "",
-                    Status = s.Status,
+                    Status = GetEffectiveScheduleStatus(s, VietnamClock.Now),
                     CreatedAt = s.CreatedAt,
                     RegisteredCount = s.Registrations.Where(x => x.Status != 3).GroupBy(x => x.EmployeeId).Count(),
                     IsRegisteredByCurrentUser = s.Registrations.Any(r => r.EmployeeId == emp.EmployeeId && r.Status != 3) // 3 = Cancelled
@@ -287,8 +304,8 @@ namespace HumanResourcesManager.BLL.Services
                 return false;
             }
 
-            // 1) Chặn OT trùng thời gian hành chính (08:00-17:00 theo Constants)
-            if (IsTimeOverlap(schedule.StartTime, schedule.EndTime, Constants.WorkStart, Constants.WorkEnd))
+            // 1) Chặn OT trùng thời gian hành chính (08:00-17:00 theo Constants) trên các ngày làm việc
+            if (!IsWeekend(schedule.StartDate) && IsTimeOverlap(schedule.StartTime, schedule.EndTime, Constants.WorkStart, Constants.WorkEnd))
             {
                 message = $"Không thể đăng ký: khung giờ OT ({schedule.StartTime:hh\\:mm}–{schedule.EndTime:hh\\:mm}) trùng với thời gian hành chính ({Constants.WorkStart:hh\\:mm}–{Constants.WorkEnd:hh\\:mm}).";
                 return false;
@@ -651,7 +668,7 @@ namespace HumanResourcesManager.BLL.Services
                 DepartmentId = schedule.DepartmentId,
                 ManagerId = schedule.ManagerId,
                 ManagerName = schedule.Manager?.FullName ?? "",
-                Status = schedule.Status,
+                Status = GetEffectiveScheduleStatus(schedule, VietnamClock.Now),
                 CreatedAt = schedule.CreatedAt,
                 RegisteredCount = schedule.Registrations.Where(r => r.Status != 3).GroupBy(r => r.EmployeeId).Count(),
                 Registrations = schedule.Registrations

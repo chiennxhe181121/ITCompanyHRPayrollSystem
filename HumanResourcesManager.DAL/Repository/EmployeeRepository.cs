@@ -2,6 +2,7 @@ using HumanResourcesManager.DAL.Data;
 using HumanResourcesManager.DAL.Enum;
 using HumanResourcesManager.DAL.Interfaces;
 using HumanResourcesManager.DAL.Models;
+using HumanResourcesManager.DAL.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace HumanResourcesManager.DAL.Repositories
@@ -63,7 +64,7 @@ namespace HumanResourcesManager.DAL.Repositories
 
         public int CountOvertimeSchedulesForManager(int managerEmployeeId)
         {
-            var now = DateTime.Now;
+            var now = VietnamClock.Now;
             return _context.OTSchedules.Count(x =>
                 x.ManagerId == managerEmployeeId &&
                 x.CreatedAt.Month == now.Month &&
@@ -72,7 +73,7 @@ namespace HumanResourcesManager.DAL.Repositories
 
         public int CountCompletedOTSchedulesForManager(int managerEmployeeId)
         {
-            var now = DateTime.Now;
+            var now = VietnamClock.Now;
             return _context.OTSchedules.Count(x =>
                 x.ManagerId == managerEmployeeId &&
                 x.Status == 4 &&
